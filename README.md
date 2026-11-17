@@ -65,10 +65,11 @@ users are refused outright; the audit trigger records who changed what.
 supabase/
   config.toml                      local stack config (public sign-up disabled)
   migrations/
-    …01_core_schema.sql            enums, tables, indexes, updated_at + denormalisation triggers, auth→profile sync
-    …02_rls.sql                    helper functions (is_admin, manages_warehouse, …), RLS policies, grants, profile guard
-    …03_audit_slots_dashboard.sql  generic audit trigger, create_brigade_slots(), v_zone_slot_summary view
-    …04_reference_data.sql         default "Standard Brigade" 1.2 m cube (all environments)
+    …122332_core_schema.sql            enums, tables, indexes, updated_at + denormalisation triggers, auth→profile sync
+    …122403_rls.sql                    helper functions (is_admin, manages_warehouse, …), RLS policies, grants, profile guard
+    …122427_audit_slots_dashboard.sql  generic audit trigger, create_brigade_slots(), v_zone_slot_summary view
+    …122431_reference_data.sql         default "Standard Brigade" 1.2 m cube (all environments)
+    …122704_lock_trigger_functions.sql trigger functions not callable through the API
   seed.sql                         LOCAL ONLY: one super admin
   functions/create-user/           Edge Function (index.ts) + pure, unit-tested rules (rules.ts)
   tests/database/rls.test.sql      pgTAP tests
@@ -102,6 +103,20 @@ src/
 - The browser only has the anon/publishable key. `create-user` checks the caller's JWT + role
   (admin → managers/staff; manager → staff for their own warehouses only) before using the service key.
 - Public sign-up is disabled; accounts are created by admins/managers.
+
+## Environments
+
+| | Local | Hosted (production) |
+|---|---|---|
+| Supabase | `npx supabase start` (Docker) | project ref `zzbpramdnuguymeaovma`, region ap-northeast-2 |
+| API URL | `http://127.0.0.1:54321` | `https://zzbpramdnuguymeaovma.supabase.co` |
+| Frontend key | anon key from `npx supabase status` | publishable key (Dashboard → Project Settings → API Keys) |
+| Migrations | applied by `supabase db reset` | 5 migrations applied; versions match the files in `supabase/migrations` |
+| Edge Function | `npx supabase functions serve` | `create-user` deployed (verify JWT on) |
+
+Git: `origin` pushes to two repositories at once —
+`warehousemanagementadmin099-web/warehouse` and `mvasagan099/warehouse-management-system` — each
+over its own SSH deploy key (`github-wms-1` / `github-wms-2` aliases in `~/.ssh/config`).
 
 ## Deploy
 
