@@ -54,3 +54,27 @@ export type LabourEntry = Tables<'labour_entries'>
 
 // Enum value lists come from the generated schema constants, not hand-typed copies.
 export { Constants } from '../types/database'
+
+// ---- Phase 3: billing ----
+export type InvoiceStatus = Enums<'invoice_status'>
+export type InvoiceSection = Enums<'invoice_section'>
+export type BillingMode = Enums<'billing_mode'>
+export type BillingCycle = Enums<'billing_cycle'>
+export type RateScope = Enums<'rate_scope'>
+export type RentBasis = Enums<'rent_basis'>
+export type LabourBasis = Enums<'labour_basis'>
+export type PremiumType = Enums<'premium_type'>
+export type PaymentMethod = Enums<'payment_method'>
+export type NoteKind = Enums<'note_kind'>
+export type ChargeCalc = Enums<'charge_calc'>
+export type Invoice = Tables<'invoices'>
+export type InvoiceLine = Tables<'invoice_lines'>
+export type InvoiceTaxLine = Tables<'invoice_tax_lines'>
+export type AdjustmentNote = Tables<'adjustment_notes'>
+export type Payment = Tables<'payments'>
+export type RateCard = Tables<'rate_cards'>
+export type RentRate = Tables<'rent_rates'>
+export type LabourRate = Tables<'labour_rates'>
+export type OtherCharge = Tables<'other_charges'>
+export type TaxRule = Tables<'tax_rules'>
+export type ClientGroup = Tables<'client_groups'>

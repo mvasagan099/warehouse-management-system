@@ -1,6 +1,6 @@
 import { createElement } from 'react'
 import { supabase } from '../../lib/supabase'
-import type { ChallanPdfData, ReceiptPdfData } from './documents'
+import type { ChallanPdfData, InvoicePdfData, ReceiptPdfData } from './documents'
 
 function save(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -39,4 +39,15 @@ export async function downloadChallanPdf(data: Omit<ChallanPdfData, 'signatureDa
   const [{ pdf }, { ChallanPdf }] = await Promise.all([import('@react-pdf/renderer'), import('./documents')])
   const blob = await pdf(createElement(ChallanPdf, { ...data, signatureDataUrl }) as never).toBlob()
   save(blob, `${fileSafe(data.challan.challan_no)}.pdf`)
+}
+
+/** Renders the tax invoice PDF in the browser (the renderer is loaded on demand). */
+export async function invoicePdfBlob(data: InvoicePdfData): Promise<Blob> {
+  const [{ pdf }, { InvoicePdf }] = await Promise.all([import('@react-pdf/renderer'), import('./documents')])
+  return await pdf(createElement(InvoicePdf, data) as never).toBlob()
+}
+
+export async function downloadInvoicePdf(data: InvoicePdfData) {
+  const blob = await invoicePdfBlob(data)
+  save(blob, `${fileSafe(data.invoice.invoice_no ?? 'draft-invoice')}.pdf`)
 }

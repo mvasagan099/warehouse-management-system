@@ -160,7 +160,7 @@ export function UsersPage() {
           <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="sm:w-72" aria-label={t('common.search')} />
           <Select aria-label={t('common.role')} value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="sm:w-52">
             <option value="">{t('common.all')}</option>
-            {(['SUPER_ADMIN', 'WAREHOUSE_MANAGER', 'STAFF'] as const).map((r) => <option key={r} value={r}>{t(`roles.${r}`)}</option>)}
+            {(['SUPER_ADMIN', 'WAREHOUSE_MANAGER', 'STAFF', 'ACCOUNTANT'] as const).map((r) => <option key={r} value={r}>{t(`roles.${r}`)}</option>)}
           </Select>
         </Toolbar>
         <DataTable data={rows} columns={columns} loading={users.isPending} error={users.error ? t('common.error') : null} onRetry={() => users.refetch()} search={search} filtered={!!roleFilter} />

@@ -1,0 +1,156 @@
+# -*- coding: utf-8 -*-
+# Adds the Phase 3 (billing) strings to en.json and ta.json. Safe to re-run.
+import json
+
+EN = {
+ "nav": {"invoices": "Invoices", "payments": "Payments", "ledger": "Ledger & Ageing", "rates": "Rate Cards", "billingReports": "Billing Reports", "billingSettings": "Billing Settings"},
+ "roles": {"ACCOUNTANT": "Accountant"},
+ "users": {"accountantHelp": "An accountant sees billing for every warehouse and can export, but cannot change anything."},
+ "validation": {"days": "Enter a whole number of days (0 to 999)"},
+ "labourActivity": {"PICKING": "Picking", "PACKING": "Packing"},
+ "labourBasis": {"PER_PACKAGE": "Per package", "PER_TONNE": "Per tonne", "PER_BRIGADE_MOVED": "Per Brigade moved", "PER_HOUR": "Per hour", "FLAT_PER_LORRY": "Flat per lorry"},
+ "receive": {"night": "Night shift", "overtime": "Overtime"},
+ "invoiceStatus": {"DRAFT": "Draft", "ISSUED": "Issued", "PARTIALLY_PAID": "Partly paid", "PAID": "Paid", "OVERDUE": "Overdue", "CANCELLED": "Cancelled"},
+ "paymentMethod": {"UPI": "UPI", "BANK_TRANSFER": "Bank transfer", "CHEQUE": "Cheque", "CASH": "Cash", "ONLINE": "Online (Razorpay)", "DEPOSIT_ADJUSTMENT": "Security deposit adjustment"},
+ "billingMode": {"BOTH": "Rent and labour", "RENT_ONLY": "Rent only", "LABOUR_ONLY": "Labour only"},
+ "billingCycle": {"WEEKLY": "Weekly", "MONTHLY": "Monthly", "ON_DEMAND": "On demand"},
+ "portal": {"amountDue": "Amount due", "openInvoices": "{{count}} open invoices"},
+ "clients": {"billingSection": "Billing", "billingCycle": "Billing cycle", "billingCycleHelp": "Weekly and monthly cycles create DRAFT invoices automatically; on demand means an administrator generates them.",
+   "paymentTerms": "Payment terms (days)", "group": "Client group", "groupHelp": "Clients in a group can share a rate card.", "noGroup": "No group", "gstExempt": "GST exempt",
+   "groups": "Client groups", "noGroups": "No groups yet.", "groupName": "New group name", "billingOverride": "Credit override",
+   "billingOverrideHelp": "If this client is blocked for overdue or over-limit bills, an override lets it book and dispatch until the date you choose.",
+   "overrideUntil": "Current override until {{date}}: {{reason}}", "overrideUntilLabel": "Allow until"},
+ "billing": {
+   "invoices": "Invoices", "payments": "Payments", "ledger": "Ledger & Ageing", "reports": "Billing Reports", "settings": "Billing Settings",
+   "invoiceNo": "Invoice no.", "draftInvoice": "Draft invoice", "period": "Period", "periodFrom": "From", "periodTo": "To", "invoiceDate": "Invoice date", "dueDate": "Due date",
+   "placeOfSupply": "Place of supply", "supplyINTRA": "Intra-state (CGST + SGST)", "supplyINTER": "Inter-state (IGST)", "supplyCONSUMER": "No GSTIN (CGST + SGST)",
+   "outstanding": "Outstanding", "paid": "Paid", "credits": "Credits", "grandTotal": "Grand total", "taxable": "Taxable value", "tax": "Tax", "roundOff": "Round off", "subtotal": "Subtotal",
+   "taxSummary": "Tax summary", "section": "Section", "sectionRENT": "A. Rent (storage)", "sectionLABOUR": "B. Labour (handling)", "sectionOTHER": "C. Other charges",
+   "description": "Description", "rate": "Rate", "discount": "Discount", "sac": "SAC code", "storageType": "Storage type", "gstRatePercent": "GST rate (%)", "defaultFromTaxRules": "Leave blank to use the tax rules",
+   "exempt": "Exempt", "exemptLine": "Exempt from GST", "exemptReason": "Exemption reason (printed on the invoice)",
+   "noInvoices": "No invoices yet.", "noLines": "This invoice has no lines.", "noPayments": "No payments yet.", "noLedger": "No entries.", "noRevenue": "No invoices in this period.",
+   "generate": "Generate invoice", "createDraft": "Create draft", "draftCreated": "Draft invoice created: check every line, then issue it", "mode": "Billing mode", "modeHelp": "Rent uses the daily occupancy snapshots; labour uses confirmed receipts and challans not billed before.", "clientDefault": "Client default",
+   "draftHelp": "Draft: nothing is final. Fix a line (with a reason), add charges, then issue. An issued invoice can never be edited; corrections are credit or debit notes.",
+   "fixLine": "Fix line", "calculatedAmount": "Calculated amount", "amountRupees": "Amount (₹)", "discountAppliesAfter": "The section discount is applied to this amount.", "fixedFrom": "Fixed (was {{amount}})", "lineFixed": "Line updated", "removeLine": "Remove line", "removeLineHelp": "The rent days or the document become billable again.", "lineRemoved": "Line removed",
+   "addCharge": "Add charge", "chargeMaster": "Charge", "manualCharge": "Manual charge (with a reason)", "unitAmount": "Amount each (₹)", "chargeAdded": "Charge added", "fixed": "Fixed", "percent": "Percentage", "percentOf": "Percentage of",
+   "discard": "Discard draft", "discardHelp": "The rent days and documents in this draft become billable again.", "draftDiscarded": "Draft discarded",
+   "issue": "Issue invoice", "issueHelp": "Issuing gives the invoice its number and locks it for ever. Check every line first.", "issued": "Invoice {{no}} issued",
+   "einvoiceJson": "e-Invoice JSON", "sendEmail": "Email invoice", "emailSent": "Invoice emailed to {{to}}", "paymentLink": "Payment link", "copyLink": "Copy link", "linkCopied": "Link copied", "emailWithLink": "Email with link",
+   "newNote": "Credit / debit note", "noteHelp": "A note is linked to invoice {{no}}. Invoices are never edited.", "noteKind": "Kind", "credit": "Credit", "debit": "Debit", "fullReversal": "Reverse the whole invoice", "issueNote": "Issue note", "noteIssued": "Note issued",
+   "section": "Section", "taxableAmount": "Taxable amount (₹)", "addNoteLine": "Add line", "notes": "Credit and debit notes", "paymentsApplied": "{{count}} payment(s) applied to this invoice.",
+   "recordPayment": "Record payment", "paymentHelp": "More than is owed stays as an advance. Without an invoice it settles the oldest first.", "paymentRecorded": "Payment recorded", "paymentNo": "Payment no.", "method": "Method", "reference": "Reference (UTR / cheque no.)", "amount": "Amount",
+   "paymentRECORDED": "Recorded", "paymentREVERSED": "Reversed", "reverse": "Reverse", "reverseHelp": "The payment is cancelled and its invoices become payable again.", "paymentReversed": "Payment reversed",
+   "chooseClient": "Choose a client", "document": "Document", "number": "Number", "balance": "Balance", "advance": "Advance", "ageing": "Outstanding by age", "total": "Total", "myRates": "My rates", "rateFor": "Rate for", "detail": "Detail", "basis": "Basis",
+   "docType": {"INVOICE": "Invoice", "CREDIT_NOTE": "Credit note", "DEBIT_NOTE": "Debit note", "PAYMENT": "Payment", "PAYMENT_REVERSAL": "Payment reversed"},
+   "revenue": "Revenue", "groupBy": "Group by", "byMonth": "Month", "byClient": "Client", "byWarehouse": "Warehouse", "gstr1": "GSTR-1 sales register (CSV)", "tally": "Tally export (XML)", "ageingCsv": "Outstanding (CSV)",
+   "utilisation": "Brigade utilisation", "utilisationHelp": "Brigade-days held, billed and available in the period.", "heldDays": "Held", "billedDays": "Billed", "availableDays": "Available", "utilisationPct": "Utilisation",
+   "supplier": "Supplier details", "supplierHelp": "Printed on every invoice. Fill in the GSTIN, address and bank details before the first invoice.",
+   "supplierField": {"name": "Trade name", "legal_name": "Legal name", "gstin": "GSTIN", "pan": "PAN", "state_code": "State code (33 = Tamil Nadu)", "state_name": "State", "address": "Address", "phone": "Phone", "email": "Email", "bank_name": "Bank", "bank_account": "Account number", "bank_ifsc": "IFSC", "bank_branch": "Branch", "upi_id": "UPI ID"},
+   "terms": "Invoice terms", "dayCount": "How storage days are counted", "dayCountHelp": "Default: the start day counts, the end day does not, and a Brigade held for part of a day counts that day.", "includeStart": "Count the start day", "includeEnd": "Count the end day", "partDay": "A Brigade held part of a day counts the day",
+   "creditBlock": "Credit control", "creditBlockHelp": "Block new bookings and dispatch requests for clients who are over their credit limit or overdue. An administrator can override a client.", "blockEnabled": "Block clients", "blockOverLimit": "Block when over the credit limit", "blockOverdueDays": "Block when an invoice is overdue by more than (days)",
+   "emailTitle": "Invoice email", "emailEnabled": "Send invoices by email (Resend)", "emailFrom": "From address", "emailHelp": "The Resend API key is stored as an Edge Function secret, never here.", "sendRemindersNow": "Send queued reminders now", "remindersSent": "Reminders: {{sent}} sent, {{skipped}} skipped, {{failed}} failed",
+   "remindersTitle": "Overdue reminders", "remindersEnabled": "Queue overdue reminder emails", "reminderDays": "Days after the due date", "reminderDaysHelp": "Comma separated, e.g. 1, 7, 15",
+   "razorpayTitle": "Online payment", "razorpayEnabled": "Enable Razorpay payment links", "razorpayHelp": "Keys and the webhook secret are Edge Function secrets, never here.",
+   "occupancy": "Daily occupancy", "occupancyHelp": "The snapshot runs every night at 00:05 India time. Run this after downtime to fill any missed day; it never changes a day already stored.", "backfill": "Fill missing days", "backfilled": "{{count}} day(s) added", "recompute": "Recompute these days", "recomputeHelp": "Use this only after correcting allocation dates. Days already on an invoice are never recomputed."},
+ "rates": {
+   "title": "Rate Cards", "tabCards": "Rate cards", "tabCharges": "Other charges", "tabTax": "SAC & GST", "tabTester": "Rate tester",
+   "cardsHelp": "Rates are looked up in this order: client, client group, warehouse default, global default. A rate that was used on an invoice is never edited: add a new version.",
+   "newCard": "New rate card", "cardCreated": "Rate card created", "scope": "Applies to", "scopeHelp": "Client rates win over group, warehouse and global rates.", "scopeCLIENT": "One client", "scopeGROUP": "Client group", "scopeWAREHOUSE": "Warehouse default", "scopeGLOBAL": "Global default",
+   "group": "Client group", "appliesTo": "For", "everyone": "Everyone", "validFrom": "Valid from", "validTo": "Valid to", "validity": "Valid", "open": "open", "terms": "Terms", "days": "days",
+   "rentDiscount": "Rent discount (%)", "labourDiscount": "Labour discount (%)", "freeDays": "Free days", "freeDaysHelp": "The first days of each Brigade are not charged.", "minDays": "Minimum billing days", "minDaysHelp": "A shorter stay is topped up to this many days.",
+   "rentRates": "Rent rates", "labourRates": "Labour rates", "addRentRate": "Add rent rate", "addLabourRate": "Add labour rate", "newVersion": "New version", "closeRate": "Close", "rateSaved": "Rate saved", "rateClosed": "Rate closed",
+   "versionHelp": "The current rate is closed on {{date}} and the new one starts on the date below.", "used": "Used on an invoice", "usedHelp": "Used on an invoice: it can only be closed, never edited.",
+   "basis": "Basis", "perBrigadeDay": "Per Brigade per day", "perM3Day": "Per m³ per day", "brigade": "Brigade", "tempMin": "Temperature from (°C)", "tempMax": "Temperature to (°C)", "tempBand": "Temperature band", "brigadeType": "Brigade type", "anyBrigadeType": "Any Brigade type",
+   "rateRupees": "Rate (₹)", "tier": "Tier", "tierFrom": "Volume tier from (Brigades)", "tierTo": "to", "tierHelp": "Applies when this many Brigades are held on the day.",
+   "activity": "Activity", "coldPremium": "Cold-room premium", "premiumNONE": "None", "premiumPERCENT": "Percentage", "premiumAMOUNT": "Amount per unit", "premiumPercentValue": "Premium (%)", "premiumAmountValue": "Premium per unit (₹)",
+   "nightMultiplier": "Night multiplier", "overtimeMultiplier": "Overtime multiplier", "multiplierHelp": "1 = no change, 1.5 = one and a half times", "night": "Night", "overtime": "Overtime",
+   "current": "Current", "future": "Future", "expired": "Expired",
+   "newCharge": "New charge", "editCharge": "Edit charge", "chargesHelp": "Optional charges that can be added to a draft invoice: each is fixed or a percentage, with its own SAC code.", "chargeCalc": "Calculation", "percentValue": "Percentage (%)", "percentBase": "Percentage of", "rentAndLabour": "Rent and labour", "fromTaxRules": "From tax rules",
+   "newTaxRule": "New tax rule", "editTaxRule": "Edit tax rule", "anyStorage": "Any storage type", "taxHelp": "Suggested SAC codes and 18% GST are defaults. Confirm them with your accountant before issuing real invoices.",
+   "testerHelp": "Pick a client, warehouse and date to see which rate applies and why. Rates higher in the list lose to the first one.", "testerPick": "Choose a client and a warehouse.", "rateKind": "Rate type", "brigadesHeld": "Brigades held that day",
+   "noRateApplies": "No rate applies. Invoices cannot be generated until a rate card covers this case.", "appliesThis": "This rate applies", "overridden": "Not used (rank {{rank}})"}
+}
+
+TA = {
+ "nav": {"invoices": "விலைப்பட்டியல்கள்", "payments": "கொடுப்பனவுகள்", "ledger": "பேரேடு & நிலுவை வயது", "rates": "கட்டண அட்டைகள்", "billingReports": "பில்லிங் அறிக்கைகள்", "billingSettings": "பில்லிங் அமைப்புகள்"},
+ "roles": {"ACCOUNTANT": "கணக்காளர்"},
+ "users": {"accountantHelp": "கணக்காளர் அனைத்துக் கிடங்குகளின் பில்லிங்கையும் பார்க்கவும் ஏற்றுமதி செய்யவும் முடியும்; எதையும் மாற்ற முடியாது."},
+ "validation": {"days": "நாட்களை முழு எண்ணாக உள்ளிடவும் (0 முதல் 999)"},
+ "labourActivity": {"PICKING": "எடுத்தல்", "PACKING": "பொட்டலமிடல்"},
+ "labourBasis": {"PER_PACKAGE": "ஒரு பொட்டலத்துக்கு", "PER_TONNE": "ஒரு டன்னுக்கு", "PER_BRIGADE_MOVED": "நகர்த்திய ஒரு பிரிகேடுக்கு", "PER_HOUR": "ஒரு மணிக்கு", "FLAT_PER_LORRY": "ஒரு லாரிக்கு நிலையானது"},
+ "receive": {"night": "இரவுப் பணி", "overtime": "கூடுதல் நேரம்"},
+ "invoiceStatus": {"DRAFT": "வரைவு", "ISSUED": "வழங்கப்பட்டது", "PARTIALLY_PAID": "பகுதி செலுத்தியது", "PAID": "செலுத்தப்பட்டது", "OVERDUE": "காலம் கடந்தது", "CANCELLED": "ரத்து"},
+ "paymentMethod": {"UPI": "UPI", "BANK_TRANSFER": "வங்கிப் பரிமாற்றம்", "CHEQUE": "காசோலை", "CASH": "ரொக்கம்", "ONLINE": "ஆன்லைன் (Razorpay)", "DEPOSIT_ADJUSTMENT": "பாதுகாப்பு வைப்புத் தொகை சரிசெய்தல்"},
+ "billingMode": {"BOTH": "வாடகையும் தொழிலாளரும்", "RENT_ONLY": "வாடகை மட்டும்", "LABOUR_ONLY": "தொழிலாளர் மட்டும்"},
+ "billingCycle": {"WEEKLY": "வாராந்திரம்", "MONTHLY": "மாதாந்திரம்", "ON_DEMAND": "கோரிக்கையின்படி"},
+ "portal": {"amountDue": "செலுத்த வேண்டிய தொகை", "openInvoices": "{{count}} நிலுவை விலைப்பட்டியல்கள்"},
+ "clients": {"billingSection": "பில்லிங்", "billingCycle": "பில்லிங் சுழற்சி", "billingCycleHelp": "வாராந்திர, மாதாந்திர சுழற்சிகளில் வரைவு விலைப்பட்டியல்கள் தானாக உருவாகும்; கோரிக்கையின்படி என்றால் நிர்வாகி உருவாக்குவார்.",
+   "paymentTerms": "கட்டண நிபந்தனை (நாட்கள்)", "group": "வாடிக்கையாளர் குழு", "groupHelp": "ஒரு குழுவில் உள்ள வாடிக்கையாளர்கள் ஒரே கட்டண அட்டையைப் பகிரலாம்.", "noGroup": "குழு இல்லை", "gstExempt": "GST விலக்கு",
+   "groups": "வாடிக்கையாளர் குழுக்கள்", "noGroups": "இன்னும் குழுக்கள் இல்லை.", "groupName": "புதிய குழுவின் பெயர்", "billingOverride": "கடன் தடை விலக்கு",
+   "billingOverrideHelp": "நிலுவை அல்லது கடன் வரம்பு மீறலால் இந்த வாடிக்கையாளர் தடுக்கப்பட்டால், நீங்கள் தேர்ந்தெடுக்கும் தேதி வரை முன்பதிவு செய்யவும் அனுப்பவும் இது அனுமதிக்கும்.",
+   "overrideUntil": "தற்போதைய விலக்கு {{date}} வரை: {{reason}}", "overrideUntilLabel": "இந்த தேதி வரை அனுமதி"},
+ "billing": {
+   "invoices": "விலைப்பட்டியல்கள்", "payments": "கொடுப்பனவுகள்", "ledger": "பேரேடு & நிலுவை வயது", "reports": "பில்லிங் அறிக்கைகள்", "settings": "பில்லிங் அமைப்புகள்",
+   "invoiceNo": "விலைப்பட்டியல் எண்", "draftInvoice": "வரைவு விலைப்பட்டியல்", "period": "காலம்", "periodFrom": "முதல்", "periodTo": "வரை", "invoiceDate": "விலைப்பட்டியல் தேதி", "dueDate": "செலுத்த வேண்டிய தேதி",
+   "placeOfSupply": "வழங்கல் இடம்", "supplyINTRA": "மாநிலத்துக்குள் (CGST + SGST)", "supplyINTER": "மாநிலங்களுக்கு இடையே (IGST)", "supplyCONSUMER": "GSTIN இல்லை (CGST + SGST)",
+   "outstanding": "நிலுவை", "paid": "செலுத்தியது", "credits": "வரவுகள்", "grandTotal": "மொத்தத் தொகை", "taxable": "வரிக்குட்பட்ட மதிப்பு", "tax": "வரி", "roundOff": "முழுமையாக்கல்", "subtotal": "துணைத் தொகை",
+   "taxSummary": "வரிச் சுருக்கம்", "section": "பிரிவு", "sectionRENT": "அ. வாடகை (சேமிப்பு)", "sectionLABOUR": "ஆ. தொழிலாளர் (கையாளுதல்)", "sectionOTHER": "இ. பிற கட்டணங்கள்",
+   "description": "விவரம்", "rate": "கட்டணம்", "discount": "தள்ளுபடி", "sac": "SAC குறியீடு", "storageType": "சேமிப்பு வகை", "gstRatePercent": "GST விகிதம் (%)", "defaultFromTaxRules": "வரி விதிகளைப் பயன்படுத்த காலியாக விடவும்",
+   "exempt": "விலக்கு", "exemptLine": "GST விலக்கு", "exemptReason": "விலக்குக் காரணம் (விலைப்பட்டியலில் அச்சாகும்)",
+   "noInvoices": "இன்னும் விலைப்பட்டியல்கள் இல்லை.", "noLines": "இந்த விலைப்பட்டியலில் வரிகள் இல்லை.", "noPayments": "இன்னும் கொடுப்பனவுகள் இல்லை.", "noLedger": "பதிவுகள் இல்லை.", "noRevenue": "இந்தக் காலத்தில் விலைப்பட்டியல்கள் இல்லை.",
+   "generate": "விலைப்பட்டியல் உருவாக்கு", "createDraft": "வரைவை உருவாக்கு", "draftCreated": "வரைவு விலைப்பட்டியல் உருவானது: ஒவ்வொரு வரியையும் சரிபார்த்து வழங்கவும்", "mode": "பில்லிங் முறை", "modeHelp": "வாடகை தினசரி இருப்புப் பதிவுகளிலிருந்தும், தொழிலாளர் முன்பு பில் செய்யப்படாத உறுதிசெய்த ரசீது/சலான்களிலிருந்தும் கணக்கிடப்படும்.", "clientDefault": "வாடிக்கையாளர் இயல்பு",
+   "draftHelp": "வரைவு: எதுவும் இறுதியல்ல. ஒரு வரியைத் (காரணத்துடன்) திருத்தலாம், கட்டணங்களைச் சேர்க்கலாம், பின்னர் வழங்கலாம். வழங்கிய விலைப்பட்டியலை ஒருபோதும் திருத்த முடியாது; திருத்தங்கள் வரவு/பற்று குறிப்புகளால் மட்டுமே.",
+   "fixLine": "வரியைத் திருத்து", "calculatedAmount": "கணக்கிட்ட தொகை", "amountRupees": "தொகை (₹)", "discountAppliesAfter": "பிரிவு தள்ளுபடி இந்தத் தொகைக்குப் பொருந்தும்.", "fixedFrom": "திருத்தப்பட்டது (முன்பு {{amount}})", "lineFixed": "வரி புதுப்பிக்கப்பட்டது", "removeLine": "வரியை நீக்கு", "removeLineHelp": "வாடகை நாட்கள் அல்லது ஆவணம் மீண்டும் பில் செய்யக்கூடியதாகும்.", "lineRemoved": "வரி நீக்கப்பட்டது",
+   "addCharge": "கட்டணத்தைச் சேர்", "chargeMaster": "கட்டணம்", "manualCharge": "கைமுறைக் கட்டணம் (காரணத்துடன்)", "unitAmount": "ஒவ்வொன்றுக்கும் தொகை (₹)", "chargeAdded": "கட்டணம் சேர்க்கப்பட்டது", "fixed": "நிலையானது", "percent": "சதவீதம்", "percentOf": "இதன் சதவீதம்",
+   "discard": "வரைவை நீக்கு", "discardHelp": "இந்த வரைவில் உள்ள வாடகை நாட்களும் ஆவணங்களும் மீண்டும் பில் செய்யக்கூடியதாகும்.", "draftDiscarded": "வரைவு நீக்கப்பட்டது",
+   "issue": "விலைப்பட்டியலை வழங்கு", "issueHelp": "வழங்கினால் விலைப்பட்டியலுக்கு எண் கிடைத்து என்றென்றும் பூட்டப்படும். முதலில் ஒவ்வொரு வரியையும் சரிபார்க்கவும்.", "issued": "விலைப்பட்டியல் {{no}} வழங்கப்பட்டது",
+   "einvoiceJson": "இ-இன்வாய்ஸ் JSON", "sendEmail": "விலைப்பட்டியலை மின்னஞ்சல் செய்", "emailSent": "விலைப்பட்டியல் {{to}} க்கு அனுப்பப்பட்டது", "paymentLink": "கட்டண இணைப்பு", "copyLink": "இணைப்பை நகலெடு", "linkCopied": "இணைப்பு நகலெடுக்கப்பட்டது", "emailWithLink": "இணைப்புடன் மின்னஞ்சல்",
+   "newNote": "வரவு / பற்று குறிப்பு", "noteHelp": "குறிப்பு விலைப்பட்டியல் {{no}} உடன் இணைக்கப்படும். விலைப்பட்டியல்கள் ஒருபோதும் திருத்தப்படாது.", "noteKind": "வகை", "credit": "வரவு", "debit": "பற்று", "fullReversal": "முழு விலைப்பட்டியலையும் மாற்றியமை", "issueNote": "குறிப்பை வழங்கு", "noteIssued": "குறிப்பு வழங்கப்பட்டது",
+   "taxableAmount": "வரிக்குட்பட்ட தொகை (₹)", "addNoteLine": "வரியைச் சேர்", "notes": "வரவு மற்றும் பற்று குறிப்புகள்", "paymentsApplied": "இந்த விலைப்பட்டியலுக்கு {{count}} கொடுப்பனவு(கள்) ஒதுக்கப்பட்டன.",
+   "recordPayment": "கொடுப்பனவைப் பதிவு செய்", "paymentHelp": "செலுத்த வேண்டியதை விட அதிகம் முன்பணமாக இருக்கும். விலைப்பட்டியல் இல்லையெனில் பழையதிலிருந்து தீர்க்கப்படும்.", "paymentRecorded": "கொடுப்பனவு பதிவானது", "paymentNo": "கொடுப்பனவு எண்", "method": "முறை", "reference": "குறிப்பு (UTR / காசோலை எண்)", "amount": "தொகை",
+   "paymentRECORDED": "பதிவானது", "paymentREVERSED": "மாற்றப்பட்டது", "reverse": "மாற்றியமை", "reverseHelp": "கொடுப்பனவு ரத்தாகி, அதன் விலைப்பட்டியல்கள் மீண்டும் செலுத்த வேண்டியவையாகும்.", "paymentReversed": "கொடுப்பனவு மாற்றப்பட்டது",
+   "chooseClient": "வாடிக்கையாளரைத் தேர்ந்தெடுக்கவும்", "document": "ஆவணம்", "number": "எண்", "balance": "இருப்பு", "advance": "முன்பணம்", "ageing": "வயது வாரியாக நிலுவை", "total": "மொத்தம்", "myRates": "என் கட்டணங்கள்", "rateFor": "கட்டணம்", "detail": "விவரம்", "basis": "அடிப்படை",
+   "docType": {"INVOICE": "விலைப்பட்டியல்", "CREDIT_NOTE": "வரவுக் குறிப்பு", "DEBIT_NOTE": "பற்றுக் குறிப்பு", "PAYMENT": "கொடுப்பனவு", "PAYMENT_REVERSAL": "கொடுப்பனவு மாற்றம்"},
+   "revenue": "வருவாய்", "groupBy": "வகைப்படுத்து", "byMonth": "மாதம்", "byClient": "வாடிக்கையாளர்", "byWarehouse": "கிடங்கு", "gstr1": "GSTR-1 விற்பனைப் பதிவேடு (CSV)", "tally": "Tally ஏற்றுமதி (XML)", "ageingCsv": "நிலுவை (CSV)",
+   "utilisation": "பிரிகேட் பயன்பாடு", "utilisationHelp": "இந்தக் காலத்தில் வைத்திருந்த, பில் செய்த, கிடைத்த பிரிகேட்-நாட்கள்.", "heldDays": "வைத்திருந்தது", "billedDays": "பில் செய்தது", "availableDays": "கிடைத்தது", "utilisationPct": "பயன்பாடு",
+   "supplier": "வழங்குநர் விவரங்கள்", "supplierHelp": "ஒவ்வொரு விலைப்பட்டியலிலும் அச்சாகும். முதல் விலைப்பட்டியலுக்கு முன் GSTIN, முகவரி, வங்கி விவரங்களை நிரப்பவும்.",
+   "supplierField": {"name": "வணிகப் பெயர்", "legal_name": "சட்டப்பூர்வ பெயர்", "gstin": "GSTIN", "pan": "PAN", "state_code": "மாநிலக் குறியீடு (33 = தமிழ்நாடு)", "state_name": "மாநிலம்", "address": "முகவரி", "phone": "தொலைபேசி", "email": "மின்னஞ்சல்", "bank_name": "வங்கி", "bank_account": "கணக்கு எண்", "bank_ifsc": "IFSC", "bank_branch": "கிளை", "upi_id": "UPI ஐடி"},
+   "terms": "விலைப்பட்டியல் நிபந்தனைகள்", "dayCount": "சேமிப்பு நாட்கள் கணக்கிடும் முறை", "dayCountHelp": "இயல்பு: தொடக்க நாள் கணக்கில் சேரும், முடிவு நாள் சேராது; ஒரு நாளின் ஒரு பகுதி வைத்திருந்தாலும் அந்த நாள் கணக்கில் சேரும்.", "includeStart": "தொடக்க நாளைக் கணக்கிடு", "includeEnd": "முடிவு நாளைக் கணக்கிடு", "partDay": "ஒரு நாளின் ஒரு பகுதி வைத்திருந்தாலும் அந்த நாளைக் கணக்கிடு",
+   "creditBlock": "கடன் கட்டுப்பாடு", "creditBlockHelp": "கடன் வரம்பை மீறிய அல்லது நிலுவை உள்ள வாடிக்கையாளர்களுக்குப் புதிய முன்பதிவு, அனுப்புதல் கோரிக்கைகளைத் தடுக்கவும். நிர்வாகி ஒரு வாடிக்கையாளருக்கு விலக்கு அளிக்கலாம்.", "blockEnabled": "வாடிக்கையாளர்களைத் தடு", "blockOverLimit": "கடன் வரம்பை மீறினால் தடு", "blockOverdueDays": "விலைப்பட்டியல் இத்தனை நாட்களுக்கு மேல் காலம் கடந்தால் தடு",
+   "emailTitle": "விலைப்பட்டியல் மின்னஞ்சல்", "emailEnabled": "விலைப்பட்டியல்களை மின்னஞ்சலில் அனுப்பு (Resend)", "emailFrom": "அனுப்புநர் முகவரி", "emailHelp": "Resend API விசை Edge Function ரகசியமாக வைக்கப்படும்; இங்கு அல்ல.", "sendRemindersNow": "வரிசையிலுள்ள நினைவூட்டல்களை இப்போது அனுப்பு", "remindersSent": "நினைவூட்டல்கள்: {{sent}} அனுப்பியது, {{skipped}} தவிர்த்தது, {{failed}} தோல்வி",
+   "remindersTitle": "காலம் கடந்த நினைவூட்டல்கள்", "remindersEnabled": "காலம் கடந்த நினைவூட்டல் மின்னஞ்சல்களை வரிசைப்படுத்து", "reminderDays": "செலுத்த வேண்டிய தேதிக்குப் பின் நாட்கள்", "reminderDaysHelp": "கமாவால் பிரிக்கவும், எ.கா. 1, 7, 15",
+   "razorpayTitle": "ஆன்லைன் கட்டணம்", "razorpayEnabled": "Razorpay கட்டண இணைப்புகளை இயக்கு", "razorpayHelp": "விசைகளும் webhook ரகசியமும் Edge Function ரகசியங்களாக வைக்கப்படும்; இங்கு அல்ல.",
+   "occupancy": "தினசரி இருப்புப் பதிவு", "occupancyHelp": "பதிவு ஒவ்வொரு இரவும் இந்திய நேரம் 00:05 மணிக்கு நடக்கும். செயலிழப்புக்குப் பின் விடுபட்ட நாட்களை நிரப்ப இதை இயக்கவும்; ஏற்கனவே சேமித்த நாளை இது மாற்றாது.", "backfill": "விடுபட்ட நாட்களை நிரப்பு", "backfilled": "{{count}} நாள்(கள்) சேர்க்கப்பட்டன", "recompute": "இந்த நாட்களை மீண்டும் கணக்கிடு", "recomputeHelp": "ஒதுக்கீட்டுத் தேதிகளைத் திருத்திய பின்னரே இதைப் பயன்படுத்தவும். விலைப்பட்டியலில் உள்ள நாட்கள் ஒருபோதும் மீண்டும் கணக்கிடப்படாது."},
+ "rates": {
+   "title": "கட்டண அட்டைகள்", "tabCards": "கட்டண அட்டைகள்", "tabCharges": "பிற கட்டணங்கள்", "tabTax": "SAC & GST", "tabTester": "கட்டணச் சோதனை",
+   "cardsHelp": "கட்டணங்கள் இந்த வரிசையில் தேடப்படும்: வாடிக்கையாளர், வாடிக்கையாளர் குழு, கிடங்கு இயல்பு, பொது இயல்பு. விலைப்பட்டியலில் பயன்படுத்திய கட்டணம் ஒருபோதும் திருத்தப்படாது: புதிய பதிப்பைச் சேர்க்கவும்.",
+   "newCard": "புதிய கட்டண அட்டை", "cardCreated": "கட்டண அட்டை உருவானது", "scope": "பொருந்தும் இடம்", "scopeHelp": "வாடிக்கையாளர் கட்டணம் குழு, கிடங்கு, பொது கட்டணங்களை விட முன்னுரிமை பெறும்.", "scopeCLIENT": "ஒரு வாடிக்கையாளர்", "scopeGROUP": "வாடிக்கையாளர் குழு", "scopeWAREHOUSE": "கிடங்கு இயல்பு", "scopeGLOBAL": "பொது இயல்பு",
+   "group": "வாடிக்கையாளர் குழு", "appliesTo": "யாருக்கு", "everyone": "அனைவருக்கும்", "validFrom": "செல்லுபடி தொடக்கம்", "validTo": "செல்லுபடி முடிவு", "validity": "செல்லுபடி", "open": "திறந்தது", "terms": "நிபந்தனைகள்", "days": "நாட்கள்",
+   "rentDiscount": "வாடகைத் தள்ளுபடி (%)", "labourDiscount": "தொழிலாளர் தள்ளுபடி (%)", "freeDays": "இலவச நாட்கள்", "freeDaysHelp": "ஒவ்வொரு பிரிகேடின் முதல் நாட்களுக்குக் கட்டணம் இல்லை.", "minDays": "குறைந்தபட்ச பில்லிங் நாட்கள்", "minDaysHelp": "இதை விடக் குறைந்த காலம் தங்கினால் இத்தனை நாட்களாக நிரப்பப்படும்.",
+   "rentRates": "வாடகைக் கட்டணங்கள்", "labourRates": "தொழிலாளர் கட்டணங்கள்", "addRentRate": "வாடகைக் கட்டணம் சேர்", "addLabourRate": "தொழிலாளர் கட்டணம் சேர்", "newVersion": "புதிய பதிப்பு", "closeRate": "முடி", "rateSaved": "கட்டணம் சேமிக்கப்பட்டது", "rateClosed": "கட்டணம் முடிக்கப்பட்டது",
+   "versionHelp": "தற்போதைய கட்டணம் {{date}} அன்று முடிக்கப்பட்டு, புதியது கீழ்க்காணும் தேதியில் தொடங்கும்.", "used": "விலைப்பட்டியலில் பயன்படுத்தப்பட்டது", "usedHelp": "விலைப்பட்டியலில் பயன்படுத்தப்பட்டது: முடிக்க மட்டுமே முடியும், திருத்த முடியாது.",
+   "basis": "அடிப்படை", "perBrigadeDay": "ஒரு பிரிகேடுக்கு ஒரு நாளுக்கு", "perM3Day": "ஒரு m³ க்கு ஒரு நாளுக்கு", "brigade": "பிரிகேட்", "tempMin": "வெப்பநிலை முதல் (°C)", "tempMax": "வெப்பநிலை வரை (°C)", "tempBand": "வெப்பநிலை வரம்பு", "brigadeType": "பிரிகேட் வகை", "anyBrigadeType": "எந்த பிரிகேட் வகையும்",
+   "rateRupees": "கட்டணம் (₹)", "tier": "படி", "tierFrom": "அளவுப் படி தொடக்கம் (பிரிகேட்)", "tierTo": "வரை", "tierHelp": "அந்த நாளில் இத்தனை பிரிகேடுகள் வைத்திருந்தால் பொருந்தும்.",
+   "activity": "செயல்பாடு", "coldPremium": "குளிர்அறை கூடுதல் கட்டணம்", "premiumNONE": "இல்லை", "premiumPERCENT": "சதவீதம்", "premiumAMOUNT": "ஒரு அலகுக்கு தொகை", "premiumPercentValue": "கூடுதல் (%)", "premiumAmountValue": "ஒரு அலகுக்கு கூடுதல் (₹)",
+   "nightMultiplier": "இரவு பெருக்கி", "overtimeMultiplier": "கூடுதல் நேரப் பெருக்கி", "multiplierHelp": "1 = மாற்றமில்லை, 1.5 = ஒன்றரை மடங்கு", "night": "இரவு", "overtime": "கூடுதல் நேரம்",
+   "current": "தற்போது", "future": "எதிர்காலம்", "expired": "காலாவதி",
+   "newCharge": "புதிய கட்டணம்", "editCharge": "கட்டணத்தைத் திருத்து", "chargesHelp": "வரைவு விலைப்பட்டியலில் சேர்க்கக்கூடிய விருப்பக் கட்டணங்கள்: ஒவ்வொன்றும் நிலையானது அல்லது சதவீதம், தனக்கான SAC குறியீட்டுடன்.", "chargeCalc": "கணக்கீடு", "percentValue": "சதவீதம் (%)", "percentBase": "இதன் சதவீதம்", "rentAndLabour": "வாடகையும் தொழிலாளரும்", "fromTaxRules": "வரி விதிகளிலிருந்து",
+   "newTaxRule": "புதிய வரி விதி", "editTaxRule": "வரி விதியைத் திருத்து", "anyStorage": "எந்த சேமிப்பு வகையும்", "taxHelp": "பரிந்துரைக்கப்பட்ட SAC குறியீடுகளும் 18% GST யும் இயல்புகள் மட்டுமே. உண்மையான விலைப்பட்டியல்களுக்கு முன் உங்கள் கணக்காளரிடம் உறுதிசெய்யவும்.",
+   "testerHelp": "எந்தக் கட்டணம் ஏன் பொருந்துகிறது என்பதைப் பார்க்க வாடிக்கையாளர், கிடங்கு, தேதியைத் தேர்ந்தெடுக்கவும். முதலாவதே பொருந்தும்; பிறவை அதனிடம் தோற்கும்.", "testerPick": "வாடிக்கையாளரையும் கிடங்கையும் தேர்ந்தெடுக்கவும்.", "rateKind": "கட்டண வகை", "brigadesHeld": "அன்று வைத்திருந்த பிரிகேடுகள்",
+   "noRateApplies": "எந்தக் கட்டணமும் பொருந்தவில்லை. ஒரு கட்டண அட்டை இதை உள்ளடக்கும் வரை விலைப்பட்டியல் உருவாக்க முடியாது.", "appliesThis": "இந்தக் கட்டணம் பொருந்துகிறது", "overridden": "பயன்படுத்தப்படவில்லை (தரம் {{rank}})"}
+}
+
+def merge(dst, src):
+    for k, v in src.items():
+        if isinstance(v, dict):
+            merge(dst.setdefault(k, {}), v)
+        else:
+            dst[k] = v
+
+for lang, data in (("en", EN), ("ta", TA)):
+    p = f"src/i18n/locales/{lang}.json"
+    cur = json.load(open(p, encoding="utf-8"))
+    merge(cur, data)
+    json.dump(cur, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    open(p, "a").write("\n")
+print("merged")

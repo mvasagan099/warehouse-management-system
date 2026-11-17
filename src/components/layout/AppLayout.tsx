@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import {
-  Boxes, Building2, CalendarClock, ClipboardCheck, ClipboardList, FileText, Grid3x3, KeyRound, LayoutDashboard,
-  LogOut, Menu, PackageCheck, Package, QrCode, Ruler, ScanLine, Snowflake, Truck, UserPlus, Users, Warehouse, X,
+  BarChart3, BookOpen, Boxes, Building2, CalendarClock, ClipboardCheck, ClipboardList, FileText, Grid3x3, KeyRound, LayoutDashboard,
+  LogOut, Menu, PackageCheck, Package, Percent, QrCode, Receipt, Ruler, ScanLine, Settings, Snowflake, Truck, UserPlus, Users, Wallet, Warehouse, X,
 } from 'lucide-react'
 import { useEffect, useState, type ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -29,6 +29,12 @@ const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   challans: FileText,
   labels: QrCode,
   scan: ScanLine,
+  rates: Percent,
+  invoices: Receipt,
+  payments: Wallet,
+  ledger: BookOpen,
+  billingReports: BarChart3,
+  billingSettings: Settings,
 }
 
 export function AppLayout() {

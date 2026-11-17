@@ -6,9 +6,13 @@ export const createUserSchema = z
     full_name: requiredText(150),
     email: z.string().trim().min(1, 'validation.required').pipe(z.email('validation.email')).transform((v) => v.toLowerCase()),
     phone: optionalPhone,
-    role: z.enum(['WAREHOUSE_MANAGER', 'STAFF']),
+    role: z.enum(['WAREHOUSE_MANAGER', 'STAFF', 'ACCOUNTANT']),
     password: z.string().min(8, 'validation.passwordMin'),
-    warehouse_ids: z.array(z.string()).min(1, 'validation.warehouseRequired'),
+    warehouse_ids: z.array(z.string()),
+  })
+  .refine((v) => v.role === 'ACCOUNTANT' || v.warehouse_ids.length >= 1, {
+    path: ['warehouse_ids'],
+    message: 'validation.warehouseRequired',
   })
   .refine((v) => v.role !== 'STAFF' || v.warehouse_ids.length === 1, {
     path: ['warehouse_ids'],

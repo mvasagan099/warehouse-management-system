@@ -8,6 +8,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { LoginPage } from './pages/LoginPage'
 import { MessagePage } from './pages/MessagePage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
+import { Navigate } from 'react-router-dom'
 import { useAuth } from './auth/AuthProvider'
 
 // feature pages are code-split
@@ -32,11 +33,18 @@ const DispatchPage = lazy(() => import('./features/dispatch/DispatchPage').then(
 const DispatchDetailPage = lazy(() => import('./features/dispatch/DispatchDetailPage').then((m) => ({ default: m.DispatchDetailPage })))
 const ChallansPage = lazy(() => import('./features/challans/ChallansPage').then((m) => ({ default: m.ChallansPage })))
 const PortalHome = lazy(() => import('./features/portal/PortalHome').then((m) => ({ default: m.PortalHome })))
+const InvoicesPage = lazy(() => import('./features/billing/InvoicesPage').then((m) => ({ default: m.InvoicesPage })))
+const PaymentsPage = lazy(() => import('./features/billing/PaymentsPage').then((m) => ({ default: m.PaymentsPage })))
+const LedgerPage = lazy(() => import('./features/billing/LedgerPage').then((m) => ({ default: m.LedgerPage })))
+const RatesPage = lazy(() => import('./features/billing/RatesPage').then((m) => ({ default: m.RatesPage })))
+const BillingReportsPage = lazy(() => import('./features/billing/BillingReportsPage').then((m) => ({ default: m.BillingReportsPage })))
+const BillingSettingsPage = lazy(() => import('./features/billing/BillingSettingsPage').then((m) => ({ default: m.BillingSettingsPage })))
 const AuditLogPage = lazy(() => import('./features/audit/AuditLogPage').then((m) => ({ default: m.AuditLogPage })))
 
 /** Staff / managers / admins see the dashboard; a client login sees its own portal home. */
 function HomeRoute() {
   const { profile } = useAuth()
+  if (profile?.role === 'ACCOUNTANT') return <Navigate to="/invoices" replace />
   return profile?.role === 'CLIENT'
     ? <RequireArea area="portal"><PortalHome /></RequireArea>
     : <RequireArea area="dashboard"><DashboardPage /></RequireArea>
@@ -73,7 +81,12 @@ export function AppRoutes() {
             <Route path="labels" element={<RequireArea area="labels"><LabelsPage /></RequireArea>} />
             <Route path="scan" element={<RequireArea area="scan"><ScanPage /></RequireArea>} />
             <Route path="account/password" element={<ChangePasswordPage />} />
-            {/* EXTENSION POINT (Phase 3+): rate cards, rent and labour calculation, invoices, GST amounts, payments, sensors */}
+            <Route path="invoices" element={<RequireArea area="invoices"><InvoicesPage /></RequireArea>} />
+            <Route path="payments" element={<RequireArea area="payments"><PaymentsPage /></RequireArea>} />
+            <Route path="ledger" element={<RequireArea area="ledger"><LedgerPage /></RequireArea>} />
+            <Route path="rates" element={<RequireArea area="rates"><RatesPage /></RequireArea>} />
+            <Route path="billing-reports" element={<RequireArea area="billingReports"><BillingReportsPage /></RequireArea>} />
+            <Route path="billing-settings" element={<RequireArea area="billingSettings"><BillingSettingsPage /></RequireArea>} />
             <Route path="*" element={<MessagePage titleKey="auth.notFoundTitle" />} />
           </Route>
         </Route>

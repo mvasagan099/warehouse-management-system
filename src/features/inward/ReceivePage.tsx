@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '../../components/ui/Button'
-import { Field, Input, Select, Textarea } from '../../components/ui/Field'
+import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/Field'
 import { Badge, Card, ErrorState, PageHeader } from '../../components/ui/misc'
 import { FullPageSpinner } from '../../components/ui/Spinner'
 import { errorMessage } from '../../lib/errors'
@@ -14,7 +14,7 @@ import { supabase } from '../../lib/supabase'
 import { Constants, type LabourActivity } from '../../lib/types'
 import { lineTotals, placementProblems, type LineCount, type Placement } from './receive'
 
-interface LabourRow { key: string; activity: LabourActivity; packages: string; tonnes: string; workers: string; hours: string }
+interface LabourRow { key: string; activity: LabourActivity; packages: string; tonnes: string; workers: string; hours: string; night?: boolean; overtime?: boolean }
 const key = () => crypto.randomUUID()
 
 /** Gate entry -> unloading count per line -> suggested slots -> confirm (one database transaction). */
@@ -87,7 +87,7 @@ export function ReceivePage() {
         p_gate_entry_id: id,
         p_lines: countsPayload(),
         p_placements: placements.map((p) => ({ gate_entry_line_id: p.line_id, slot_id: p.slot_id, quantity: Number(p.quantity), condition: p.condition })),
-        p_labour: labour.map((r) => ({ activity: r.activity, packages: Number(r.packages || 0), tonnes: Number(r.tonnes || 0), workers: Number(r.workers), hours: Number(r.hours) })),
+        p_labour: labour.map((r) => ({ activity: r.activity, packages: Number(r.packages || 0), tonnes: Number(r.tonnes || 0), workers: Number(r.workers), hours: Number(r.hours), is_night: !!r.night, is_overtime: !!r.overtime })),
         p_remarks: remarks || undefined,
       })
       if (error) throw error
@@ -196,6 +196,10 @@ export function ReceivePage() {
               <Input aria-label={t('receive.workers')} placeholder={t('receive.workers')} inputMode="numeric" value={r.workers} onChange={(e) => setLab(r.key, { workers: e.target.value })} />
               <Input aria-label={t('receive.hours')} placeholder={t('receive.hours')} inputMode="decimal" value={r.hours} onChange={(e) => setLab(r.key, { hours: e.target.value })} />
               <Button variant="ghost" size="sm" aria-label={t('common.remove')} icon={<Trash2 className="h-4 w-4" />} onClick={() => setLabour((rs) => rs.filter((x) => x.key !== r.key))} />
+              <div className="col-span-full flex gap-4">
+                <Checkbox label={t('receive.night')} checked={!!r.night} onChange={(e) => setLab(r.key, { night: e.target.checked })} />
+                <Checkbox label={t('receive.overtime')} checked={!!r.overtime} onChange={(e) => setLab(r.key, { overtime: e.target.checked })} />
+              </div>
             </div>
           ))}
         </div>

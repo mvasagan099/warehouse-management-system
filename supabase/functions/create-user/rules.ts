@@ -1,8 +1,8 @@
 // Pure authorisation + validation rules for the create-user Edge Function.
 // No Deno / network imports here so the same file is unit-tested by Vitest.
 
-export type AppRole = 'SUPER_ADMIN' | 'WAREHOUSE_MANAGER' | 'STAFF' | 'CLIENT'
-export type CreatableRole = 'WAREHOUSE_MANAGER' | 'STAFF' | 'CLIENT'
+export type AppRole = 'SUPER_ADMIN' | 'WAREHOUSE_MANAGER' | 'STAFF' | 'CLIENT' | 'ACCOUNTANT'
+export type CreatableRole = 'WAREHOUSE_MANAGER' | 'STAFF' | 'CLIENT' | 'ACCOUNTANT'
 
 export interface CreateUserRequest {
   email: string
@@ -44,8 +44,8 @@ export function parseRequest(body: unknown): { ok: true; value: CreateUserReques
   if (password.length < MIN_PASSWORD_LENGTH)
     return { ok: false, error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` }
   if (!full_name) return { ok: false, error: 'Full name is required' }
-  if (role !== 'WAREHOUSE_MANAGER' && role !== 'STAFF' && role !== 'CLIENT')
-    return { ok: false, error: 'Role must be WAREHOUSE_MANAGER, STAFF or CLIENT' }
+  if (role !== 'WAREHOUSE_MANAGER' && role !== 'STAFF' && role !== 'CLIENT' && role !== 'ACCOUNTANT')
+    return { ok: false, error: 'Role must be WAREHOUSE_MANAGER, STAFF, CLIENT or ACCOUNTANT' }
   if (!warehouse_ids.every((w) => typeof w === 'string' && UUID_RE.test(w)))
     return { ok: false, error: 'warehouse_ids must be UUIDs' }
   const unique = [...new Set(warehouse_ids as string[])]
@@ -54,6 +54,10 @@ export function parseRequest(body: unknown): { ok: true; value: CreateUserReques
     if (!client_id || !UUID_RE.test(client_id)) return { ok: false, error: 'A client login needs a valid client_id' }
     if (unique.length > 0) return { ok: false, error: 'A client login has no warehouses' }
     if (applicant_id) return { ok: false, error: 'A client login cannot come from an applicant' }
+  } else if (role === 'ACCOUNTANT') {
+    if (client_id) return { ok: false, error: 'client_id is only for client logins' }
+    if (unique.length > 0) return { ok: false, error: 'An accountant sees every warehouse: no warehouses are assigned' }
+    if (applicant_id) return { ok: false, error: 'An accountant cannot come from an applicant' }
   } else {
     if (client_id) return { ok: false, error: 'client_id is only for client logins' }
     if (unique.length === 0) return { ok: false, error: 'At least one warehouse is required' }
@@ -66,7 +70,7 @@ export function parseRequest(body: unknown): { ok: true; value: CreateUserReques
 
 /**
  * Who may create whom:
- *  - SUPER_ADMIN: managers (any warehouses), staff (any warehouse) and client logins; may link an applicant.
+ *  - SUPER_ADMIN: managers (any warehouses), staff (any warehouse), accountants and client logins; may link an applicant.
  *  - WAREHOUSE_MANAGER: STAFF only, only for a warehouse they manage; no applicant linking.
  *  - everyone else: nobody.
  */
@@ -78,6 +82,8 @@ export function authorize(caller: Caller, req: CreateUserRequest): Decision {
   if (caller.role === 'WAREHOUSE_MANAGER') {
     if (req.role === 'CLIENT')
       return { ok: false, status: 403, error: 'Only an administrator can create client logins' }
+    if (req.role === 'ACCOUNTANT')
+      return { ok: false, status: 403, error: 'Only an administrator can create accountant logins' }
     if (req.role !== 'STAFF') return { ok: false, status: 403, error: 'Managers can only create staff' }
     if (req.applicant_id)
       return { ok: false, status: 403, error: 'Only an administrator can create accounts from applicants' }

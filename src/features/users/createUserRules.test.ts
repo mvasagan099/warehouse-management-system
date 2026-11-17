@@ -61,3 +61,15 @@ describe('create-user authorize', () => {
     expect(authorize({ ...admin, role: null }, req()).ok).toBe(false)
   })
 })
+
+describe('create-user accountant logins', () => {
+  it('needs no warehouses and no client', () => {
+    expect(req({ role: 'ACCOUNTANT', warehouse_ids: [] })).toMatchObject({ role: 'ACCOUNTANT', warehouse_ids: [] })
+    expect(parseRequest({ email: 'a@b.co', password: 'Secret123', full_name: 'A', role: 'ACCOUNTANT', warehouse_ids: [W1] }).ok).toBe(false)
+    expect(parseRequest({ email: 'a@b.co', password: 'Secret123', full_name: 'A', role: 'ACCOUNTANT', warehouse_ids: [], client_id: W2 }).ok).toBe(false)
+  })
+  it('only an administrator can create one', () => {
+    expect(authorize(admin, req({ role: 'ACCOUNTANT', warehouse_ids: [] })).ok).toBe(true)
+    expect(authorize(manager, req({ role: 'ACCOUNTANT', warehouse_ids: [] })).ok).toBe(false)
+  })
+})

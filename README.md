@@ -1,10 +1,11 @@
-# Cold Storage WMS — Phases 1 and 2
+# Cold Storage WMS — Phases 1, 2 and 3
 
 Warehouse & cold-storage management for a Tamil Nadu business.
 
 - **Phase 1 (foundation):** auth and roles, warehouses, zones, brigade types and slots, managers and staff, hiring, audit log, dashboard.
 - **Phase 2 (operations):** clients and contracts, space booking, gate / lorry entry, inward receipt, stock, QR labels and scanning, dispatch, delivery challan, client portal.
-- **Not built yet (Phase 3):** rate cards, rent and labour calculation, invoices, GST amounts, payments, temperature sensors. The facts they need (slot allocation dates, labour hours) are already stored.
+- **Phase 3 (billing):** rate cards with scope precedence, daily occupancy snapshots, rent and labour invoices with India GST, credit and debit notes, payments, client ledger and ageing, PDF / email / Razorpay link, GSTR-1 and Tally exports, ACCOUNTANT role. See *Phase 3: billing* below.
+- **Not built (by design):** temperature sensors and alerts, MQTT, WhatsApp / SMS, calling the government e-invoice portal, Tamil invoice printing.
 **No custom backend:** a React SPA talks directly to Supabase (Postgres + Auth + Storage). All
 authorisation lives in Postgres Row Level Security; the only privileged code is one Edge Function
 (`create-user`) that holds the service key server-side.
@@ -53,10 +54,10 @@ Local password-reset emails are caught by Mailpit at http://127.0.0.1:54324.
 ## Tests
 
 ```bash
-npm test                  # Vitest (111): schemas, GSTIN, roles, receipt / pick / stock logic, i18n key coverage, route guards, create-user rules
-npm run test:db           # pgTAP (174): RLS per role, confirm functions, FEFO, rollback, numbering, cancellation (needs `supabase start`)
-npm run test:concurrency  # 30 parallel sessions: document numbers never skip or duplicate
-npm run test:e2e          # Playwright: client -> booking -> gate -> receipt (+PDF) -> dispatch -> scan -> challan -> client portal
+npm test                  # Vitest (136): schemas, GSTIN, roles, receipt / pick / stock logic, amount in words, CSV, Razorpay signature, i18n key coverage, route guards, create-user rules
+npm run test:db           # pgTAP (299): RLS per role, confirm functions, FEFO, rollback, numbering, cancellation, plus Phase 3: rates, occupancy, rent / labour / GST maths, immutability, notes, payments (needs `supabase start`)
+npm run test:concurrency  # 30 parallel sessions for document numbers, 20 parallel issue_invoice calls: never skip or duplicate
+npm run test:e2e          # Playwright: Phase 2 (client -> booking -> gate -> receipt -> dispatch -> challan -> portal) and Phase 3 (rates -> stock -> advance days -> invoice -> issue -> payment -> client PDF -> accountant)
 npm run test:all          # all of the above
 npm run typecheck && npm run build
 ```
@@ -142,8 +143,8 @@ src/
 | Supabase | `npx supabase start` (Docker) | project ref `zzbpramdnuguymeaovma`, region ap-northeast-2 |
 | API URL | `http://127.0.0.1:54321` | `https://zzbpramdnuguymeaovma.supabase.co` |
 | Frontend key | anon key from `npx supabase status` | publishable key (Dashboard → Project Settings → API Keys) |
-| Migrations | applied by `supabase db reset` | 12 migrations applied (5 for Phase 1, 7 for Phase 2); versions match the files in `supabase/migrations` |
-| Edge Function | `npx supabase functions serve` | `create-user` deployed (verify JWT on) |
+| Migrations | applied by `supabase db reset` | 19 migrations applied (5 for Phase 1, 7 for Phase 2, 7 for Phase 3); versions match the files in `supabase/migrations` |
+| Edge Functions | `npx supabase functions serve` | `create-user`, `send-invoice`, `razorpay-link` (verify JWT on), `razorpay-webhook` (JWT off: HMAC signature) and `send-reminders` (JWT off: checks an administrator JWT or the `x-cron-secret` header itself) |
 
 Git: `origin` pushes to two repositories at once —
 `warehousemanagementadmin099-web/warehouse` and `mvasagan099/warehouse-management-system` — each
@@ -174,18 +175,71 @@ update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"SUPER_A
 
 ## Conventions
 
-- Money is integer **paise** (`credit_limit_paise`, `security_deposit_paise`; no other money exists until Phase 3) (`bigint`), helpers in `src/lib/money.ts`. No floats.
+- Money is integer **paise** (`bigint` columns ending in `_paise`), helpers in `src/lib/money.ts`. No floats.
 - Timestamps are `timestamptz` (UTC) and displayed in `Asia/Kolkata` (`src/lib/format.ts`).
 - Sizes, temperatures, rates live in tables, not code (brigade dimensions, zone temperature bands, expiry alert days in `app_settings`).
 - Soft delete (`deleted_at`) everywhere; queries filter `deleted_at is null`. `audit_logs` is append-only.
 - After a schema change: add a migration, `npx supabase db reset`, `npm run db:types`.
 
-## Extension points (Phase 3, not built)
+## Phase 3: billing
 
-Rate cards, rent and labour calculation, invoices, GST amounts, payments, temperature sensors and alerts.
-Already stored for them: `contracts.rate_card_id`, `slot_allocations` (client, slot, start and end date, per brigade type),
-`labour_entries` (activity, packages, tonnes, workers, hours), `stock_movements`, paise helpers in `src/lib/money.ts`,
-and the generic audit trigger (attach to new tables with one `create trigger`).
+All money is integer **paise**. Every calculation happens in Postgres functions in one transaction; the browser only shows results.
+Nothing (rate, tax rate, SAC code, rule) is hard-coded: they live in tables and `app_settings`.
+
+**Tables (new):** `client_groups`, `rate_cards`, `rent_rates`, `labour_rates`, `other_charges`, `tax_rules`, `daily_occupancy`, `occupancy_runs`,
+`invoices`, `invoice_lines`, `invoice_tax_lines`, `adjustment_notes`, `adjustment_note_lines`, `payments`, `payment_allocations`, `reminder_queue`,
+`billing_job_log`; new columns on `clients` (group, billing cycle / mode, payment terms, GST exemption, credit override), `labour_entries`
+(`is_night`, `is_overtime`), `inward_receipts` / `delivery_challans` (`billed_invoice_id`), `slot_allocations` (`min_days_invoice_id`).
+New enum values: role `ACCOUNTANT`, labour activities `PICKING`, `PACKING`. Private storage bucket `invoices`.
+
+**Functions:** `resolve_rent_rate` / `resolve_labour_rate` (the only two rate resolvers; `rent_rate_candidates` / `labour_rate_candidates` power the
+rate tester), `resolve_rate_terms`, `resolve_tax_rule`, `my_rate_summary`, `snapshot_occupancy(date)`, `snapshot_occupancy_backfill`,
+`generate_invoice_draft`, `fix_invoice_line`, `remove_invoice_line`, `add_other_charge`, `discard_draft_invoice`, `issue_invoice`, `einvoice_json`,
+`issue_adjustment_note`, `record_payment`, `reverse_payment`, `client_ledger`, `ageing_report`, `mark_overdue_invoices`, `billing_block_reason`,
+`set_billing_override`, `generate_scheduled_drafts`, `report_revenue`, `report_utilisation`, `gstr1_register`, `tally_export_xml`.
+Error codes: `WMS20` nothing to bill, `WMS21` rate already used, `WMS22` day not finished, `WMS23` no rate / tax rule, `WMS24` credit block,
+`WMS25` invoice immutable, `WMS26` period already billed, `WMS27` deposit too small, `WMS28` credit note too large, `WMS29` billed document.
+
+**Scheduled jobs (pg_cron, always UTC; India time = UTC + 5:30):**
+
+| Job | UTC | India time | What |
+|---|---|---|---|
+| `wms-occupancy-snapshot` | `35 18 * * *` | 00:05 | `snapshot_occupancy_backfill()`: yesterday's occupancy (idempotent; also fills any missed day) |
+| `wms-mark-overdue` | `0 19 * * *` | 00:30 | `mark_overdue_invoices()`: status OVERDUE and queues reminder emails |
+| `wms-generate-invoices` | `10 19 * * *` | 00:40 | `generate_scheduled_drafts()`: DRAFT invoices for WEEKLY (Monday) / MONTHLY (1st) clients |
+
+**Edge Functions and secrets** (set with `npx supabase secrets set NAME=value`, never in the browser):
+
+| Function | Needs | Notes |
+|---|---|---|
+| `send-invoice` | `RESEND_API_KEY` (and a From address in Billing settings or `RESEND_FROM`) | emails the PDF the browser uploaded to the `invoices` bucket; behind the `email` setting flag |
+| `razorpay-link` | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | creates a payment link for what is outstanding; behind the `razorpay` flag |
+| `razorpay-webhook` | `RAZORPAY_WEBHOOK_SECRET` | verifies `X-Razorpay-Signature` (HMAC-SHA256 of the raw body), records the payment idempotently by Razorpay payment id |
+| `send-reminders` | `RESEND_API_KEY`, optional `CRON_SECRET` | sends the queued overdue reminders (admin button, or a scheduler calling it with `x-cron-secret`) |
+
+The Razorpay webhook URL is `https://<project>.supabase.co/functions/v1/razorpay-webhook` (event `payment_link.paid`).
+The Resend and Razorpay calls themselves could not be exercised without real keys: the request and signature logic is unit tested.
+
+**Roles in billing:** SUPER_ADMIN sets rates, generates, fixes, issues, records payments. ACCOUNTANT reads and exports everything (read only).
+WAREHOUSE_MANAGER sees issued billing data of their own warehouses (read only). STAFF see nothing. A CLIENT sees its own issued invoices, payments,
+ledger and rate summary and downloads PDFs. Every create / update / issue / cancel is in the audit log.
+
+### Assumptions to confirm (especially with your accountant)
+
+1. **SAC codes and GST rates are suggested defaults, not advice:** 996721 refrigerated storage, 996729 other storage / warehousing,
+   996719 other cargo handling, all 18 %. Edit them in *Rate Cards -> SAC & GST*. Rent is taxed per storage type (frozen / chilled = 996721, others 996729).
+2. Supplier state is `33` (Tamil Nadu) in the `supplier` setting. Client GSTIN state 33 -> CGST + SGST (half each); another state -> IGST;
+   no GSTIN -> consumer taxed by the supplier-state rule. Fill the supplier GSTIN, address and bank details in *Billing Settings* before the first invoice.
+3. Tax is computed per section on the taxable value after discount; each tax amount is rounded half-up to the paisa; a visible round-off line makes the grand total a whole rupee.
+4. Day counting is a setting: the start day counts, the end day does not, and a Brigade held for part of a day counts that day.
+5. Volume tiers pick the rate by the total Brigades held that day and apply it to all of them (whole-volume tiers, not slab tiers).
+6. Free days are counted per allocation (each Brigade's first N days). Minimum billing days are a top-up line added when a stay ends short.
+7. The cold-room premium is applied in proportion to the cold packages in the document; night and overtime multipliers apply to the activity's amount.
+8. Invoice numbers are `IN/<warehouse>/<financial year>/<serial>` (e.g. `IN/W1/2627/0001`, at most 16 characters); credit notes `CN`, debit notes `DN`, payments `PY`.
+9. Payments settle the oldest invoice (or debit note) first; the rest stays as an advance, applied automatically to the next invoice.
+10. Ageing is by days since the invoice date (0-30, 31-60, 61-90, 90+).
+11. The e-invoice JSON follows the IRP 1.1 shape for upload; the government portal is not called (IRN and QR fields are stored empty).
+12. A day already on an invoice is never recomputed; correct an invoice only with a credit or debit note.
 
 ## Notes
 

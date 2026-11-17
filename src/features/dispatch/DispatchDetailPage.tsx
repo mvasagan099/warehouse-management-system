@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { useAuth } from '../../auth/AuthProvider'
 import { canOperate } from '../../auth/roles'
 import { Button } from '../../components/ui/Button'
-import { Field, Input, Select } from '../../components/ui/Field'
+import { Checkbox, Field, Input, Select } from '../../components/ui/Field'
 import { ScannerInput } from '../../components/ui/ScannerInput'
 import { SignaturePad } from '../../components/ui/SignaturePad'
 import { Badge, Card, ErrorState, PageHeader } from '../../components/ui/misc'
@@ -20,7 +20,7 @@ import { normaliseLorry } from '../gate/schema'
 import { DISPATCH_TONE } from './DispatchPage'
 import { allPicked, matchPick } from './picking'
 
-interface LabourRow { key: string; activity: LabourActivity; packages: string; tonnes: string; workers: string; hours: string }
+interface LabourRow { key: string; activity: LabourActivity; packages: string; tonnes: string; workers: string; hours: string; night?: boolean; overtime?: boolean }
 
 export function DispatchDetailPage() {
   const { id = '' } = useParams()
@@ -95,7 +95,7 @@ export function DispatchDetailPage() {
         p_request_id: request.id, p_gate_entry_id: gateId,
         p_dispatch_temp_c: temp === '' ? undefined : Number(temp), p_seal_number: seal || undefined,
         p_receiver_name: receiver || undefined, p_signature_path: signaturePath,
-        p_labour: labour.map((r) => ({ activity: r.activity, packages: Number(r.packages || 0), tonnes: Number(r.tonnes || 0), workers: Number(r.workers), hours: Number(r.hours) })),
+        p_labour: labour.map((r) => ({ activity: r.activity, packages: Number(r.packages || 0), tonnes: Number(r.tonnes || 0), workers: Number(r.workers), hours: Number(r.hours), is_night: !!r.night, is_overtime: !!r.overtime })),
       })
       if (error) throw error
       return challanId
@@ -200,6 +200,10 @@ export function DispatchDetailPage() {
                   <Input key={f} aria-label={t(f === 'packages' ? 'gate.packages' : `receive.${f}`)} placeholder={t(f === 'packages' ? 'gate.packages' : `receive.${f}`)} inputMode="decimal" value={r[f]} onChange={(e) => setLabour((rs) => rs.map((x) => x.key === r.key ? { ...x, [f]: e.target.value } : x))} />
                 ))}
                 <Button variant="ghost" size="sm" aria-label={t('common.remove')} icon={<Trash2 className="h-4 w-4" />} disabled={labour.length === 1} onClick={() => setLabour((rs) => rs.filter((x) => x.key !== r.key))} />
+                <div className="col-span-full flex gap-4">
+                  <Checkbox label={t('receive.night')} checked={!!r.night} onChange={(e) => setLabour((rs) => rs.map((x) => x.key === r.key ? { ...x, night: e.target.checked } : x))} />
+                  <Checkbox label={t('receive.overtime')} checked={!!r.overtime} onChange={(e) => setLabour((rs) => rs.map((x) => x.key === r.key ? { ...x, overtime: e.target.checked } : x))} />
+                </div>
               </div>
             ))}
           </div>

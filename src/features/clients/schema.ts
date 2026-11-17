@@ -55,8 +55,18 @@ export const clientSchema = z
     pick_rule: z.enum(Constants.public.Enums.pick_rule),
     status: z.enum(Constants.public.Enums.client_status),
     notes: optionalText(500),
+    group_id: z.string().trim().transform((v) => (v === '' ? null : v)),
+    billing_cycle: z.enum(Constants.public.Enums.billing_cycle),
+    billing_mode: z.enum(Constants.public.Enums.billing_mode),
+    payment_terms_days: z.string().trim().refine((v) => /^\d{1,3}$/.test(v), 'validation.days').transform(Number),
+    gst_exempt: z.boolean(),
+    gst_exempt_reason: optionalText(200),
   })
   .superRefine(gstConsistency)
+  .superRefine((v, ctx) => {
+    if (v.gst_exempt && !v.gst_exempt_reason) ctx.addIssue({ code: 'custom', path: ['gst_exempt_reason'], message: 'validation.required' })
+  })
+  .transform((v) => ({ ...v, gst_exempt_reason: v.gst_exempt ? v.gst_exempt_reason : null }))
 
 export type ClientFormInput = z.input<typeof clientSchema>
 export type ClientFormOutput = z.output<typeof clientSchema>
@@ -64,6 +74,7 @@ export type ClientFormOutput = z.output<typeof clientSchema>
 export const emptyClient: ClientFormInput = {
   company_name: '', gstin: '', pan: '', address_line1: '', address_line2: '', city: '', district: '', state: '',
   pincode: '', contact_name: '', phone: '', email: '', credit_limit_paise: '', pick_rule: 'FEFO', status: 'ACTIVE', notes: '',
+  group_id: '', billing_cycle: 'MONTHLY', billing_mode: 'BOTH', payment_terms_days: '15', gst_exempt: false, gst_exempt_reason: '',
 }
 
 const str = (v: unknown) => (v === null || v === undefined ? '' : String(v))
@@ -75,6 +86,8 @@ export function clientToForm(c: Client): ClientFormInput {
     address_line2: str(c.address_line2), city: str(c.city), district: str(c.district), state: str(c.state),
     pincode: str(c.pincode), contact_name: str(c.contact_name), phone: str(c.phone), email: str(c.email),
     credit_limit_paise: paiseToRupeesInput(c.credit_limit_paise), pick_rule: c.pick_rule, status: c.status, notes: str(c.notes),
+    group_id: str(c.group_id), billing_cycle: c.billing_cycle, billing_mode: c.billing_mode, payment_terms_days: String(c.payment_terms_days),
+    gst_exempt: c.gst_exempt, gst_exempt_reason: str(c.gst_exempt_reason),
   }
 }
 

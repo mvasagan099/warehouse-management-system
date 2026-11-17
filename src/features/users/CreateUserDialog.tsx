@@ -90,6 +90,7 @@ export function CreateUserDialog({
             {...register('role', {
               onChange: (e) => {
                 if (e.target.value === 'STAFF') setValue('warehouse_ids', watch('warehouse_ids').slice(0, 1))
+                if (e.target.value === 'ACCOUNTANT') setValue('warehouse_ids', [])
               },
             })}
           >
@@ -107,7 +108,9 @@ export function CreateUserDialog({
             control={control}
             name="warehouse_ids"
             render={({ field }) =>
-              role === 'STAFF' ? (
+              role === 'ACCOUNTANT' ? (
+                <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">{t('users.accountantHelp')}</p>
+              ) : role === 'STAFF' ? (
                 <Field label={t('common.warehouse')} htmlFor="cu-wh" error={errors.warehouse_ids?.message}>
                   <Select id="cu-wh" value={field.value[0] ?? ''} onChange={(e) => field.onChange(e.target.value ? [e.target.value] : [])}>
                     <option value="">{t('common.select')}</option>

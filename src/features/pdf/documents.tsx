@@ -3,6 +3,8 @@ import type {
   Client, Company, DeliveryChallan, DeliveryChallanLine, GateEntry, InwardReceipt, InwardReceiptLine, Warehouse,
 } from '../../lib/types'
 import { APP_TIME_ZONE } from '../../lib/format'
+import type { Invoice, InvoiceLine, InvoiceTaxLine } from '../../lib/types'
+import { amountInWords, bpToPercent, formatIndian } from '../../lib/words'
 
 // Documents are printed in English with the built-in Helvetica font (Tamil needs an embedded font; see README).
 const s = StyleSheet.create({
@@ -206,6 +208,111 @@ export function ChallanPdf({ challan, lines, warehouse, client, toCompany, gate,
           </View>
         </View>
         <Text style={s.foot} fixed>Computer generated challan · {challan.challan_no}</Text>
+      </Page>
+    </Document>
+  )
+}
+
+
+// ------------------------------------------------------------------ Tax invoice (Phase 3) ------------------------------------------------------------------
+export interface InvoicePdfData {
+  invoice: Invoice
+  lines: InvoiceLine[]
+  tax: InvoiceTaxLine[]
+  terms?: string | null
+  /** shown on the draft preview only */
+  watermark?: string | null
+}
+
+type Snap = Record<string, string | boolean | null | undefined>
+const SECTION_TITLE = { RENT: 'A. Rent (storage)', LABOUR: 'B. Labour (handling)', OTHER: 'C. Other charges' } as const
+const SUPPLY_LABEL = { INTRA: 'Intra-state supply: CGST + SGST', INTER: 'Inter-state supply: IGST', CONSUMER: 'Unregistered recipient: CGST + SGST' } as const
+const money = (p: number) => formatIndian(p)
+
+export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark }: InvoicePdfData) {
+  const sup = (inv.supplier_snapshot ?? {}) as Snap
+  const cli = (inv.client_snapshot ?? {}) as Snap
+  const sections = (['RENT', 'LABOUR', 'OTHER'] as const).filter((sec) => lines.some((l) => l.section === sec))
+  const hasLorry = lines.some((l) => l.lorry_number)
+  const taxBy = (sec: string) => tax.filter((t) => t.section === sec)
+  const exempt = tax.filter((t) => t.exempt)
+  return (
+    <Document title={inv.invoice_no ?? 'Draft invoice'}>
+      <Page size="A4" style={s.page}>
+        {watermark && <Text style={{ position: 'absolute', top: 300, left: 90, fontSize: 70, color: '#e2e8f0', transform: 'rotate(-30deg)' }}>{watermark}</Text>}
+        <View style={s.head}>
+          <View>
+            <Text style={s.title}>TAX INVOICE</Text>
+            <Text style={s.bold}>{String(sup.legal_name || sup.name || '')}</Text>
+            <Text>{String(sup.address ?? '')}</Text>
+            <Text>GSTIN: {String(sup.gstin || '-')}   PAN: {String(sup.pan || '-')}</Text>
+            <Text>State: {String(sup.state_name ?? '')} ({String(sup.state_code ?? '')})</Text>
+          </View>
+          <View style={{ textAlign: 'right' }}>
+            <Text style={s.bold}>Invoice no: {inv.invoice_no ?? 'DRAFT'}</Text>
+            <Text>Date: {d(inv.invoice_date)}</Text>
+            <Text>Due date: {d(inv.due_date)}</Text>
+            <Text>Period: {d(inv.period_from)} to {d(inv.period_to)}</Text>
+            <Text>{inv.irn ? `IRN: ${inv.irn}` : ''}</Text>
+          </View>
+        </View>
+        <View style={s.row}>
+          <Party title="Bill to" name={String(cli.name ?? '')} lines={[String(cli.address ?? ''), `GSTIN: ${cli.gstin ? String(cli.gstin) : 'Unregistered'}`, cli.pan ? `PAN: ${String(cli.pan)}` : null]} />
+          <Party title="Place of supply" name={`${String(inv.place_of_supply ?? '')}`} lines={[SUPPLY_LABEL[inv.supply_kind as keyof typeof SUPPLY_LABEL] ?? '']} />
+        </View>
+
+        {sections.map((sec) => {
+          const rows = lines.filter((l) => l.section === sec)
+          const taxable = rows.reduce((a, l) => a + l.taxable_paise, 0)
+          const cols = sec === 'LABOUR'
+            ? [{ h: 'Document', w: '17%' }, ...(hasLorry ? [{ h: 'Lorry', w: '12%' }] : []), { h: 'Description', w: hasLorry ? '27%' : '39%' }, { h: 'Qty', w: '9%', right: true }, { h: 'Rate', w: '11%', right: true }, { h: 'Discount', w: '10%', right: true }, { h: 'Taxable', w: '14%', right: true }]
+            : [{ h: 'Description', w: '44%' }, { h: 'SAC', w: '9%' }, { h: 'Qty', w: '10%', right: true }, { h: 'Rate', w: '12%', right: true }, { h: 'Discount', w: '10%', right: true }, { h: 'Taxable', w: '15%', right: true }]
+          const body = rows.map((l) => sec === 'LABOUR'
+            ? [l.doc_no ?? '-', ...(hasLorry ? [l.lorry_number ?? '-'] : []), l.description, `${n(l.quantity, 3)} ${l.unit}`, money(l.rate_paise), money(l.discount_paise), money(l.taxable_paise)]
+            : [`${l.description}${l.from_date ? ` (${d(l.from_date)} to ${d(l.to_date)})` : ''}`, l.sac_code ?? '-', `${n(l.quantity, 3)} ${l.unit}`, money(l.rate_paise), money(l.discount_paise), money(l.taxable_paise)])
+          return (
+            <View key={sec} style={{ marginBottom: 8 }} wrap>
+              <Text style={[s.bold, { marginTop: 4 }]}>{SECTION_TITLE[sec]}</Text>
+              <Table cols={cols} rows={body} />
+              <Text style={{ textAlign: 'right', marginTop: 2 }} wrap={false}><Text style={s.bold}>Subtotal {SECTION_TITLE[sec].slice(0, 1)}: </Text>{money(taxable)}</Text>
+            </View>
+          )
+        })}
+
+        <Text style={[s.bold, { marginTop: 4 }]}>Tax summary</Text>
+        <Table
+          cols={[{ h: 'Section', w: '22%' }, { h: 'SAC', w: '12%' }, { h: 'Taxable', w: '18%', right: true }, { h: 'Rate', w: '8%', right: true }, { h: 'CGST', w: '13%', right: true }, { h: 'SGST', w: '13%', right: true }, { h: 'IGST', w: '14%', right: true }]}
+          rows={(['RENT', 'LABOUR', 'OTHER'] as const).flatMap((sec) => taxBy(sec).map((t) => [SECTION_TITLE[sec].slice(3), t.sac_code ?? '-', money(t.taxable_paise), bpToPercent(t.gst_rate_bp), money(t.cgst_paise), money(t.sgst_paise), money(t.igst_paise)]))}
+        />
+        {exempt.length > 0 && <Text style={s.note}>Exempt supply: {exempt.map((t) => t.exempt_reason).filter(Boolean).join('; ') || 'exempt'}</Text>}
+
+        <View style={{ alignSelf: 'flex-end', width: '50%', marginTop: 8 }} wrap={false}>
+          {([['Taxable value', inv.taxable_paise], ['CGST', inv.cgst_paise], ['SGST', inv.sgst_paise], ['IGST', inv.igst_paise], ['Round off', inv.round_off_paise]] as [string, number][]).map(([k, v]) => (
+            <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text>{k}</Text><Text>{money(v)}</Text></View>
+          ))}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTop: '1pt solid #0f172a', marginTop: 2, paddingTop: 2 }}>
+            <Text style={s.bold}>Grand total (INR)</Text><Text style={s.bold}>{money(inv.grand_total_paise)}</Text>
+          </View>
+        </View>
+        <Text style={{ marginTop: 6 }}><Text style={s.bold}>Amount in words: </Text>{amountInWords(inv.grand_total_paise)}</Text>
+
+        <View style={[s.row, { marginTop: 10 }]} wrap={false}>
+          <View style={s.box}>
+            <Text style={s.label}>Bank details</Text>
+            <Text>{String(sup.bank_name ?? '')} {String(sup.bank_branch ?? '')}</Text>
+            <Text>A/c: {String(sup.bank_account ?? '-')}   IFSC: {String(sup.bank_ifsc ?? '-')}</Text>
+            {sup.upi_id ? <Text>UPI: {String(sup.upi_id)}</Text> : null}
+          </View>
+          <View style={s.box}>
+            <Text style={s.label}>Terms</Text>
+            <Text>{terms ?? ''}</Text>
+          </View>
+        </View>
+        <View style={s.sigRow} wrap={false}>
+          <Text style={s.sig}>Receiver's signature</Text>
+          <Text style={s.sig}>For {String(sup.legal_name || sup.name || 'the supplier')}{'\n'}Authorised signatory</Text>
+        </View>
+        <Text style={s.foot} fixed render={({ pageNumber, totalPages }) => `${inv.invoice_no ?? 'DRAFT'} · page ${pageNumber} of ${totalPages} · computer generated invoice`} />
       </Page>
     </Document>
   )

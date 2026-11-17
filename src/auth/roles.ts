@@ -19,21 +19,28 @@ export type Area =
   | 'users'
   | 'hiring'
   | 'audit'
+  | 'rates'
+  | 'invoices'
+  | 'payments'
+  | 'ledger'
+  | 'billingReports'
+  | 'billingSettings'
 
 const A: AppRole = 'SUPER_ADMIN'
 const M: AppRole = 'WAREHOUSE_MANAGER'
 const S: AppRole = 'STAFF'
 const C: AppRole = 'CLIENT'
+const X: AppRole = 'ACCOUNTANT'
 
 /** Which roles can open each area (UI guard; the database enforces the same with RLS). */
 export const AREA_ACCESS: Record<Area, readonly AppRole[]> = {
   dashboard: [A, M, S],
   portal: [C],
-  warehouses: [A, M, S],
+  warehouses: [A, M, S, X],
   zones: [A, M, S],
   brigadeTypes: [A],
   slots: [A, M, S],
-  clients: [A, M],
+  clients: [A, M, X],
   bookings: [A, M, C],
   gate: [A, M, S],
   receipts: [A, M, S, C],
@@ -44,7 +51,13 @@ export const AREA_ACCESS: Record<Area, readonly AppRole[]> = {
   scan: [A, M, S],
   users: [A, M],
   hiring: [A, M],
-  audit: [A],
+  audit: [A, X],
+  rates: [A, X],
+  invoices: [A, X, M, C],   // managers: their warehouses, read only; clients: their own
+  payments: [A, X, C],
+  ledger: [A, X, C],
+  billingReports: [A, X],
+  billingSettings: [A, X],
 }
 
 /** Which roles can create / edit in each area. */
@@ -67,6 +80,12 @@ export const AREA_WRITE: Record<Area, readonly AppRole[]> = {
   users: [A, M],
   hiring: [A, M],
   audit: [],
+  rates: [A],               // accountants read and export only
+  invoices: [A],
+  payments: [A],
+  ledger: [],
+  billingReports: [],
+  billingSettings: [A],
 }
 
 export function canAccess(role: AppRole | null | undefined, area: Area): boolean {
@@ -89,7 +108,7 @@ export function canOperate(role: AppRole | null | undefined): boolean {
 
 /** Roles a given user may create through the create-user Edge Function. */
 export function creatableRoles(role: AppRole | null | undefined): AppRole[] {
-  if (role === 'SUPER_ADMIN') return ['WAREHOUSE_MANAGER', 'STAFF']
+  if (role === 'SUPER_ADMIN') return ['WAREHOUSE_MANAGER', 'STAFF', 'ACCOUNTANT']
   if (role === 'WAREHOUSE_MANAGER') return ['STAFF']
   return []
 }
@@ -113,7 +132,12 @@ export const NAV_ITEMS: { area: Area; path: string; labelKey: string }[] = [
   { area: 'users', path: '/users', labelKey: 'nav.users' },
   { area: 'hiring', path: '/hiring', labelKey: 'nav.hiring' },
   { area: 'audit', path: '/audit', labelKey: 'nav.audit' },
-  // EXTENSION POINT (Phase 3+): rate cards, rent & labour calculation, invoices, payments, sensors.
+  { area: 'invoices', path: '/invoices', labelKey: 'nav.invoices' },
+  { area: 'payments', path: '/payments', labelKey: 'nav.payments' },
+  { area: 'ledger', path: '/ledger', labelKey: 'nav.ledger' },
+  { area: 'rates', path: '/rates', labelKey: 'nav.rates' },
+  { area: 'billingReports', path: '/billing-reports', labelKey: 'nav.billingReports' },
+  { area: 'billingSettings', path: '/billing-settings', labelKey: 'nav.billingSettings' },
 ]
 
 export function navFor(role: AppRole | null | undefined) {

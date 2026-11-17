@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Building, FileSignature, KeyRound, Pencil, Plus } from 'lucide-react'
+import { Building, FileSignature, KeyRound, Pencil, Plus, ShieldCheck, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import { useAuth } from '../../auth/AuthProvider'
 import { Button } from '../../components/ui/Button'
 import { DataTable } from '../../components/ui/DataTable'
-import { Field, Input, Select, Textarea } from '../../components/ui/Field'
+import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/Field'
 import { Modal } from '../../components/ui/Modal'
 import { Badge, Card, PageHeader, Toolbar } from '../../components/ui/misc'
 import { errorMessage } from '../../lib/errors'
@@ -17,7 +17,9 @@ import { gstinPan, gstinStateCode } from '../../lib/gstin'
 import { formatINR } from '../../lib/money'
 import { supabase } from '../../lib/supabase'
 import { Constants, type Client } from '../../lib/types'
+import { useClientGroups } from '../billing/queries'
 import { qk, useClients } from '../shared/queries'
+import { BillingOverrideDialog, GroupsDialog } from './ClientBillingDialogs'
 import { ClientLoginDialog } from './ClientLoginDialog'
 import { CompaniesDialog } from './CompaniesDialog'
 import { ContractsDialog } from './ContractsDialog'
@@ -29,6 +31,7 @@ function ClientForm({ initial, title, saving, onClose, onSubmit }: {
   initial: ClientFormInput; title: string; saving: boolean; onClose: () => void; onSubmit: (v: ClientFormOutput) => void
 }) {
   const { t } = useTranslation()
+  const groups = useClientGroups()
   const { register, handleSubmit, watch, formState: { errors } } = useForm<ClientFormInput, unknown, ClientFormOutput>({
     resolver: zodResolver(clientSchema), defaultValues: initial,
   })
@@ -83,6 +86,23 @@ function ClientForm({ initial, title, saving, onClose, onSubmit }: {
             </Select>
           </Field>
         </div>
+        <fieldset className="grid gap-4 sm:grid-cols-3">
+          <legend className="mb-2 text-sm font-semibold">{t('clients.billingSection')}</legend>
+          <Field label={t('clients.billingCycle')} htmlFor="cf-billing_cycle" hint={t('clients.billingCycleHelp')}>
+            <Select id="cf-billing_cycle" {...register('billing_cycle')}>{Constants.public.Enums.billing_cycle.map((c) => <option key={c} value={c}>{t(`billingCycle.${c}`)}</option>)}</Select>
+          </Field>
+          <Field label={t('billing.mode')} htmlFor="cf-billing_mode">
+            <Select id="cf-billing_mode" {...register('billing_mode')}>{Constants.public.Enums.billing_mode.map((m) => <option key={m} value={m}>{t(`billingMode.${m}`)}</option>)}</Select>
+          </Field>
+          <Field label={t('clients.paymentTerms')} htmlFor="cf-payment_terms_days" error={errors.payment_terms_days?.message}>
+            <Input id="cf-payment_terms_days" inputMode="numeric" aria-invalid={!!errors.payment_terms_days} {...register('payment_terms_days')} />
+          </Field>
+          <Field label={t('clients.group')} htmlFor="cf-group_id" optional hint={t('clients.groupHelp')}>
+            <Select id="cf-group_id" {...register('group_id')}><option value="">{t('clients.noGroup')}</option>{(groups.data ?? []).map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}</Select>
+          </Field>
+          <div className="flex items-end pb-2"><Checkbox label={t('clients.gstExempt')} {...register('gst_exempt')} /></div>
+          {watch('gst_exempt') && <Field label={t('billing.exemptReason')} htmlFor="cf-gst_exempt_reason" error={errors.gst_exempt_reason?.message}><Input id="cf-gst_exempt_reason" {...register('gst_exempt_reason')} /></Field>}
+        </fieldset>
         <Field label={t('common.notes')} htmlFor="cf-notes" optional error={errors.notes?.message}>
           <Textarea id="cf-notes" {...register('notes')} />
         </Field>
@@ -96,6 +116,7 @@ export function ClientsPage() {
   const lang = i18n.resolvedLanguage
   const { profile } = useAuth()
   const isAdmin = profile?.role === 'SUPER_ADMIN'
+  const canEdit = profile?.role === 'SUPER_ADMIN' || profile?.role === 'WAREHOUSE_MANAGER'
   const qc = useQueryClient()
   const list = useClients()
   const [search, setSearch] = useState('')
@@ -104,6 +125,8 @@ export function ClientsPage() {
   const [contractsFor, setContractsFor] = useState<Client | null>(null)
   const [companiesFor, setCompaniesFor] = useState<Client | null>(null)
   const [loginFor, setLoginFor] = useState<Client | null>(null)
+  const [overrideFor, setOverrideFor] = useState<Client | null>(null)
+  const [showGroups, setShowGroups] = useState(false)
 
   const save = useMutation({
     mutationFn: async (v: ClientFormOutput) => {
@@ -131,20 +154,21 @@ export function ClientsPage() {
       id: 'actions', header: t('common.actions'),
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Button size="sm" variant="ghost" icon={<Pencil className="h-4 w-4" />} onClick={() => setEditing(row.original)}>{t('common.edit')}</Button>
+          {canEdit && <Button size="sm" variant="ghost" icon={<Pencil className="h-4 w-4" />} onClick={() => setEditing(row.original)}>{t('common.edit')}</Button>}
           <Button size="sm" variant="ghost" icon={<FileSignature className="h-4 w-4" />} onClick={() => setContractsFor(row.original)}>{t('contracts.title')}</Button>
           <Button size="sm" variant="ghost" icon={<Building className="h-4 w-4" />} onClick={() => setCompaniesFor(row.original)}>{t('companies.title')}</Button>
           {isAdmin && (
             <Button size="sm" variant="ghost" icon={<KeyRound className="h-4 w-4" />} onClick={() => setLoginFor(row.original)}>{t('clients.createLogin')}</Button>
           )}
+          {isAdmin && <Button size="sm" variant="ghost" icon={<ShieldCheck className="h-4 w-4" />} onClick={() => setOverrideFor(row.original)}>{t('clients.billingOverride')}</Button>}
         </div>
       ),
     },
-  ], [t, lang, isAdmin])
+  ], [t, lang, isAdmin, canEdit])
 
   return (
     <div>
-      <PageHeader title={t('clients.title')} actions={<Button icon={<Plus className="h-4 w-4" />} onClick={() => setEditing('new')}>{t('clients.add')}</Button>} />
+      <PageHeader title={t('clients.title')} actions={canEdit && <>{isAdmin && <Button variant="secondary" icon={<Users className="h-4 w-4" />} onClick={() => setShowGroups(true)}>{t('clients.groups')}</Button>}<Button icon={<Plus className="h-4 w-4" />} onClick={() => setEditing('new')}>{t('clients.add')}</Button></>} />
       <Card>
         <Toolbar>
           <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="sm:w-72" aria-label={t('common.search')} />
@@ -175,6 +199,8 @@ export function ClientsPage() {
           onClose={() => setLoginFor(null)}
         />
       )}
+      {overrideFor && <BillingOverrideDialog client={overrideFor} onClose={() => setOverrideFor(null)} />}
+      {showGroups && <GroupsDialog onClose={() => setShowGroups(false)} />}
     </div>
   )
 }
