@@ -1,5 +1,5 @@
 // Edge Function: create-user
-// Creates WAREHOUSE_MANAGER / STAFF accounts. The service key lives ONLY here
+// Creates WAREHOUSE_MANAGER / STAFF accounts (and, for admins, CLIENT logins linked to a client). The service key lives ONLY here
 // (server side); the browser calls this function with the user's own JWT.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { authorize, parseRequest, type AppRole } from './rules.ts'
@@ -65,16 +65,27 @@ Deno.serve(async (req) => {
   )
   if (!decision.ok) return json(decision.status, { error: decision.error })
 
-  // Warehouses must exist and be active
-  const { data: whs, error: whErr } = await admin
-    .from('warehouses')
-    .select('id')
-    .in('id', input.warehouse_ids)
-    .is('deleted_at', null)
-    .eq('is_active', true)
-  if (whErr) return json(500, { error: whErr.message })
-  if ((whs ?? []).length !== input.warehouse_ids.length)
-    return json(400, { error: 'One or more warehouses do not exist or are inactive' })
+  if (input.role === 'CLIENT') {
+    // The client must exist and be active
+    const { data: client } = await admin
+      .from('clients')
+      .select('id, status, deleted_at')
+      .eq('id', input.client_id!)
+      .maybeSingle()
+    if (!client || client.deleted_at) return json(404, { error: 'Client not found' })
+    if (client.status === 'INACTIVE') return json(400, { error: 'Client is inactive' })
+  } else {
+    // Warehouses must exist and be active
+    const { data: whs, error: whErr } = await admin
+      .from('warehouses')
+      .select('id')
+      .in('id', input.warehouse_ids)
+      .is('deleted_at', null)
+      .eq('is_active', true)
+    if (whErr) return json(500, { error: whErr.message })
+    if ((whs ?? []).length !== input.warehouse_ids.length)
+      return json(400, { error: 'One or more warehouses do not exist or are inactive' })
+  }
 
   // Applicant (admin only, checked in authorize) must exist and not already have an account
   if (input.applicant_id) {
@@ -95,6 +106,7 @@ Deno.serve(async (req) => {
     app_metadata: {
       role: input.role,
       warehouse_id: input.role === 'STAFF' ? input.warehouse_ids[0] : null,
+      client_id: input.role === 'CLIENT' ? input.client_id : null,
       must_change_password: true,
       created_by: callerId,
     },

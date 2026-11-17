@@ -25,6 +25,24 @@ describe('create-user parseRequest', () => {
   })
 })
 
+describe('create-user client logins', () => {
+  const C1 = '33333333-3333-3333-3333-333333333333'
+  it('requires a client_id and no warehouses', () => {
+    expect(parseRequest({ email: 'c@t.co', password: 'Secret123', full_name: 'C', role: 'CLIENT', warehouse_ids: [] }).ok).toBe(false)
+    expect(parseRequest({ email: 'c@t.co', password: 'Secret123', full_name: 'C', role: 'CLIENT', client_id: C1, warehouse_ids: [W1] }).ok).toBe(false)
+    expect(parseRequest({ email: 'c@t.co', password: 'Secret123', full_name: 'C', role: 'CLIENT', client_id: C1, warehouse_ids: [] }).ok).toBe(true)
+  })
+  it('rejects client_id on staff and managers', () => {
+    expect(parseRequest({ email: 'a@t.co', password: 'Secret123', full_name: 'A', role: 'STAFF', client_id: C1, warehouse_ids: [W1] }).ok).toBe(false)
+  })
+  it('lets only an administrator create a client login', () => {
+    const r = parseRequest({ email: 'c@t.co', password: 'Secret123', full_name: 'C', role: 'CLIENT', client_id: C1, warehouse_ids: [] })
+    if (!r.ok) throw new Error(r.error)
+    expect(authorize(admin, r.value).ok).toBe(true)
+    expect(authorize(manager, r.value)).toMatchObject({ ok: false, status: 403 })
+  })
+})
+
 describe('create-user authorize', () => {
   it('lets the admin create managers and staff, including from applicants', () => {
     expect(authorize(admin, req({ role: 'WAREHOUSE_MANAGER', warehouse_ids: [W1, W2] })).ok).toBe(true)

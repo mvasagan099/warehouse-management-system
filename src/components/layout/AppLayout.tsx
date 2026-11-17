@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import {
-  Boxes, ClipboardList, Grid3x3, KeyRound, LayoutDashboard, LogOut, Menu, Ruler, Snowflake, UserPlus, Users, Warehouse, X,
+  Boxes, Building2, CalendarClock, ClipboardCheck, ClipboardList, FileText, Grid3x3, KeyRound, LayoutDashboard,
+  LogOut, Menu, PackageCheck, Package, QrCode, Ruler, ScanLine, Snowflake, Truck, UserPlus, Users, Warehouse, X,
 } from 'lucide-react'
 import { useEffect, useState, type ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -18,6 +19,16 @@ const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   users: Users,
   hiring: UserPlus,
   audit: ClipboardList,
+  portal: LayoutDashboard,
+  clients: Building2,
+  bookings: CalendarClock,
+  gate: Truck,
+  receipts: ClipboardCheck,
+  stock: Package,
+  dispatch: PackageCheck,
+  challans: FileText,
+  labels: QrCode,
+  scan: ScanLine,
 }
 
 export function AppLayout() {

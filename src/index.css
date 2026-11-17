@@ -12,3 +12,12 @@
 
 html, body, #root { height: 100%; }
 body { @apply bg-slate-50 text-slate-900 antialiased; }
+
+/* Printing: only the label sheet / document area is printed */
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+  .no-print { display: none !important; }
+  @page { margin: 8mm; }
+}

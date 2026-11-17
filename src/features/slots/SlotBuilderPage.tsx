@@ -18,7 +18,7 @@ import { Constants, type BrigadeSlot, type SlotStatus } from '../../lib/types'
 import { qk, useBrigadeTypes, useWarehouses, useZones } from '../shared/queries'
 import { MAX_SLOTS_PER_REQUEST, slotBuilderSchema, slotPreview, type SlotBuilderInput, type SlotBuilderOutput } from './schema'
 
-const STATUS_TONE: Record<SlotStatus, 'green' | 'blue' | 'amber'> = { FREE: 'green', OCCUPIED: 'blue', BLOCKED: 'amber' }
+const STATUS_TONE: Record<SlotStatus, 'green' | 'blue' | 'amber' | 'violet'> = { FREE: 'green', RESERVED: 'violet', OCCUPIED: 'blue', BLOCKED: 'amber' }
 
 function SlotList({ zoneId, writable, brigadeNames }: { zoneId: string; writable: boolean; brigadeNames: Map<string, string> }) {
   const { t } = useTranslation()
@@ -81,8 +81,8 @@ function SlotList({ zoneId, writable, brigadeNames }: { zoneId: string; writable
     ...(writable ? [{
       id: 'actions',
       header: t('common.actions'),
-      // OCCUPIED will be driven by stock movements (Phase 2); here only FREE <-> BLOCKED
-      cell: ({ row }) => row.original.status === 'OCCUPIED' ? null : row.original.status === 'FREE' ? (
+      // RESERVED / OCCUPIED are driven by bookings and stock documents; here only FREE <-> BLOCKED
+      cell: ({ row }) => row.original.status === 'OCCUPIED' || row.original.status === 'RESERVED' ? null : row.original.status === 'FREE' ? (
         <Button size="sm" variant="ghost" icon={<Ban className="h-4 w-4" />} onClick={() => setSlotStatus.mutate({ id: row.original.id, next: 'BLOCKED' })}>{t('slots.block')}</Button>
       ) : (
         <Button size="sm" variant="ghost" icon={<CircleCheck className="h-4 w-4" />} onClick={() => setSlotStatus.mutate({ id: row.original.id, next: 'FREE' })}>{t('slots.unblock')}</Button>

@@ -14,7 +14,8 @@ export function RequireAuth({ children }: { children?: ReactNode }) {
   if (!session) return <Navigate to="/login" replace state={{ from: location.pathname }} />
   if (!profile || !profile.is_active || profile.deleted_at)
     return <MessagePage titleKey="auth.inactiveTitle" bodyKey="auth.inactiveBody" showLogout />
-  if (profile.role === 'CLIENT')
+  // A CLIENT login must be linked to a client company, otherwise there is nothing to show.
+  if (profile.role === 'CLIENT' && !profile.client_id)
     return <MessagePage titleKey="auth.noAccessTitle" bodyKey="auth.noAccessBody" showLogout />
   if (profile.must_change_password && location.pathname !== '/account/password')
     return <Navigate to="/account/password" replace />

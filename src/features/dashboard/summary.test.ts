@@ -5,7 +5,7 @@ import { byStorageType, totals } from './summary'
 
 const row = (o: Partial<ZoneSlotSummary>): ZoneSlotSummary => ({
   warehouse_id: 'w', warehouse_code: 'W1', warehouse_name: 'W', zone_id: 'z', zone_code: 'Z1', zone_name: 'Z',
-  storage_type: 'DRY', temp_min: null, temp_max: null, total_slots: 0, free_slots: 0, occupied_slots: 0, blocked_slots: 0, ...o,
+  storage_type: 'DRY', temp_min: null, temp_max: null, total_slots: 0, free_slots: 0, occupied_slots: 0, blocked_slots: 0, reserved_slots: 0, ...o,
 })
 
 describe('dashboard summary', () => {
@@ -15,7 +15,7 @@ describe('dashboard summary', () => {
     row({ storage_type: 'FROZEN', total_slots: 10, free_slots: 10 }),
   ]
   it('totals free vs occupied', () => {
-    expect(totals(rows)).toEqual({ zones: 3, total: 110, free: 95, occupied: 10, blocked: 5 })
+    expect(totals(rows)).toEqual({ zones: 3, total: 110, free: 95, occupied: 10, blocked: 5, reserved: 0 })
   })
   it('groups by storage type in enum order, skipping unused types', () => {
     const r = byStorageType(rows, Constants.public.Enums.storage_type)

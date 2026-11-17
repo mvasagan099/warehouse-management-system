@@ -6,6 +6,7 @@ export interface Totals {
   free: number
   occupied: number
   blocked: number
+  reserved: number
 }
 
 export function totals(rows: ZoneSlotSummary[]): Totals {
@@ -16,8 +17,9 @@ export function totals(rows: ZoneSlotSummary[]): Totals {
       free: acc.free + (r.free_slots ?? 0),
       occupied: acc.occupied + (r.occupied_slots ?? 0),
       blocked: acc.blocked + (r.blocked_slots ?? 0),
+      reserved: acc.reserved + (r.reserved_slots ?? 0),
     }),
-    { zones: 0, total: 0, free: 0, occupied: 0, blocked: 0 },
+    { zones: 0, total: 0, free: 0, occupied: 0, blocked: 0, reserved: 0 },
   )
 }
 

@@ -12,7 +12,7 @@ import { Constants, type ZoneSlotSummary } from '../../lib/types'
 import { useSlotSummary, useWarehouses } from '../shared/queries'
 import { byStorageType, totals } from './summary'
 
-const COLORS = { free: '#10b981', occupied: '#0e7490', blocked: '#f59e0b' }
+const COLORS = { free: '#10b981', reserved: '#8b5cf6', occupied: '#0e7490', blocked: '#f59e0b' }
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -52,6 +52,7 @@ export function DashboardPage() {
       { id: 'temp', header: t('zones.tempRange'), cell: (c) => formatTemperatureRange(c.row.original.temp_min, c.row.original.temp_max) },
       { accessorKey: 'total_slots', header: t('dashboard.totalSlots') },
       { accessorKey: 'free_slots', header: t('dashboard.free') },
+      { accessorKey: 'reserved_slots', header: t('dashboard.reserved') },
       { accessorKey: 'occupied_slots', header: t('dashboard.occupied') },
       { accessorKey: 'blocked_slots', header: t('dashboard.blocked') },
       {
@@ -69,12 +70,14 @@ export function DashboardPage() {
   const zoneChart = rows.map((r) => ({
     name: `${r.warehouse_code}-${r.zone_code}`,
     [t('dashboard.free')]: r.free_slots,
+    [t('dashboard.reserved')]: r.reserved_slots,
     [t('dashboard.occupied')]: r.occupied_slots,
     [t('dashboard.blocked')]: r.blocked_slots,
   }))
   const typeChart = byType.map((r) => ({
     name: t(`storageType.${r.storage_type}`),
     [t('dashboard.free')]: r.free,
+    [t('dashboard.reserved')]: r.reserved,
     [t('dashboard.occupied')]: r.occupied,
     [t('dashboard.blocked')]: r.blocked,
   }))
@@ -87,6 +90,7 @@ export function DashboardPage() {
       <Tooltip />
       <Legend />
       <Bar dataKey={t('dashboard.free')} stackId="a" fill={COLORS.free} />
+      <Bar dataKey={t('dashboard.reserved')} stackId="a" fill={COLORS.reserved} />
       <Bar dataKey={t('dashboard.occupied')} stackId="a" fill={COLORS.occupied} />
       <Bar dataKey={t('dashboard.blocked')} stackId="a" fill={COLORS.blocked} />
     </>
@@ -109,11 +113,12 @@ export function DashboardPage() {
         }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
         <Stat label={t('dashboard.warehouses')} value={formatNumber(warehouseCount, lang)} />
         <Stat label={t('dashboard.zones')} value={formatNumber(sum.zones, lang)} />
         <Stat label={t('dashboard.totalSlots')} value={formatNumber(sum.total, lang)} />
         <Stat label={t('dashboard.free')} value={formatNumber(sum.free, lang)} sub={`${percent(sum.free, sum.total)}%`} />
+        <Stat label={t('dashboard.reserved')} value={formatNumber(sum.reserved, lang)} sub={`${percent(sum.reserved, sum.total)}%`} />
         <Stat label={t('dashboard.occupied')} value={formatNumber(sum.occupied, lang)} sub={`${percent(sum.occupied, sum.total)}%`} />
         <Stat label={t('dashboard.blocked')} value={formatNumber(sum.blocked, lang)} sub={`${percent(sum.blocked, sum.total)}%`} />
       </div>

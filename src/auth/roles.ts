@@ -2,35 +2,70 @@ import type { AppRole } from '../lib/types'
 
 export type Area =
   | 'dashboard'
+  | 'portal'
   | 'warehouses'
   | 'zones'
   | 'brigadeTypes'
   | 'slots'
+  | 'clients'
+  | 'bookings'
+  | 'gate'
+  | 'receipts'
+  | 'stock'
+  | 'dispatch'
+  | 'challans'
+  | 'labels'
+  | 'scan'
   | 'users'
   | 'hiring'
   | 'audit'
 
+const A: AppRole = 'SUPER_ADMIN'
+const M: AppRole = 'WAREHOUSE_MANAGER'
+const S: AppRole = 'STAFF'
+const C: AppRole = 'CLIENT'
+
 /** Which roles can open each area (UI guard; the database enforces the same with RLS). */
 export const AREA_ACCESS: Record<Area, readonly AppRole[]> = {
-  dashboard: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER', 'STAFF'],
-  warehouses: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER', 'STAFF'],
-  zones: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER', 'STAFF'],
-  brigadeTypes: ['SUPER_ADMIN'],
-  slots: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER', 'STAFF'],
-  users: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER'],
-  hiring: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER'],
-  audit: ['SUPER_ADMIN'],
+  dashboard: [A, M, S],
+  portal: [C],
+  warehouses: [A, M, S],
+  zones: [A, M, S],
+  brigadeTypes: [A],
+  slots: [A, M, S],
+  clients: [A, M],
+  bookings: [A, M, C],
+  gate: [A, M, S],
+  receipts: [A, M, S, C],
+  stock: [A, M, S, C],
+  dispatch: [A, M, S, C],
+  challans: [A, M, S, C],
+  labels: [A, M, S],
+  scan: [A, M, S],
+  users: [A, M],
+  hiring: [A, M],
+  audit: [A],
 }
 
-/** Which roles can create/edit in each area. */
+/** Which roles can create / edit in each area. */
 export const AREA_WRITE: Record<Area, readonly AppRole[]> = {
   dashboard: [],
-  warehouses: ['SUPER_ADMIN'],
-  zones: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER'],
-  brigadeTypes: ['SUPER_ADMIN'],
-  slots: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER'],
-  users: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER'],
-  hiring: ['SUPER_ADMIN', 'WAREHOUSE_MANAGER'],
+  portal: [],
+  warehouses: [A],
+  zones: [A, M],
+  brigadeTypes: [A],
+  slots: [A, M],
+  clients: [A, M],
+  bookings: [A, M, C],      // clients may request; managers decide
+  gate: [A, M, S],
+  receipts: [],             // created only by confirming a gate entry
+  stock: [A, M, S],         // transfers; adjustments need canDecide
+  dispatch: [A, M, C],      // requests; staff pick and confirm
+  challans: [],
+  labels: [],
+  scan: [],
+  users: [A, M],
+  hiring: [A, M],
   audit: [],
 }
 
@@ -42,6 +77,16 @@ export function canWrite(role: AppRole | null | undefined, area: Area): boolean 
   return !!role && AREA_WRITE[area].includes(role)
 }
 
+/** Approve / reject / cancel documents and adjust stock: managers and administrators only. */
+export function canDecide(role: AppRole | null | undefined): boolean {
+  return role === 'SUPER_ADMIN' || role === 'WAREHOUSE_MANAGER'
+}
+
+/** Pick, receive, dispatch: anyone working in a warehouse. */
+export function canOperate(role: AppRole | null | undefined): boolean {
+  return role === 'SUPER_ADMIN' || role === 'WAREHOUSE_MANAGER' || role === 'STAFF'
+}
+
 /** Roles a given user may create through the create-user Edge Function. */
 export function creatableRoles(role: AppRole | null | undefined): AppRole[] {
   if (role === 'SUPER_ADMIN') return ['WAREHOUSE_MANAGER', 'STAFF']
@@ -51,15 +96,24 @@ export function creatableRoles(role: AppRole | null | undefined): AppRole[] {
 
 export const NAV_ITEMS: { area: Area; path: string; labelKey: string }[] = [
   { area: 'dashboard', path: '/', labelKey: 'nav.dashboard' },
+  { area: 'portal', path: '/', labelKey: 'nav.home' },
   { area: 'warehouses', path: '/warehouses', labelKey: 'nav.warehouses' },
   { area: 'zones', path: '/zones', labelKey: 'nav.zones' },
   { area: 'brigadeTypes', path: '/brigade-types', labelKey: 'nav.brigadeTypes' },
   { area: 'slots', path: '/slots', labelKey: 'nav.slots' },
+  { area: 'clients', path: '/clients', labelKey: 'nav.clients' },
+  { area: 'bookings', path: '/bookings', labelKey: 'nav.bookings' },
+  { area: 'gate', path: '/gate', labelKey: 'nav.gate' },
+  { area: 'receipts', path: '/receipts', labelKey: 'nav.receipts' },
+  { area: 'stock', path: '/stock', labelKey: 'nav.stock' },
+  { area: 'dispatch', path: '/dispatch', labelKey: 'nav.dispatch' },
+  { area: 'challans', path: '/challans', labelKey: 'nav.challans' },
+  { area: 'labels', path: '/labels', labelKey: 'nav.labels' },
+  { area: 'scan', path: '/scan', labelKey: 'nav.scan' },
   { area: 'users', path: '/users', labelKey: 'nav.users' },
   { area: 'hiring', path: '/hiring', labelKey: 'nav.hiring' },
   { area: 'audit', path: '/audit', labelKey: 'nav.audit' },
-  // EXTENSION POINT (Phase 2+): clients, contracts, rates, stock, lorry entry,
-  // inward receipts, delivery challans, invoices, sensors, payments.
+  // EXTENSION POINT (Phase 3+): rate cards, rent & labour calculation, invoices, payments, sensors.
 ]
 
 export function navFor(role: AppRole | null | undefined) {

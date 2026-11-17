@@ -8,7 +8,7 @@ import { RequireArea, RequireAuth } from './guards'
 
 const profile = (o: Partial<Profile> = {}): Profile => ({
   id: 'u1', email: 'u@test.local', full_name: 'User', phone: null, role: 'STAFF', warehouse_id: 'w1',
-  preferred_language: 'en', is_active: true, must_change_password: false, created_by: null,
+  client_id: null, preferred_language: 'en', is_active: true, must_change_password: false, created_by: null,
   created_at: '', updated_at: '', deleted_at: null, ...o,
 })
 
@@ -57,9 +57,18 @@ describe('route guards', () => {
     renderAt('/audit', { profile: profile({ role: 'SUPER_ADMIN', warehouse_id: null }) })
     expect(screen.getByText('AUDIT')).toBeInTheDocument()
   })
-  it('shows clients a no-access page', () => {
+  it('shows a client login that is not linked to a client a no-access page', () => {
     renderAt('/', { profile: profile({ role: 'CLIENT', warehouse_id: null }) })
     expect(screen.getByText('No access yet')).toBeInTheDocument()
+  })
+  it('lets a linked client login in', () => {
+    renderAt('/', { profile: profile({ role: 'CLIENT', warehouse_id: null, client_id: 'c1' }) })
+    expect(screen.getByText('HOME')).toBeInTheDocument()
+  })
+  it('keeps a client out of the admin-only audit log', () => {
+    renderAt('/audit', { profile: profile({ role: 'CLIENT', warehouse_id: null, client_id: 'c1' }) })
+    expect(screen.queryByText('AUDIT')).not.toBeInTheDocument()
+    expect(screen.getByText('Not allowed')).toBeInTheDocument()
   })
   it('shows deactivated users a message', () => {
     renderAt('/', { profile: profile({ is_active: false }) })

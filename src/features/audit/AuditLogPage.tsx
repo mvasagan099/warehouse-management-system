@@ -13,7 +13,12 @@ import { supabase } from '../../lib/supabase'
 import { Constants, type AuditLog } from '../../lib/types'
 import { changedFields, displayValue } from './diff'
 
-const AUDITED_TABLES = ['warehouses', 'zones', 'brigade_types', 'brigade_slots', 'profiles', 'warehouse_managers', 'vacancies', 'applicants']
+const AUDITED_TABLES = [
+  'warehouses', 'zones', 'brigade_types', 'brigade_slots', 'profiles', 'warehouse_managers', 'vacancies', 'applicants',
+  'clients', 'contracts', 'company_master', 'space_bookings', 'gate_entries', 'gate_entry_lines', 'inward_receipts',
+  'inward_receipt_lines', 'stock_items', 'slot_allocations', 'labour_entries', 'dispatch_requests',
+  'dispatch_request_lines', 'dispatch_picks', 'delivery_challans', 'delivery_challan_lines',
+]
 const ACTION_TONE = { INSERT: 'green', UPDATE: 'blue', DELETE: 'red' } as const
 
 export function AuditLogPage() {
