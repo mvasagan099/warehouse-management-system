@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CheckCircle2, Plus, Sparkles, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -49,16 +49,22 @@ export function ReceivePage() {
   useEffect(() => {
     if (!data.data) return
     setCounts((prev) => Object.keys(prev).length ? prev : Object.fromEntries(data.data.lines.map((l) => [l.id, { accepted: String(l.counted_qty ?? l.declared_qty), damaged: '0', remarks: '' }])))
-    setLabour((prev) => prev.length ? prev : [{
-      key: key(), activity: 'UNLOADING', packages: String(data.data.lines.reduce((n, l) => n + l.packages, 0)),
-      tonnes: String(Math.round(data.data.lines.reduce((n, l) => n + Number(l.weight_kg), 0)) / 1000), workers: '', hours: '',
-    }])
   }, [data.data])
+
+  // one tap receiving: as soon as the counts are filled in (they start equal to what the driver declared), slots are suggested automatically
+  const autoDone = useRef(false)
+  useEffect(() => {
+    if (!data.data || autoDone.current || Object.keys(counts).length === 0 || data.data.lines.length === 0) return
+    autoDone.current = true
+    suggest.mutate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.data, counts])
+  const [showSlots, setShowSlots] = useState(false)
 
   const slotLabel = useMemo(() => new Map((data.data?.slots ?? []).map((s) => [s.id, s.code])), [data.data])
   const problems = useMemo(() => (data.data ? placementProblems(data.data.lines, counts, placements) : {}), [data.data, counts, placements])
   const allOk = !!data.data && data.data.lines.length > 0 && Object.values(problems).every((v) => v === null)
-  const labourOk = labour.every((r) => Number(r.workers) >= 1 && Number(r.hours) >= 0 && r.hours !== '')
+  const labourOk = labour.every((r) => Number(r.workers) >= 1 && Number(r.hours) >= 0 && r.hours !== '')  // labour is optional: an empty list is fine
 
   const countsPayload = () => data.data!.lines.map((l) => ({
     gate_entry_line_id: l.id,
@@ -143,10 +149,14 @@ export function ReceivePage() {
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3">
           <h2 className="font-semibold">2 · {t('receive.slotStep')}</h2>
-          <Button icon={<Sparkles className="h-4 w-4" />} loading={suggest.isPending} onClick={() => suggest.mutate()}>{t('receive.suggest')}</Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" icon={<Sparkles className="h-4 w-4" />} loading={suggest.isPending} onClick={() => suggest.mutate()}>{t('receive.suggest')}</Button>
+            {allOk && <Button size="sm" variant="ghost" onClick={() => setShowSlots(!showSlots)}>{showSlots ? t('receive.hideSlots') : t('receive.changeSlots')}</Button>}
+          </div>
         </div>
-        <p className="px-4 pt-3 text-sm text-slate-500">{t('receive.slotHelp')}</p>
-        <div className="divide-y divide-slate-100">
+        {allOk && !showSlots && <p className="px-4 py-3 text-sm text-emerald-700" data-testid="slots-summary">{t('receive.slotsChosen', { count: placements.length, slots: [...new Set(placements.map((p) => slotLabel.get(p.slot_id) ?? ''))].filter(Boolean).join(', ') })}</p>}
+        {(showSlots || !allOk) && <p className="px-4 pt-3 text-sm text-slate-500">{t('receive.slotHelp')}</p>}
+        {(showSlots || !allOk) && <div className="divide-y divide-slate-100">
           {lines.map((l) => {
             const mine = placements.filter((p) => p.line_id === l.id)
             const prob = problems[l.id]
@@ -175,17 +185,17 @@ export function ReceivePage() {
               </div>
             )
           })}
-        </div>
+        </div>}
       </Card>
 
       <Card>
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h2 className="font-semibold">3 · {t('receive.labourStep')}</h2>
+          <h2 className="font-semibold">3 · {t('receive.labourStep')} <span className="text-sm font-normal text-slate-500">({t('common.optional')})</span></h2>
           <Button size="sm" variant="secondary" icon={<Plus className="h-4 w-4" />}
             onClick={() => setLabour((r) => [...r, { key: key(), activity: 'STACKING', packages: '', tonnes: '', workers: '', hours: '' }])}>{t('receive.addLabour')}</Button>
         </div>
         <div className="space-y-2 p-4">
-          <p className="text-sm text-slate-500">{t('receive.labourHelp')}</p>
+          {labour.length === 0 && <p className="text-sm text-slate-500">{t('receive.labourSkip')}</p>}
           {labour.map((r) => (
             <div key={r.key} className="grid grid-cols-2 gap-2 md:grid-cols-[1.5fr_repeat(4,1fr)_auto]">
               <Select aria-label={t('receive.activity')} value={r.activity} onChange={(e) => setLab(r.key, { activity: e.target.value as LabourActivity })}>

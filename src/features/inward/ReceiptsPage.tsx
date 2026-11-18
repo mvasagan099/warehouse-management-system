@@ -13,6 +13,36 @@ import { supabase } from '../../lib/supabase'
 import type { InwardReceipt } from '../../lib/types'
 import { useClients, useWarehouses } from '../shared/queries'
 
+/** Type a receipt number and see its status at once (received, cancelled, and where the lorry is). */
+function ReceiptLookup() {
+  const { t, i18n } = useTranslation()
+  const [no, setNo] = useState('')
+  const q = no.trim()
+  const found = useQuery({
+    queryKey: ['receipt_lookup', q], enabled: q.length >= 3,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('inward_receipts').select('*').ilike('receipt_no', `%${q.replace(/[%_]/g, '')}%`).limit(5)
+      if (error) throw error
+      const gates = data.length ? await supabase.from('gate_entries').select('id, lorry_number, status').in('id', data.map((r) => r.gate_entry_id)) : { data: [] }
+      return data.map((r) => ({ r, gate: gates.data?.find((g) => g.id === r.gate_entry_id) }))
+    },
+  })
+  return (
+    <Card className="mb-4 p-4">
+      <label htmlFor="rc-lookup" className="mb-1 block text-sm font-medium">{t('receipts.lookupTitle')}</label>
+      <Input id="rc-lookup" value={no} onChange={(e) => setNo(e.target.value)} placeholder={t('receipts.lookupHint')} className="h-12 text-base sm:w-96" autoComplete="off" />
+      {q.length >= 3 && found.data && (
+        <ul className="mt-3 space-y-2" data-testid="lookup-results">
+          {found.data.length === 0 && <li className="text-sm text-slate-500">{t('receipts.notFound')}</li>}
+          {found.data.map(({ r, gate }) => (
+            <li key={r.id}><Link to={`/receipts/${r.id}`} className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 p-3 hover:border-brand-500">
+              <span className="font-mono font-semibold">{r.receipt_no}</span><Badge tone={r.status === 'CONFIRMED' ? 'green' : 'red'}>{t(`docStatus.${r.status}`)}</Badge>
+              <span className="text-sm text-slate-600">{formatDateTime(r.received_at, i18n.resolvedLanguage)}</span>{gate && <span className="text-sm text-slate-600">{t('receipts.lorry')} {gate.lorry_number} · {t(`gateStatus.${gate.status}`)}</span>}</Link></li>))}
+        </ul>)}
+    </Card>
+  )
+}
+
 export function ReceiptsPage() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage
@@ -46,6 +76,7 @@ export function ReceiptsPage() {
   return (
     <div>
       <PageHeader title={t('receipts.title')} />
+      <ReceiptLookup />
       <Card>
         <Toolbar>
           <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="sm:w-64" aria-label={t('common.search')} />

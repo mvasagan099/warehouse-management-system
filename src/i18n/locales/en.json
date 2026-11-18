@@ -647,7 +647,11 @@
       "noSlot": "Choose a slot for every row"
     },
     "night": "Night shift",
-    "overtime": "Overtime"
+    "overtime": "Overtime",
+    "changeSlots": "Change slots",
+    "hideSlots": "Hide slots",
+    "slotsChosen": "{{count}} placement(s) ready: {{slots}}",
+    "labourSkip": "Not needed to receive. Add it only if you want to record the labour."
   },
   "receipts": {
     "title": "Inward Receipts",
@@ -656,7 +660,11 @@
     "empty": "No receipts yet.",
     "cancelTitle": "Cancel receipt",
     "cancelHelp": "The stock is taken out again by new ledger entries. This is only possible while the goods are untouched.",
-    "cancelled": "Receipt cancelled"
+    "cancelled": "Receipt cancelled",
+    "lookupTitle": "Check a receipt",
+    "lookupHint": "Type the receipt number, e.g. GR/W1/2627/0001",
+    "notFound": "No receipt with that number.",
+    "lorry": "Lorry"
   },
   "stock": {
     "title": "Stock",
