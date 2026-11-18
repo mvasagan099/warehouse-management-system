@@ -1,6 +1,6 @@
 /* Service worker: makes the app open with no signal. It caches the app shell and the hashed build files only.
    It never caches API answers, signed file links or anything from Supabase: data always comes live, or from the phone's own offline queue. */
-const VERSION = 'wms-v1'
+const VERSION = 'wms-v2'
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/favicon.svg']
 
 self.addEventListener('install', (event) => {
