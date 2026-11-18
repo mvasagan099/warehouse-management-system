@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 import { supabase } from '../../lib/supabase'
+import type { OfferLetterData } from './hrDocuments'
 import type { ChallanPdfData, ClientTempReportPdfData, EvidencePackPdfData, InvoicePdfData, ReceiptPdfData, RegisterPdfData } from './documents'
 
 function save(blob: Blob, filename: string) {
@@ -77,4 +78,26 @@ export async function downloadEvidencePackPdf(data: Omit<EvidencePackPdfData, 'p
 
 export async function downloadRegisterPdf(data: RegisterPdfData, filename: string) {
   save(await toBlobFrom((m) => createElement(m.RegisterPdf, data)), `${fileSafe(filename)}.pdf`)
+}
+
+/** Renders the offer letter. The caller uploads it to the private HR bucket and/or saves it. */
+export async function offerLetterBlob(data: OfferLetterData): Promise<Blob> {
+  const [{ pdf }, { OfferLetterPdf }] = await Promise.all([import('@react-pdf/renderer'), import('./hrDocuments')])
+  return await pdf(createElement(OfferLetterPdf, data) as never).toBlob()
+}
+
+export function saveBlob(blob: Blob, filename: string) { save(blob, filename) }
+
+export async function receiptPdfBlob(data: ReceiptPdfData): Promise<Blob> {
+  return toBlobFrom((m) => createElement(m.ReceiptPdf, data))
+}
+export async function challanPdfBlob(data: Omit<ChallanPdfData, 'signatureDataUrl'> & { signatureDataUrl?: string | null }): Promise<Blob> {
+  const signatureDataUrl = data.signatureDataUrl ?? (await signatureAsDataUrl(data.challan.signature_path))
+  return toBlobFrom((m) => createElement(m.ChallanPdf, { ...data, signatureDataUrl }))
+}
+export async function tempReportPdfBlob(data: ClientTempReportPdfData): Promise<Blob> {
+  return toBlobFrom((m) => createElement(m.ClientTempReportPdf, data))
+}
+export async function registerPdfBlob(data: RegisterPdfData): Promise<Blob> {
+  return toBlobFrom((m) => createElement(m.RegisterPdf, data))
 }

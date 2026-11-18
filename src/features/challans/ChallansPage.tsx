@@ -7,6 +7,7 @@ import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAuth } from '../../auth/AuthProvider'
 import { canDecide, canOperate } from '../../auth/roles'
+import { CrewPanel } from '../attendance/CrewPanel'
 import { Button } from '../../components/ui/Button'
 import { DataTable } from '../../components/ui/DataTable'
 import { Input, Select } from '../../components/ui/Field'
@@ -106,6 +107,7 @@ function ChallanDetail({ challan, onClose }: { challan: DeliveryChallan; onClose
               ))}
             </tbody>
           </table>
+          {operate && <CrewPanel documentType="DELIVERY_CHALLAN" documentId={challan.id} warehouseId={challan.warehouse_id} at={challan.dispatched_at} editable={challan.status === 'CONFIRMED'} />}
           {challan.cancel_reason && <p className="rounded-lg bg-red-50 p-2 text-red-700">{t('common.reason')}: {challan.cancel_reason}</p>}
           {operate && challan.status === 'CONFIRMED' && !challan.signature_path && (
             signing ? (

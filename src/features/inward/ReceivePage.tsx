@@ -48,7 +48,7 @@ export function ReceivePage() {
 
   useEffect(() => {
     if (!data.data) return
-    setCounts((prev) => Object.keys(prev).length ? prev : Object.fromEntries(data.data.lines.map((l) => [l.id, { accepted: String(l.declared_qty), damaged: '0', remarks: '' }])))
+    setCounts((prev) => Object.keys(prev).length ? prev : Object.fromEntries(data.data.lines.map((l) => [l.id, { accepted: String(l.counted_qty ?? l.declared_qty), damaged: '0', remarks: '' }])))
     setLabour((prev) => prev.length ? prev : [{
       key: key(), activity: 'UNLOADING', packages: String(data.data.lines.reduce((n, l) => n + l.packages, 0)),
       tonnes: String(Math.round(data.data.lines.reduce((n, l) => n + Number(l.weight_kg), 0)) / 1000), workers: '', hours: '',

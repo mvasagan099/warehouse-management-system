@@ -3,6 +3,8 @@
 // (server side); the browser calls this function with the user's own JWT.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { authorize, parseRequest, type AppRole } from './rules.ts'
+import { allowed, guarded } from '../_shared/ops.ts'
+import { RATE } from '../_shared/ops-rules.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') ?? '*',
@@ -17,7 +19,7 @@ function json(status: number, body: unknown) {
   })
 }
 
-Deno.serve(async (req) => {
+Deno.serve(guarded('create-user', async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed' })
 
@@ -38,6 +40,7 @@ Deno.serve(async (req) => {
   const { data: userData, error: userErr } = await asCaller.auth.getUser(authHeader.slice(7))
   if (userErr || !userData.user) return json(401, { error: 'Invalid session' })
   const callerId = userData.user.id
+  if (!(await allowed(admin, `create-user:${callerId}`, 3600, RATE.createUserPerCallerPerHour))) return json(429, { error: 'Too many accounts created in the last hour. Try again later.' })
 
   let body: unknown
   try {
@@ -145,4 +148,4 @@ Deno.serve(async (req) => {
   }
 
   return json(201, { id: newUserId, email: input.email, role: input.role })
-})
+}))

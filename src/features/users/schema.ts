@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { strongPassword } from '../../lib/password'
 import { optionalPhone, requiredText } from '../../lib/zod'
 
 export const createUserSchema = z
@@ -7,7 +8,7 @@ export const createUserSchema = z
     email: z.string().trim().min(1, 'validation.required').pipe(z.email('validation.email')).transform((v) => v.toLowerCase()),
     phone: optionalPhone,
     role: z.enum(['WAREHOUSE_MANAGER', 'STAFF', 'ACCOUNTANT']),
-    password: z.string().min(8, 'validation.passwordMin'),
+    password: strongPassword,
     warehouse_ids: z.array(z.string()),
   })
   .refine((v) => v.role === 'ACCOUNTANT' || v.warehouse_ids.length >= 1, {

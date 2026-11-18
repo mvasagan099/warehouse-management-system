@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../../components/ui/Button'
 import { DataTable } from '../../components/ui/DataTable'
-import { Select } from '../../components/ui/Field'
+import { Input, Select } from '../../components/ui/Field'
 import { Modal } from '../../components/ui/Modal'
 import { Badge, Card, PageHeader, Toolbar } from '../../components/ui/misc'
 import { formatDateTime } from '../../lib/format'
@@ -18,6 +18,10 @@ const AUDITED_TABLES = [
   'clients', 'contracts', 'company_master', 'space_bookings', 'gate_entries', 'gate_entry_lines', 'inward_receipts',
   'inward_receipt_lines', 'stock_items', 'slot_allocations', 'labour_entries', 'dispatch_requests',
   'dispatch_request_lines', 'dispatch_picks', 'delivery_challans', 'delivery_challan_lines',
+  'invoices', 'payments', 'adjustment_notes', 'rate_cards', 'rent_rates', 'labour_rates', 'tax_rules',
+  'sensors', 'device_keys', 'calibration_log', 'alert_rules', 'defrost_windows', 'alerts', 'equipment', 'maintenance_tasks', 'client_notices',
+  'employees', 'employee_private', 'vacancy_salaries', 'interview_rounds', 'shifts', 'attendance', 'crew_log',
+  'client_contacts', 'support_tickets', 'client_change_requests', 'opening_balances',
 ]
 const ACTION_TONE = { INSERT: 'green', UPDATE: 'blue', DELETE: 'red' } as const
 
@@ -27,17 +31,24 @@ export function AuditLogPage() {
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 25 })
   const [table, setTable] = useState('')
   const [action, setAction] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [who, setWho] = useState('')
   const [viewing, setViewing] = useState<AuditLog | null>(null)
-  useEffect(() => setPagination((p) => ({ ...p, pageIndex: 0 })), [table, action])
+  useEffect(() => setPagination((p) => ({ ...p, pageIndex: 0 })), [table, action, from, to, who])
 
+  const people = useQuery({ queryKey: ['audit_people'], queryFn: async () => { const { data, error } = await supabase.from('profiles').select('id, full_name, email').in('role', ['SUPER_ADMIN', 'WAREHOUSE_MANAGER', 'STAFF', 'ACCOUNTANT']).order('full_name'); if (error) throw error; return data } })
   const logs = useQuery({
-    queryKey: ['audit', table, action, pagination.pageIndex, pagination.pageSize],
+    queryKey: ['audit', table, action, from, to, who, pagination.pageIndex, pagination.pageSize],
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const from = pagination.pageIndex * pagination.pageSize
       let q = supabase.from('audit_logs').select('*', { count: 'exact' }).order('changed_at', { ascending: false }).range(from, from + pagination.pageSize - 1)
       if (table) q = q.eq('table_name', table)
       if (action) q = q.eq('action', action as AuditLog['action'])
+      if (from) q = q.gte('changed_at', `${from}T00:00:00+05:30`)
+      if (to) q = q.lte('changed_at', `${to}T23:59:59.999+05:30`)
+      if (who) q = q.eq('changed_by', who)
       const { data, error, count } = await q
       if (error) throw error
       // resolve user names for this page (admins can read all profiles)
@@ -85,14 +96,21 @@ export function AuditLogPage() {
             <option value="">{t('audit.allActions')}</option>
             {Constants.public.Enums.audit_action.map((a) => <option key={a} value={a}>{t(`auditAction.${a}`)}</option>)}
           </Select>
+          <Input type="date" aria-label={t('billing.periodFrom')} value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className="sm:w-40" />
+          <Input type="date" aria-label={t('billing.periodTo')} value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="sm:w-40" />
+          <Select aria-label={t('audit.changedBy')} value={who} onChange={(e) => setWho(e.target.value)} className="sm:w-48">
+            <option value="">{t('audit.anyone')}</option>
+            {(people.data ?? []).map((p) => <option key={p.id} value={p.id}>{p.full_name || p.email}</option>)}
+          </Select>
         </Toolbar>
+        <p className="border-t border-slate-100 px-4 py-2 text-xs text-slate-500">{t('audit.maskedNote')}</p>
         <DataTable
           data={logs.data?.rows}
           columns={columns}
           loading={logs.isPending}
           error={logs.error ? t('common.error') : null}
           onRetry={() => logs.refetch()}
-          filtered={!!table || !!action}
+          filtered={!!table || !!action || !!from || !!to || !!who}
           server={{ pagination, onPaginationChange: setPagination, rowCount: logs.data?.count ?? 0 }}
         />
       </Card>

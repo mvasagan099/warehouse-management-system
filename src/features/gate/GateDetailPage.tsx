@@ -19,6 +19,7 @@ import { errorMessage } from '../../lib/errors'
 import { formatDate, formatDateTime, formatNumber } from '../../lib/format'
 import { supabase } from '../../lib/supabase'
 import { Constants, type GateEntryLine } from '../../lib/types'
+import { CountCell } from './CountCell'
 import { useClients, useCompanies } from '../shared/queries'
 import { GATE_TONE } from './GatePage'
 import { emptyGateLine, gateLineSchema, gateLineToForm, loadSummary, type GateLineInput, type GateLineOutput } from './schema'
@@ -193,7 +194,7 @@ export function GateDetailPage() {
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
-                  <tr><th className="px-4 py-2">#</th><th className="px-4 py-2">{t('common.item')}</th><th className="px-4 py-2">{t('common.batch')}</th><th className="px-4 py-2">{t('common.expiry')}</th><th className="px-4 py-2">{t('gate.declaredQty')}</th><th className="px-4 py-2">{t('gate.weightKg')}</th><th className="px-4 py-2">{t('gate.requirement')}</th><th className="px-4 py-2">{t('common.status')}</th><th /></tr>
+                  <tr><th className="px-4 py-2">#</th><th className="px-4 py-2">{t('common.item')}</th><th className="px-4 py-2">{t('common.batch')}</th><th className="px-4 py-2">{t('common.expiry')}</th><th className="px-4 py-2">{t('gate.declaredQty')}</th><th className="px-4 py-2">{t('gate.weightKg')}</th>{g.direction === 'INWARD' && <th className="px-4 py-2">{t('gate.counted')}</th>}<th className="px-4 py-2">{t('gate.requirement')}</th><th className="px-4 py-2">{t('common.status')}</th><th /></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {lines.map((l) => (
@@ -204,6 +205,7 @@ export function GateDetailPage() {
                       <td className="px-4 py-2">{l.expiry_date ? formatDate(l.expiry_date, lang) : '—'}</td>
                       <td className="px-4 py-2">{formatNumber(l.declared_qty, lang, 3)} {l.unit}</td>
                       <td className="px-4 py-2">{formatNumber(l.weight_kg, lang)}</td>
+                      {g.direction === 'INWARD' && <td className="px-4 py-2">{editable ? <CountCell line={l} onSaved={refresh} /> : (l.counted_qty ?? '—')}</td>}
                       <td className="px-4 py-2">{l.required_temp_c !== null ? `${l.required_temp_c} °C` : ''} {l.storage_type ? t(`storageType.${l.storage_type}`) : ''}</td>
                       <td className="px-4 py-2">{l.condition ? <Badge tone={l.condition === 'GOOD' ? 'green' : 'amber'}>{t(`lineCondition.${l.condition}`)}</Badge> : '—'}</td>
                       <td className="px-4 py-2 text-right">

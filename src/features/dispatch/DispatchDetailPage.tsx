@@ -14,6 +14,8 @@ import { Badge, Card, ErrorState, PageHeader } from '../../components/ui/misc'
 import { FullPageSpinner } from '../../components/ui/Spinner'
 import { errorMessage } from '../../lib/errors'
 import { formatDate, formatNumber } from '../../lib/format'
+import { isNetworkError } from '../../lib/offline/queue'
+import { useOfflineQueue } from '../../lib/offline/useOfflineQueue'
 import { supabase } from '../../lib/supabase'
 import { Constants, type LabourActivity } from '../../lib/types'
 import { normaliseLorry } from '../gate/schema'
@@ -28,6 +30,7 @@ export function DispatchDetailPage() {
   const lang = i18n.resolvedLanguage
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const offline = useOfflineQueue()
   const { profile } = useAuth()
   const operate = canOperate(profile?.role)
   const [lastScan, setLastScan] = useState<{ ok: boolean; text: string } | null>(null)
@@ -64,11 +67,13 @@ export function DispatchDetailPage() {
       const picks = data.data!.picks
       const pick = matchPick(picks, code) ?? picks.find((p) => !p.picked)
       if (!pick) throw new Error(t('dispatch.nothingToPick'))
+      const queued = async () => { await offline.enqueue('scan', `${(pick as unknown as { slot_code: string }).slot_code} ${code}`, { pick_id: pick.id, code }); return { ...(pick as unknown as { slot_code: string; batch_no: string | null }), queued: true } }
+      if (!navigator.onLine) return await queued()
       const { data: res, error } = await supabase.rpc('record_pick_scan', { p_pick_id: pick.id, p_code: code })
-      if (error) throw error
-      return res
+      if (error) { if (isNetworkError(error)) return await queued(); throw error }
+      return res as unknown as { slot_code: string; batch_no: string | null; queued?: boolean }
     },
-    onSuccess: (pick) => { setLastScan({ ok: true, text: t('dispatch.scanOk', { slot: pick.slot_code, batch: pick.batch_no ?? '-' }) }); refresh() },
+    onSuccess: (pick) => { setLastScan({ ok: true, text: pick.queued ? t('offline.scanQueued', { slot: pick.slot_code }) : t('dispatch.scanOk', { slot: pick.slot_code, batch: pick.batch_no ?? '-' }) }); refresh() },
     onError: async (e) => { const m = await errorMessage(e); setLastScan({ ok: false, text: m }); toast.error(m) },
   })
   const onScan = useCallback((code: string) => scan.mutate(code), [scan])

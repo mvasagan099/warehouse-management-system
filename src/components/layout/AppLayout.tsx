@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import {
-  Activity, AlertTriangle, BarChart3, BookOpen, Cpu, Thermometer, Wrench, SlidersHorizontal, FileBarChart, Boxes, Building2, CalendarClock, ClipboardCheck, ClipboardList, FileText, Grid3x3, KeyRound, LayoutDashboard,
-  LogOut, Menu, PackageCheck, Package, Percent, QrCode, Receipt, Ruler, ScanLine, Settings, Snowflake, Truck, UserPlus, Users, Wallet, Warehouse, X,
+  Activity, AlertTriangle, BarChart3, BookOpen, Cpu, Thermometer, UserCog, CalendarCheck, FileUp, ServerCog, Download as DownloadIcon, Bell, UserCircle, Wrench, SlidersHorizontal, FileBarChart, Boxes, Building2, CalendarClock, ClipboardCheck, ClipboardList, FileText, Grid3x3, KeyRound, LayoutDashboard,
+  LifeBuoy, LogOut, Menu, PackageCheck, Package, Percent, QrCode, Receipt, Ruler, ScanLine, Settings, Snowflake, Truck, UserPlus, Users, Wallet, Warehouse, X,
 } from 'lucide-react'
 import { useEffect, useState, type ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +10,7 @@ import { useAuth } from '../../auth/AuthProvider'
 import { navFor, type Area } from '../../auth/roles'
 import { LanguageSwitch } from './LanguageSwitch'
 import { NotificationBell } from './NotificationBell'
+import { SyncStatus } from './SyncStatus'
 
 const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   dashboard: LayoutDashboard,
@@ -43,6 +44,14 @@ const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   alertRules: SlidersHorizontal,
   equipment: Wrench,
   coldReports: FileBarChart,
+  staff: UserCog,
+  attendance: CalendarCheck,
+  imports: FileUp,
+  ops: ServerCog,
+  support: LifeBuoy,
+  profile: UserCircle,
+  documents: DownloadIcon,
+  notices: Bell,
 }
 
 export function AppLayout() {
@@ -122,6 +131,7 @@ export function AppLayout() {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          <SyncStatus />
           <NotificationBell />
           <LanguageSwitch userId={profile?.id} />
           <div className="hidden text-right sm:block">

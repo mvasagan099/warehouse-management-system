@@ -11,6 +11,8 @@ import { Input, Select } from '../../components/ui/Field'
 import { Badge, Card, PageHeader, Toolbar } from '../../components/ui/misc'
 import { errorMessage } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
+import { isNetworkError } from '../../lib/offline/queue'
+import { useOfflineQueue } from '../../lib/offline/useOfflineQueue'
 import { supabase } from '../../lib/supabase'
 import { Constants, type GateDirection, type GateEntry, type GateStatus } from '../../lib/types'
 import { useClients, useWarehouses } from '../shared/queries'
@@ -26,6 +28,7 @@ export function GatePage() {
   const lang = i18n.resolvedLanguage
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const offline = useOfflineQueue()
   const clients = useClients()
   const warehouses = useWarehouses()
   const [search, setSearch] = useState('')
@@ -44,11 +47,19 @@ export function GatePage() {
 
   const create = useMutation({
     mutationFn: async (v: GateFormOutput) => {
-      const { data, error } = await supabase.from('gate_entries').insert(v).select('id').single()
-      if (error) throw error
-      return data.id
+      // The id is made here, so a retry after a lost reply (or a later sync from the phone's queue) can never create a second entry for the same lorry.
+      const id = crypto.randomUUID()
+      const queue = async () => { await offline.enqueue('gate_entry', `${v.lorry_number}`, v as unknown as Record<string, unknown>, { id }); return null }
+      if (!navigator.onLine) return queue()
+      const { error } = await supabase.from('gate_entries').insert({ ...v, id })
+      if (error) { if (isNetworkError(error)) return queue(); throw error }
+      return id
     },
-    onSuccess: (id) => { toast.success(t('gate.recorded')); setForm(null); void qc.invalidateQueries({ queryKey: ['gate_entries'] }); navigate(`/gate/${id}`) },
+    onSuccess: (id) => {
+      setForm(null); void qc.invalidateQueries({ queryKey: ['gate_entries'] })
+      if (!id) { toast.info(t('offline.gateQueued')); return }
+      toast.success(t('gate.recorded')); navigate(`/gate/${id}`)
+    },
     onError: async (e) => toast.error(await errorMessage(e)),
   })
 

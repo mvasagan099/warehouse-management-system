@@ -26,7 +26,14 @@ export type Decision = { ok: true } | { ok: false; status: number; error: string
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-export const MIN_PASSWORD_LENGTH = 8
+export const MIN_PASSWORD_LENGTH = 10
+
+/** At least 10 characters with a lower-case letter, an upper-case letter and a digit. */
+export function passwordProblem(p: string): string | null {
+  if (p.length < MIN_PASSWORD_LENGTH) return `Password must be at least ${MIN_PASSWORD_LENGTH} characters`
+  if (!/[a-z]/.test(p) || !/[A-Z]/.test(p) || !/[0-9]/.test(p)) return 'Password needs a lower-case letter, an upper-case letter and a digit'
+  return null
+}
 
 export function parseRequest(body: unknown): { ok: true; value: CreateUserRequest } | { ok: false; error: string } {
   if (!body || typeof body !== 'object') return { ok: false, error: 'Body must be a JSON object' }
@@ -41,8 +48,8 @@ export function parseRequest(body: unknown): { ok: true; value: CreateUserReques
   const client_id = typeof b.client_id === 'string' && b.client_id ? b.client_id : null
 
   if (!EMAIL_RE.test(email)) return { ok: false, error: 'A valid email is required' }
-  if (password.length < MIN_PASSWORD_LENGTH)
-    return { ok: false, error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` }
+  const pw = passwordProblem(password)
+  if (pw) return { ok: false, error: pw }
   if (!full_name) return { ok: false, error: 'Full name is required' }
   if (role !== 'WAREHOUSE_MANAGER' && role !== 'STAFF' && role !== 'CLIENT' && role !== 'ACCOUNTANT')
     return { ok: false, error: 'Role must be WAREHOUSE_MANAGER, STAFF, CLIENT or ACCOUNTANT' }

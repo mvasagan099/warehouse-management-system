@@ -1,7 +1,11 @@
 import type { Session } from '@supabase/supabase-js'
 import { render, screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+// The administrator's two-factor check asks the database; in these tests it is switched off.
+vi.mock('../lib/supabase', () => ({ supabase: { rpc: async () => ({ data: { mfa_required: false, aal: 'aal1', role: 'SUPER_ADMIN' }, error: null }) } }))
 import type { Profile } from '../lib/types'
 import { AuthContext, type AuthState } from './AuthProvider'
 import { RequireArea, RequireAuth } from './guards'
@@ -24,7 +28,7 @@ function renderAt(path: string, state: Partial<AuthState>) {
     ...state,
   }
   return render(
-    <AuthContext.Provider value={value}>
+    <QueryClientProvider client={new QueryClient()}><AuthContext.Provider value={value}>
       <MemoryRouter initialEntries={[path]}>
         <Routes>
           <Route path="/login" element={<div>LOGIN PAGE</div>} />
@@ -35,7 +39,7 @@ function renderAt(path: string, state: Partial<AuthState>) {
           </Route>
         </Routes>
       </MemoryRouter>
-    </AuthContext.Provider>,
+    </AuthContext.Provider></QueryClientProvider>,
   )
 }
 
@@ -53,9 +57,9 @@ describe('route guards', () => {
     expect(screen.queryByText('AUDIT')).not.toBeInTheDocument()
     expect(screen.getByText('Not allowed')).toBeInTheDocument()
   })
-  it('lets the admin open the audit log', () => {
+  it('lets the admin open the audit log', async () => {
     renderAt('/audit', { profile: profile({ role: 'SUPER_ADMIN', warehouse_id: null }) })
-    expect(screen.getByText('AUDIT')).toBeInTheDocument()
+    expect(await screen.findByText('AUDIT')).toBeInTheDocument()
   })
   it('shows a client login that is not linked to a client a no-access page', () => {
     renderAt('/', { profile: profile({ role: 'CLIENT', warehouse_id: null }) })

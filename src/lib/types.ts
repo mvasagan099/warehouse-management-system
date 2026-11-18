@@ -98,3 +98,22 @@ export type ClientNotice = Tables<'client_notices'>
 export type Equipment = Tables<'equipment'>
 export type MaintenanceTask = Tables<'maintenance_tasks'>
 export type AppNotification = Tables<'notifications'>
+
+// ---- Phase 5: hiring, staff, portal, operations ----
+export type JobRole = Enums<'job_role'>
+export type EmployeeStatus = Enums<'employee_status'>
+export type CorrectionStatus = Enums<'correction_status'>
+export type TicketStatus = Enums<'ticket_status'>
+export type RequestStatus = Enums<'request_status'>
+export type Employee = Tables<'employees'>
+export type EmployeePrivate = Tables<'employee_private'>
+export type InterviewRound = Tables<'interview_rounds'>
+export type VacancySalary = Tables<'vacancy_salaries'>
+export type Shift = Tables<'shifts'>
+export type ShiftRoster = Tables<'shift_roster'>
+export type Attendance = Tables<'attendance'>
+export type SupportTicket = Tables<'support_tickets'>
+export type TicketEvent = Tables<'ticket_events'>
+export type ClientContact = Tables<'client_contacts'>
+export type ClientChangeRequest = Tables<'client_change_requests'>
+export type CronJobState = Tables<'cron_job_state'>

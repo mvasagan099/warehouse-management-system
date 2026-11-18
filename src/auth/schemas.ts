@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { strongPassword } from '../lib/password'
 
 export const loginSchema = z.object({
   email: z.string().trim().min(1, 'validation.required').pipe(z.email('validation.email')),
@@ -12,7 +13,7 @@ export const forgotSchema = z.object({
 
 export const newPasswordSchema = z
   .object({
-    password: z.string().min(8, 'validation.passwordMin'),
+    password: strongPassword,
     confirm: z.string().min(1, 'validation.required'),
   })
   .refine((v) => v.password === v.confirm, { path: ['confirm'], message: 'validation.passwordMatch' })
@@ -20,7 +21,7 @@ export const newPasswordSchema = z
 export const changePasswordSchema = z
   .object({
     current: z.string().min(1, 'validation.required'),
-    password: z.string().min(8, 'validation.passwordMin'),
+    password: strongPassword,
     confirm: z.string().min(1, 'validation.required'),
   })
   .refine((v) => v.password === v.confirm, { path: ['confirm'], message: 'validation.passwordMatch' })

@@ -2,9 +2,10 @@
 // reminders). Called every minute by the database (pg_net, see dispatch_notifications) with the x-cron-secret header, or by an administrator.
 // Email goes through Resend (RESEND_API_KEY secret). WhatsApp and SMS use a provider-neutral interface with a STUB only.
 import { emailNotifier, outcome, stubNotifier, type Channel, type Notifier } from '../_shared/coldchain-rules.ts'
+import { guarded } from '../_shared/ops.ts'
 import { corsHeaders, json, requireAdmin, serviceClient, setting } from '../_shared/http.ts'
 
-Deno.serve(async (req) => {
+Deno.serve(guarded('notify-alert', async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed' })
   const cron = Deno.env.get('CRON_SECRET')
@@ -25,4 +26,4 @@ Deno.serve(async (req) => {
     if (o.status === 'SENT') sent++; else if (o.status === 'SKIPPED') skipped++; else failed++
   }
   return json(200, { sent, skipped, failed })
-})
+}))

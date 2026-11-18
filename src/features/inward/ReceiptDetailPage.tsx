@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAuth } from '../../auth/AuthProvider'
-import { canDecide } from '../../auth/roles'
+import { canDecide, canOperate } from '../../auth/roles'
+import { CrewPanel } from '../attendance/CrewPanel'
 import { Button } from '../../components/ui/Button'
 import { ReasonDialog } from '../../components/ui/ReasonDialog'
 import { Badge, Card, ErrorState, PageHeader } from '../../components/ui/misc'
@@ -129,6 +130,7 @@ export function ReceiptDetailPage() {
           </ul>
         </Card>
       )}
+      {canOperate(profile?.role) && <CrewPanel documentType="INWARD_RECEIPT" documentId={receipt.id} warehouseId={receipt.warehouse_id} at={receipt.received_at} editable={receipt.status === 'CONFIRMED'} />}
       <ReasonDialog open={cancelling} title={t('receipts.cancelTitle')} message={t('receipts.cancelHelp')} loading={cancel.isPending} onConfirm={(r) => cancel.mutate(r)} onClose={() => setCancelling(false)} />
     </div>
   )

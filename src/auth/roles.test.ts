@@ -8,6 +8,7 @@ describe('role access map', () => {
       'stock', 'dispatch', 'challans', 'labels', 'scan', 'users', 'hiring', 'audit',
       'invoices', 'payments', 'ledger', 'rates', 'billingReports', 'billingSettings',
       'coldChain', 'manualReading', 'alerts', 'sensors', 'alertRules', 'equipment', 'coldReports',
+      'staff', 'attendance', 'support', 'imports', 'ops',
     ])
   })
   it('hides admin-only pages from managers', () => {
@@ -23,7 +24,7 @@ describe('role access map', () => {
     expect(canAccess('STAFF', 'users')).toBe(false)
   })
   it('gives a client only its own portal pages', () => {
-    expect(navFor('CLIENT').map((n) => n.area)).toEqual(['portal', 'bookings', 'receipts', 'stock', 'dispatch', 'challans', 'invoices', 'payments', 'ledger', 'coldReports'])
+    expect(navFor('CLIENT').map((n) => n.area)).toEqual(['portal', 'bookings', 'receipts', 'stock', 'dispatch', 'challans', 'invoices', 'payments', 'ledger', 'coldReports', 'documents', 'support', 'profile', 'notices'])
     for (const area of ['dashboard', 'warehouses', 'zones', 'slots', 'clients', 'gate', 'users', 'audit', 'labels', 'scan', 'rates', 'billingReports', 'billingSettings', 'coldChain', 'sensors', 'alerts', 'equipment', 'manualReading'] as const)
       expect(canAccess('CLIENT', area)).toBe(false)
   })
@@ -78,5 +79,12 @@ describe('role access map', () => {
     expect(canWrite('STAFF', 'alertRules')).toBe(false)
     expect(canWrite('WAREHOUSE_MANAGER', 'sensors')).toBe(true)
     expect(canAccess('CLIENT', 'coldReports')).toBe(true)
+  })
+  it('Phase 5 areas: staff records and imports are for managers/admin; attendance for everyone on the floor; nothing new for the accountant', () => {
+    expect(canAccess('WAREHOUSE_MANAGER', 'staff')).toBe(true); expect(canAccess('STAFF', 'staff')).toBe(false); expect(canAccess('CLIENT', 'staff')).toBe(false)
+    expect(canAccess('STAFF', 'attendance')).toBe(true); expect(canAccess('CLIENT', 'attendance')).toBe(false); expect(canAccess('ACCOUNTANT', 'attendance')).toBe(false)
+    for (const a of ['imports', 'ops', 'audit'] as const) { expect(canAccess('SUPER_ADMIN', a)).toBe(true); for (const r of ['WAREHOUSE_MANAGER', 'STAFF', 'CLIENT', 'ACCOUNTANT'] as const) expect(canAccess(r, a)).toBe(false) }
+    for (const a of ['documents', 'profile', 'notices'] as const) { expect(canAccess('CLIENT', a)).toBe(true); expect(canAccess('STAFF', a)).toBe(false) }
+    expect(canAccess('CLIENT', 'support')).toBe(true); expect(canAccess('WAREHOUSE_MANAGER', 'support')).toBe(true); expect(canAccess('STAFF', 'support')).toBe(false)
   })
 })

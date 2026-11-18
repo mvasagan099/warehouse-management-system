@@ -57,3 +57,6 @@ create policy wms_tickets_insert on storage.objects for insert to authenticated 
 create policy wms_tickets_select on storage.objects for select to authenticated using (bucket_id = 'tickets' and public.ticket_object_allowed(name));
 
 revoke execute on all functions in schema public from anon, public;
+
+-- ---------- backups bucket: the administrator can list and download the nightly exports (nobody else; written only by the Edge Function) ----------
+create policy wms_backups_select on storage.objects for select to authenticated using (bucket_id = 'backups' and public.is_admin());

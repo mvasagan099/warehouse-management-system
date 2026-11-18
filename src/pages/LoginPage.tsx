@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button'
 import { Field, Input } from '../components/ui/Field'
 import { supabase } from '../lib/supabase'
 import { AuthShell } from './AuthShell'
+import { lockedFor, recordFailure, recordSuccess } from '../features/security/loginThrottle'
 
 export function LoginPage() {
   const { t } = useTranslation()
@@ -25,11 +26,15 @@ export function LoginPage() {
 
   const onSubmit = handleSubmit(async (values) => {
     setAuthError(null)
+    const wait = lockedFor()
+    if (wait > 0) { setAuthError(t('auth.tooManyAttempts', { minutes: Math.ceil(wait / 60000) })); return }
     const { error } = await supabase.auth.signInWithPassword(values)
     if (error) {
-      setAuthError(t('auth.invalidCredentials'))
+      recordFailure()
+      setAuthError(error.status === 429 ? t('auth.tooManyAttempts', { minutes: 5 }) : t('auth.invalidCredentials'))
       return
     }
+    recordSuccess()
     const from = (location.state as { from?: string } | null)?.from
     navigate(from && from !== '/login' ? from : '/', { replace: true })
   })

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { strongPassword } from '../../lib/password'
 import { Button } from '../../components/ui/Button'
 import { Field, Input } from '../../components/ui/Field'
 import { Modal } from '../../components/ui/Modal'
@@ -17,7 +18,7 @@ const schema = z.object({
   full_name: requiredText(150),
   email: z.string().trim().min(1, 'validation.required').pipe(z.email('validation.email')).transform((v) => v.toLowerCase()),
   phone: optionalPhone,
-  password: z.string().min(8, 'validation.passwordMin'),
+  password: strongPassword,
 })
 type In = z.input<typeof schema>
 type Out = z.output<typeof schema>

@@ -47,6 +47,14 @@ const SensorsPage = lazy(() => import('./features/coldchain/SensorsPage').then((
 const RulesPage = lazy(() => import('./features/coldchain/RulesPage').then((m) => ({ default: m.RulesPage })))
 const EquipmentPage = lazy(() => import('./features/coldchain/EquipmentPage').then((m) => ({ default: m.EquipmentPage })))
 const ColdReportsPage = lazy(() => import('./features/coldchain/ColdReportsPage').then((m) => ({ default: m.ColdReportsPage })))
+const StaffPage = lazy(() => import('./features/staff/StaffPage').then((m) => ({ default: m.StaffPage })))
+const AttendancePage = lazy(() => import('./features/attendance/AttendancePage').then((m) => ({ default: m.AttendancePage })))
+const ImportsPage = lazy(() => import('./features/imports/ImportsPage').then((m) => ({ default: m.ImportsPage })))
+const AdminOpsPage = lazy(() => import('./features/admin/AdminOpsPage').then((m) => ({ default: m.AdminOpsPage })))
+const SupportPage = lazy(() => import('./features/portal/SupportPage').then((m) => ({ default: m.SupportPage })))
+const ProfilePage = lazy(() => import('./features/portal/ProfilePage').then((m) => ({ default: m.ProfilePage })))
+const DocumentsPage = lazy(() => import('./features/portal/DocumentsPage').then((m) => ({ default: m.DocumentsPage })))
+const NoticesPage = lazy(() => import('./features/portal/NoticesPage').then((m) => ({ default: m.NoticesPage })))
 const AuditLogPage = lazy(() => import('./features/audit/AuditLogPage').then((m) => ({ default: m.AuditLogPage })))
 
 /** Staff / managers / admins see the dashboard; a client login sees its own portal home. */
@@ -102,6 +110,14 @@ export function AppRoutes() {
             <Route path="alert-rules" element={<RequireArea area="alertRules"><RulesPage /></RequireArea>} />
             <Route path="equipment" element={<RequireArea area="equipment"><EquipmentPage /></RequireArea>} />
             <Route path="cold-reports" element={<RequireArea area="coldReports"><ColdReportsPage /></RequireArea>} />
+            <Route path="staff" element={<RequireArea area="staff"><StaffPage /></RequireArea>} />
+            <Route path="attendance" element={<RequireArea area="attendance"><AttendancePage /></RequireArea>} />
+            <Route path="import" element={<RequireArea area="imports"><ImportsPage /></RequireArea>} />
+            <Route path="admin" element={<RequireArea area="ops"><AdminOpsPage /></RequireArea>} />
+            <Route path="support" element={<RequireArea area="support"><SupportPage /></RequireArea>} />
+            <Route path="profile" element={<RequireArea area="profile"><ProfilePage /></RequireArea>} />
+            <Route path="documents" element={<RequireArea area="documents"><DocumentsPage /></RequireArea>} />
+            <Route path="notices" element={<RequireArea area="notices"><NoticesPage /></RequireArea>} />
             <Route path="billing-settings" element={<RequireArea area="billingSettings"><BillingSettingsPage /></RequireArea>} />
             <Route path="*" element={<MessagePage titleKey="auth.notFoundTitle" />} />
           </Route>

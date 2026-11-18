@@ -8,6 +8,8 @@ import { Field, Input, Select } from '../../components/ui/Field'
 import { Card, PageHeader } from '../../components/ui/misc'
 import { errorMessage } from '../../lib/errors'
 import { formatDateTime, formatTemperatureRange } from '../../lib/format'
+import { isNetworkError } from '../../lib/offline/queue'
+import { useOfflineQueue } from '../../lib/offline/useOfflineQueue'
 import { supabase } from '../../lib/supabase'
 import { useWarehouses, useZones } from '../shared/queries'
 
@@ -15,6 +17,7 @@ import { useWarehouses, useZones } from '../shared/queries'
 export function ManualReadingPage() {
   const { t, i18n } = useTranslation()
   const qc = useQueryClient()
+  const offline = useOfflineQueue()
   const whs = useWarehouses()
   const zones = useZones()
   const list = (zones.data ?? []).filter((z) => z.is_active)
@@ -41,6 +44,8 @@ export function ManualReadingPage() {
   })
   const save = useMutation({
     mutationFn: async () => {
+      const queue = async () => { await offline.enqueue('manual_reading', `${zone?.code ?? ''} ${num} °C`, { zone_id: zoneId, value: num, note: note.trim() || null }); toast.info(photo ? t('offline.savedNoPhoto') : t('offline.savedOnPhone')); return 'queued' as const }
+      if (!navigator.onLine) return await queue()
       let path: string | undefined
       if (photo && zone) {
         path = `${zone.warehouse_id}/readings/${crypto.randomUUID()}-${photo.name.replace(/[^A-Za-z0-9._-]+/g, '-')}`
@@ -48,9 +53,10 @@ export function ManualReadingPage() {
         if (up.error) throw up.error
       }
       const { error } = await supabase.rpc('add_manual_reading', { p_zone_id: zoneId, p_value: num!, p_photo_path: path, p_note: note.trim() || undefined })
-      if (error) throw error
+      if (error) { if (isNetworkError(error)) return await queue(); throw error }
+      return 'saved' as const
     },
-    onSuccess: () => { toast.success(t('cold.readingSaved')); setValue(''); setNote(''); setPhoto(null); void qc.invalidateQueries({ queryKey: ['manual_recent'] }); for (const k of ['cc_overview', 'alerts', 'sensors']) void qc.invalidateQueries({ queryKey: [k] }) },
+    onSuccess: (r) => { if (r === 'saved') toast.success(t('cold.readingSaved')); setValue(''); setNote(''); setPhoto(null); void qc.invalidateQueries({ queryKey: ['manual_recent'] }); for (const k of ['cc_overview', 'alerts', 'sensors']) void qc.invalidateQueries({ queryKey: [k] }) },
     onError: async (e) => toast.error(await errorMessage(e)),
   })
 

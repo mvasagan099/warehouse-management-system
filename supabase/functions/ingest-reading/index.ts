@@ -5,10 +5,12 @@
 // EXTENSION POINT (MQTT): a bridge that subscribes to a broker can call this same endpoint, or call ingest_readings() with the key hash.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { extractKey, ingestErrorStatus, ingestStatus, MAX_BODY_BYTES, parseIngestBody, sha256Hex } from '../_shared/coldchain-rules.ts'
+import { allowed, guarded } from '../_shared/ops.ts'
+import { RATE } from '../_shared/ops-rules.ts'
 
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
-Deno.serve(async (req) => {
+Deno.serve(guarded('ingest-reading', async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'Use POST' })
   const raw = await req.text()
   if (raw.length > MAX_BODY_BYTES) return json(413, { error: 'Request too large' })
@@ -21,11 +23,13 @@ Deno.serve(async (req) => {
   if (!parsed.ok) return json(400, { error: parsed.error })
 
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false, autoRefreshToken: false } })
-  const { data, error } = await admin.rpc('ingest_readings', { p_key_hash: await sha256Hex(key), p_readings: parsed.readings })
+  const keyHash = await sha256Hex(key)
+  if (!(await allowed(admin, `ingest:${keyHash}`, 60, RATE.ingestPerKeyPerMin))) return json(429, { error: 'Too many requests for this device key. Send readings in batches of up to 100.' })
+  const { data, error } = await admin.rpc('ingest_readings', { p_key_hash: keyHash, p_readings: parsed.readings })
   if (error) {
     const status = ingestErrorStatus(error.code)
     return json(status, { error: status === 401 ? 'Invalid or revoked device key' : status === 400 ? error.message : 'Could not store the readings' })
   }
   const result = data as { accepted: number; duplicates: number; rejected: { index: number; sensor: string; reason: string }[] }
   return json(ingestStatus(result), result)
-})
+}))

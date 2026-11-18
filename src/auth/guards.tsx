@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { FullPageSpinner } from '../components/ui/Spinner'
 import { MessagePage } from '../pages/MessagePage'
 import { useAuth } from './AuthProvider'
+import { MfaGate } from '../features/security/MfaGate'
 import { canAccess, type Area } from './roles'
 
 /** Requires a signed-in, active, non-client user. */
@@ -19,7 +20,7 @@ export function RequireAuth({ children }: { children?: ReactNode }) {
     return <MessagePage titleKey="auth.noAccessTitle" bodyKey="auth.noAccessBody" showLogout />
   if (profile.must_change_password && location.pathname !== '/account/password')
     return <Navigate to="/account/password" replace />
-  return children ? <>{children}</> : <Outlet />
+  return <MfaGate>{children ? <>{children}</> : <Outlet />}</MfaGate>
 }
 
 /** Requires the current role to have access to an area (see roles.ts). */

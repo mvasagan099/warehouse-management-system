@@ -6,6 +6,10 @@ import App from './App'
 import { AuthProvider } from './auth/AuthProvider'
 import './i18n'
 import './index.css'
+import { registerServiceWorker, startErrorReporting } from './lib/pwa'
+
+startErrorReporting()
+registerServiceWorker()
 
 const queryClient = new QueryClient({
   defaultOptions: {

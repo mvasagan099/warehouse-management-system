@@ -86,6 +86,12 @@ export function InvoiceDetail({ id, onClose }: { id: string; onClose: () => void
     setPayLink((data as { short_url: string }).short_url)
   })
 
+  const payNow = () => wrap(async () => {
+    const { data, error } = await supabase.functions.invoke('razorpay-link', { body: { invoice_id: id } })
+    if (error) throw error
+    window.location.href = (data as { short_url: string }).short_url
+  })
+
   const header = (k: string, v: string) => <div><dt className="text-xs uppercase text-slate-500">{k}</dt><dd className="font-medium">{v}</dd></div>
   const totalRows: [string, number][] = inv ? [[t('billing.taxable'), inv.taxable_paise], ['CGST', inv.cgst_paise], ['SGST', inv.sgst_paise], ['IGST', inv.igst_paise], [t('billing.roundOff'), inv.round_off_paise]] : []
 
@@ -102,6 +108,8 @@ export function InvoiceDetail({ id, onClose }: { id: string; onClose: () => void
           {emailFlag.data?.enabled && <Button variant="secondary" icon={<Mail className="h-4 w-4" />} loading={busy} onClick={() => email()}>{t('billing.sendEmail')}</Button>}
           {rzpFlag.data?.enabled && owed(inv) > 0 && <Button variant="secondary" icon={<Link2 className="h-4 w-4" />} loading={busy} onClick={makeLink}>{t('billing.paymentLink')}</Button>}
         </>}
+        {profile?.role === 'CLIENT' && !isDraft && rzpFlag.data?.enabled && owed(inv) > 0 && inv.status !== 'CANCELLED' && (
+          <Button icon={<Wallet className="h-4 w-4" />} loading={busy} onClick={payNow} data-testid="pay-online">{t('billing.payOnline')} {formatINR(owed(inv))}</Button>)}
         {!isDraft && !!profile && profile.role !== 'CLIENT' && inv.status !== 'CANCELLED' && <Button variant="secondary" icon={<Braces className="h-4 w-4" />} loading={busy} onClick={einvoice}>{t('billing.einvoiceJson')}</Button>}
         <Button variant={isDraft ? 'secondary' : 'primary'} icon={<Download className="h-4 w-4" />} loading={busy} onClick={download}>{t('common.downloadPdf')}</Button>
         {admin && isDraft && <Button icon={<Send className="h-4 w-4" />} onClick={() => setIssuing(true)}>{t('billing.issue')}</Button>}

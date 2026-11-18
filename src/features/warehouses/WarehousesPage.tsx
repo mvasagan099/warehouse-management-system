@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
-import { MapPin, Pencil, Plus, Power } from 'lucide-react'
+import { MapPin, Pencil, Plus, Power, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -18,6 +18,7 @@ import type { Warehouse } from '../../lib/types'
 import { qk, useWarehouses } from '../shared/queries'
 import { emptyWarehouse, toFormValues, toPayload, type WarehouseFormOutput } from './schema'
 import { WarehouseForm } from './WarehouseForm'
+import { ManagersDialog } from './ManagersDialog'
 
 export function WarehousesPage() {
   const { t, i18n } = useTranslation()
@@ -29,6 +30,7 @@ export function WarehousesPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active')
   const [editing, setEditing] = useState<Warehouse | 'new' | null>(null)
   const [toggling, setToggling] = useState<Warehouse | null>(null)
+  const [managing, setManaging] = useState<Warehouse | null>(null)
 
   const save = useMutation({
     mutationFn: async (v: WarehouseFormOutput) => {
@@ -126,6 +128,7 @@ export function WarehousesPage() {
                   <Button size="sm" variant="ghost" icon={<Pencil className="h-4 w-4" />} onClick={() => setEditing(row.original)}>
                     {t('common.edit')}
                   </Button>
+                  {profile?.role === 'SUPER_ADMIN' && <Button size="sm" variant="ghost" icon={<Users className="h-4 w-4" />} onClick={() => setManaging(row.original)}>{t('managers.manage')}</Button>}
                   <Button size="sm" variant="ghost" icon={<Power className="h-4 w-4" />} onClick={() => setToggling(row.original)}>
                     {row.original.is_active ? t('common.deactivate') : t('common.activate')}
                   </Button>
@@ -135,7 +138,7 @@ export function WarehousesPage() {
           ]
         : []),
     ],
-    [t, i18n.resolvedLanguage, writable],
+    [t, i18n.resolvedLanguage, writable, profile?.role],
   )
 
   return (
@@ -175,6 +178,7 @@ export function WarehousesPage() {
           onSubmit={(v) => save.mutate(v)}
         />
       )}
+      {managing && <ManagersDialog warehouseId={managing.id} warehouseName={managing.name} onClose={() => setManaging(null)} />}
       <ConfirmDialog
         open={!!toggling}
         title={toggling?.is_active ? t('common.deactivate') : t('common.activate')}

@@ -11,6 +11,7 @@ import { formatNumber, formatTemperatureRange, percent } from '../../lib/format'
 import { Constants, type ZoneSlotSummary } from '../../lib/types'
 import { useSlotSummary, useWarehouses } from '../shared/queries'
 import { byStorageType, totals } from './summary'
+import { AdminDashboard, ManagerDashboard } from './RoleDashboards'
 
 const COLORS = { free: '#10b981', reserved: '#8b5cf6', occupied: '#0e7490', blocked: '#f59e0b' }
 
@@ -112,6 +113,8 @@ export function DashboardPage() {
           )
         }
       />
+      {profile?.role === 'SUPER_ADMIN' && <AdminDashboard />}
+      {profile?.role === 'WAREHOUSE_MANAGER' && <ManagerDashboard />}
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
         <Stat label={t('dashboard.warehouses')} value={formatNumber(warehouseCount, lang)} />

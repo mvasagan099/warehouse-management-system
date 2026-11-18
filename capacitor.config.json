@@ -1,0 +1,9 @@
+{
+  "appId": "in.example.coldstorage",
+  "appName": "Cold Storage WMS",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": { "androidScheme": "https" },
+  "android": { "allowMixedContent": false },
+  "_note": "Ready for a later Android build (see docs/android.md). Nothing is built or published from this file in Phase 5; change appId to your own reverse-domain before the first build."
+}

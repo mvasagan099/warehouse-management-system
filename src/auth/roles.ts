@@ -32,6 +32,14 @@ export type Area =
   | 'alertRules'
   | 'coldReports'
   | 'equipment'
+  | 'staff'
+  | 'attendance'
+  | 'imports'
+  | 'support'
+  | 'profile'
+  | 'documents'
+  | 'notices'
+  | 'ops'
 
 const A: AppRole = 'SUPER_ADMIN'
 const M: AppRole = 'WAREHOUSE_MANAGER'
@@ -58,7 +66,7 @@ export const AREA_ACCESS: Record<Area, readonly AppRole[]> = {
   scan: [A, M, S],
   users: [A, M],
   hiring: [A, M],
-  audit: [A, X],
+  audit: [A],
   rates: [A, X],
   invoices: [A, X, M, C],   // managers: their warehouses, read only; clients: their own
   payments: [A, X, C],
@@ -72,6 +80,14 @@ export const AREA_ACCESS: Record<Area, readonly AppRole[]> = {
   alertRules: [A, M, S],
   coldReports: [A, M, S, C],
   equipment: [A, M, S],
+  staff: [A, M],
+  attendance: [A, M, S],
+  imports: [A],
+  support: [A, M, C],
+  profile: [C],
+  documents: [C],
+  notices: [C],
+  ops: [A],
 }
 
 /** Which roles can create / edit in each area. */
@@ -107,6 +123,14 @@ export const AREA_WRITE: Record<Area, readonly AppRole[]> = {
   alertRules: [A, M],
   coldReports: [],
   equipment: [A, M],        // staff update their maintenance tasks
+  staff: [A, M],
+  attendance: [A, M, S],    // everyone checks in; managers approve (checked by canDecide)
+  imports: [A],
+  support: [A, M, C],
+  profile: [C],
+  documents: [],
+  notices: [],
+  ops: [A],
 }
 
 export function canAccess(role: AppRole | null | undefined, area: Area): boolean {
@@ -166,6 +190,14 @@ export const NAV_ITEMS: { area: Area; path: string; labelKey: string }[] = [
   { area: 'alertRules', path: '/alert-rules', labelKey: 'nav.alertRules' },
   { area: 'equipment', path: '/equipment', labelKey: 'nav.equipment' },
   { area: 'coldReports', path: '/cold-reports', labelKey: 'nav.coldReports' },
+  { area: 'staff', path: '/staff', labelKey: 'nav.staff' },
+  { area: 'attendance', path: '/attendance', labelKey: 'nav.attendance' },
+  { area: 'documents', path: '/documents', labelKey: 'nav.documents' },
+  { area: 'support', path: '/support', labelKey: 'nav.support' },
+  { area: 'profile', path: '/profile', labelKey: 'nav.profile' },
+  { area: 'notices', path: '/notices', labelKey: 'nav.notices' },
+  { area: 'imports', path: '/import', labelKey: 'nav.imports' },
+  { area: 'ops', path: '/admin', labelKey: 'nav.ops' },
 ]
 
 export function navFor(role: AppRole | null | undefined) {
