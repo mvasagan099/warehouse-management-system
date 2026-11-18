@@ -8,7 +8,7 @@ describe('role access map', () => {
       'stock', 'dispatch', 'challans', 'labels', 'scan', 'users', 'hiring', 'audit',
       'invoices', 'payments', 'ledger', 'rates', 'billingReports', 'billingSettings',
       'coldChain', 'manualReading', 'alerts', 'sensors', 'alertRules', 'equipment', 'coldReports',
-      'staff', 'attendance', 'support', 'imports', 'ops',
+      'companies', 'staff', 'attendance', 'support', 'imports', 'ops',
     ])
   })
   it('hides admin-only pages from managers', () => {

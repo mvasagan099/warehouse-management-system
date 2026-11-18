@@ -20,6 +20,7 @@ import { formatDate, formatNumber } from '../../lib/format'
 import { supabase } from '../../lib/supabase'
 import { Constants, type DispatchRequest, type DispatchStatus } from '../../lib/types'
 import { useClients, useCompanies, useWarehouses } from '../shared/queries'
+import { QuickCompany } from '../gate/QuickAdd'
 import { dispatchSchema, stockChoices, type DispatchFormInput, type DispatchFormOutput } from './schema'
 
 export const DISPATCH_TONE: Record<DispatchStatus, 'amber' | 'green' | 'red' | 'gray' | 'blue' | 'violet'> = {
@@ -38,7 +39,8 @@ function RequestForm({ initial, lockClient, saving, onClose, onSubmit }: {
   const warehouses = useWarehouses()
   const [drafts, setDrafts] = useState<LineDraft[]>([{ key: crypto.randomUUID(), choice: '', batch: '', quantity: '' }])
   const [lineError, setLineError] = useState<string | null>(null)
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<DispatchFormInput, unknown, DispatchFormOutput>({
+  const [addingCompany, setAddingCompany] = useState(false)
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<DispatchFormInput, unknown, DispatchFormOutput>({
     resolver: zodResolver(dispatchSchema), defaultValues: initial,
   })
   const clientId = watch('client_id')
@@ -77,6 +79,7 @@ function RequestForm({ initial, lockClient, saving, onClose, onSubmit }: {
         <Button type="submit" form="dispatch-form" loading={saving}>{t('dispatch.submit')}</Button>
       </>
     }>
+      {addingCompany && clientId && <QuickCompany clientId={clientId} onClose={() => setAddingCompany(false)} onCreated={(id) => { setValue('to_company_id', id, { shouldValidate: true }); setAddingCompany(false) }} />}
       <form id="dispatch-form" onSubmit={submit} className="space-y-4" noValidate>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('common.client')} htmlFor="dr-client" error={errors.client_id?.message}>
@@ -96,6 +99,8 @@ function RequestForm({ initial, lockClient, saving, onClose, onSubmit }: {
               <option value="">{t('common.select')}</option>
               {companies.data?.filter((c) => c.kind !== 'SENDER').map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Select>
+            {clientId ? <button type="button" className="mt-1 text-sm font-medium text-brand-700 hover:underline" onClick={() => setAddingCompany(true)}>+ {t('gate.newCompany')}</button>
+              : <p className="mt-1 text-xs text-slate-500">{t('dispatch.pickClientFirst')}</p>}
           </Field>
           <Field label={t('dispatch.requestedDate')} htmlFor="dr-date" error={errors.requested_date?.message}>
             <Input id="dr-date" type="date" {...register('requested_date')} />

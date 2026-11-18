@@ -106,7 +106,8 @@
     "ops": "System health",
     "profile": "My details",
     "staff": "Staff",
-    "support": "Support"
+    "support": "Support",
+    "companies": "Senders & Receivers"
   },
   "header": {
     "language": "Language",
@@ -536,7 +537,10 @@
     "edit": "Edit company",
     "empty": "No companies yet. Add the companies this client sends goods from or to.",
     "name": "Company name",
-    "kind": "Used as"
+    "kind": "Used as",
+    "pageTitle": "Senders & Receivers",
+    "pageHelp": "Companies your clients receive goods from or send goods to. Add them here, or on the spot at the gate or in a dispatch request.",
+    "noClients": "No clients found."
   },
   "bookings": {
     "title": "Space Booking",
@@ -731,7 +735,7 @@
     "items": "Items",
     "addItem": "Add item",
     "autoBatch": "Automatic (by rule)",
-    "pickClientFirst": "Choose the client and warehouse first.",
+    "pickClientFirst": "Choose a client first, then you can add a company.",
     "noStock": "This client has no available stock in this warehouse.",
     "lineIncomplete": "Choose an item and a quantity on every row.",
     "exceeds": "{{item}}: only {{available}} available.",

@@ -47,6 +47,7 @@ const SensorsPage = lazy(() => import('./features/coldchain/SensorsPage').then((
 const RulesPage = lazy(() => import('./features/coldchain/RulesPage').then((m) => ({ default: m.RulesPage })))
 const EquipmentPage = lazy(() => import('./features/coldchain/EquipmentPage').then((m) => ({ default: m.EquipmentPage })))
 const ColdReportsPage = lazy(() => import('./features/coldchain/ColdReportsPage').then((m) => ({ default: m.ColdReportsPage })))
+const CompaniesPage = lazy(() => import('./features/clients/CompaniesPage').then((m) => ({ default: m.CompaniesPage })))
 const StaffPage = lazy(() => import('./features/staff/StaffPage').then((m) => ({ default: m.StaffPage })))
 const AttendancePage = lazy(() => import('./features/attendance/AttendancePage').then((m) => ({ default: m.AttendancePage })))
 const ImportsPage = lazy(() => import('./features/imports/ImportsPage').then((m) => ({ default: m.ImportsPage })))
@@ -110,6 +111,7 @@ export function AppRoutes() {
             <Route path="alert-rules" element={<RequireArea area="alertRules"><RulesPage /></RequireArea>} />
             <Route path="equipment" element={<RequireArea area="equipment"><EquipmentPage /></RequireArea>} />
             <Route path="cold-reports" element={<RequireArea area="coldReports"><ColdReportsPage /></RequireArea>} />
+            <Route path="companies" element={<RequireArea area="companies"><CompaniesPage /></RequireArea>} />
             <Route path="staff" element={<RequireArea area="staff"><StaffPage /></RequireArea>} />
             <Route path="attendance" element={<RequireArea area="attendance"><AttendancePage /></RequireArea>} />
             <Route path="import" element={<RequireArea area="imports"><ImportsPage /></RequireArea>} />
