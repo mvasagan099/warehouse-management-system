@@ -7,6 +7,7 @@ import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAuth } from '../../auth/AuthProvider'
 import { canDecide, canOperate } from '../../auth/roles'
+import { BillDialog } from './BillDialog'
 import { CrewPanel } from '../attendance/CrewPanel'
 import { Button } from '../../components/ui/Button'
 import { DataTable } from '../../components/ui/DataTable'
@@ -33,6 +34,7 @@ function ChallanDetail({ challan, onClose }: { challan: DeliveryChallan; onClose
   const [cancelling, setCancelling] = useState(false)
   const [busy, setBusy] = useState(false)
   const [signing, setSigning] = useState(false)
+  const [billing, setBilling] = useState(false)
   const [sig, setSig] = useState<Blob | null>(null)
   const [receiver, setReceiver] = useState(challan.receiver_name ?? '')
 
@@ -82,6 +84,7 @@ function ChallanDetail({ challan, onClose }: { challan: DeliveryChallan; onClose
   return (
     <Modal open size="lg" title={`${challan.challan_no}`} onClose={onClose} footer={
       <>
+        {profile?.role === 'SUPER_ADMIN' && challan.status === 'CONFIRMED' && <Button variant="secondary" onClick={() => setBilling(true)} data-testid="bill-collect">{t('quickBill.button')}</Button>}
         {decide && challan.status === 'CONFIRMED' && <Button variant="ghost" icon={<Ban className="h-4 w-4" />} onClick={() => setCancelling(true)}>{t('common.cancelDoc')}</Button>}
         <Button icon={<Download className="h-4 w-4" />} loading={busy} disabled={!detail.data} onClick={download}>{t('common.downloadPdf')}</Button>
       </>
@@ -120,6 +123,7 @@ function ChallanDetail({ challan, onClose }: { challan: DeliveryChallan; onClose
           )}
         </div>
       )}
+      {billing && <BillDialog clientId={challan.client_id} warehouseId={challan.warehouse_id} clientName={detail.data?.client?.company_name ?? ''} onClose={() => setBilling(false)} />}
       <ReasonDialog open={cancelling} title={t('challans.cancelTitle')} message={t('challans.cancelHelp')} loading={cancel.isPending} onConfirm={(r) => cancel.mutate(r)} onClose={() => setCancelling(false)} />
     </Modal>
   )

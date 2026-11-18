@@ -3249,6 +3249,9 @@ isOneToOne: false
 "queue_message":
 { Args: { "p_alert"?: string,"p_body": string,"p_email": string,"p_kind": string,"p_phone": string,"p_task"?: string,"p_title": string,"p_user": string }; Returns: undefined
                            },
+"quick_bill":
+{ Args: { "p_client_id": string,"p_warehouse_id": string }; Returns: Json
+                           },
 "quick_create_client":
 { Args: { "p_gstin"?: string,"p_name": string,"p_phone"?: string }; Returns: string
                            },
