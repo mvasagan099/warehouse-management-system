@@ -1699,5 +1699,14 @@
     "verified": "Verified",
     "wrongCode": "That code did not work. Try the new one.",
     "failed": "Could not start the setup."
+  },
+  "features": {
+    "title": "Features",
+    "help": "Switch parts of the app off for now. They disappear from the menus and cannot be opened. Switch them back on any time.",
+    "sensors": "Sensors and device keys",
+    "qr": "QR labels and scanning",
+    "coldChain": "Live cold chain dashboard",
+    "offTitle": "Switched off",
+    "offBody": "The administrator has switched this feature off for now."
   }
 }

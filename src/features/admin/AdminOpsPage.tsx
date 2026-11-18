@@ -14,6 +14,7 @@ import { formatDateTime } from '../../lib/format'
 import { supabase } from '../../lib/supabase'
 import { MfaPanel } from '../security/MfaScreen'
 import { useSetting } from '../shared/queries'
+import { FEATURE_KEYS, type FeatureKey } from '../../lib/features'
 
 function CronCard() {
   const { t, i18n } = useTranslation()
@@ -106,12 +107,26 @@ function RetentionCard() {
   )
 }
 
+function FeaturesCard() {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const cur = useSetting<Partial<Record<FeatureKey, boolean>>>('features', {})
+  const set = useMutation({
+    mutationFn: async ({ k, on }: { k: FeatureKey; on: boolean }) => { const { error } = await supabase.from('app_settings').update({ value: { ...(cur.data ?? {}), [k]: on } }).eq('key', 'features'); if (error) throw error },
+    onSuccess: () => { void qc.invalidateQueries({ queryKey: ['app_settings'] }) }, onError: async (e) => toast.error(await errorMessage(e)),
+  })
+  return (
+    <Card className="p-4"><h2 className="mb-1 font-semibold">{t('features.title')}</h2><p className="mb-3 text-sm text-slate-500">{t('features.help')}</p>
+      <div className="space-y-2">{FEATURE_KEYS.map((k) => <Checkbox key={k} label={t(`features.${k}`)} checked={cur.data?.[k] !== false} disabled={set.isPending} onChange={(e) => set.mutate({ k, on: e.target.checked })} />)}</div></Card>
+  )
+}
+
 export function AdminOpsPage() {
   const { t } = useTranslation()
   return (
     <div className="space-y-4">
       <PageHeader title={t('ops.title')} subtitle={t('ops.subtitle')} actions={<Link to="/audit" className="text-sm font-medium text-brand-700 hover:underline">{t('nav.audit')}</Link>} />
-      <CronCard /><div className="grid gap-4 lg:grid-cols-2"><BackupCard /><Card className="p-4"><h2 className="mb-1 flex items-center gap-2 font-semibold"><ShieldCheck className="h-4 w-4" />{t('ops.securityTitle')}</h2><p className="text-sm text-slate-500">{t('ops.passwordRules')}</p></Card></div><RetentionCard />
+      <FeaturesCard /><CronCard /><div className="grid gap-4 lg:grid-cols-2"><BackupCard /><Card className="p-4"><h2 className="mb-1 flex items-center gap-2 font-semibold"><ShieldCheck className="h-4 w-4" />{t('ops.securityTitle')}</h2><p className="text-sm text-slate-500">{t('ops.passwordRules')}</p></Card></div><RetentionCard />
     </div>
   )
 }

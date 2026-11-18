@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { FullPageSpinner } from '../components/ui/Spinner'
 import { MessagePage } from '../pages/MessagePage'
 import { useAuth } from './AuthProvider'
+import { disabledAreas, useFeatureFlags } from '../lib/features'
 import { canAccess, type Area } from './roles'
 
 /** Requires a signed-in, active, non-client user. */
@@ -25,6 +26,9 @@ export function RequireAuth({ children }: { children?: ReactNode }) {
 /** Requires the current role to have access to an area (see roles.ts). */
 export function RequireArea({ area, children }: { area: Area; children: ReactNode }) {
   const { profile } = useAuth()
+  const flags = useFeatureFlags()
+  if (disabledAreas(flags.data).has(area))
+    return <MessagePage titleKey="features.offTitle" bodyKey="features.offBody" />
   if (!canAccess(profile?.role, area))
     return <MessagePage titleKey="auth.forbiddenTitle" bodyKey="auth.forbiddenBody" />
   return <>{children}</>

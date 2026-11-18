@@ -11,6 +11,7 @@ import { navFor, type Area } from '../../auth/roles'
 import { LanguageSwitch } from './LanguageSwitch'
 import { NotificationBell } from './NotificationBell'
 import { SyncStatus } from './SyncStatus'
+import { disabledAreas, useFeatureFlags } from '../../lib/features'
 
 const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   dashboard: LayoutDashboard,
@@ -59,7 +60,9 @@ export function AppLayout() {
   const { profile, signOut } = useAuth()
   const [open, setOpen] = useState(false)
   const location = useLocation()
-  const items = navFor(profile?.role)
+  const flags = useFeatureFlags()
+  const off = disabledAreas(flags.data)
+  const items = navFor(profile?.role).filter((i) => !off.has(i.area))
 
   useEffect(() => setOpen(false), [location.pathname])
 
