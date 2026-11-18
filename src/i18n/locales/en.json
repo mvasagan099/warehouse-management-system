@@ -614,14 +614,15 @@
     "counted": "Counted",
     "newClient": "New client",
     "clientAdded": "Client added",
-    "newCompany": "New sender / receiver",
+    "newCompany": "New company (sender and receiver)",
     "companyAdded": "Company added",
     "companyKind": "Type",
     "kind": {
       "SENDER": "Sender",
       "RECEIVER": "Receiver",
       "BOTH": "Both"
-    }
+    },
+    "companyBothHelp": "This company can be used both as the sender (inward) and the receiver (dispatch)."
   },
   "receive": {
     "title": "Inward receipt",

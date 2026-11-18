@@ -85,7 +85,7 @@ export function GateEntryForm({ initial, saving, onClose, onSubmit }: {
         </details>
       </form>
       {adding === 'client' && <QuickClient onClose={() => setAdding(null)} onCreated={(id) => { setValue('client_id', id); setAdding(null) }} />}
-      {adding === 'company' && clientId && <QuickCompany clientId={clientId} inward={inward} onClose={() => setAdding(null)} onCreated={(id) => { setValue('company_id', id); setAdding(null) }} />}
+      {adding === 'company' && clientId && <QuickCompany clientId={clientId} onClose={() => setAdding(null)} onCreated={(id) => { setValue('company_id', id); setAdding(null) }} />}
     </Modal>
   )
 }

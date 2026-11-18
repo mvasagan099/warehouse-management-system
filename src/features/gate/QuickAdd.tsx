@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '../../components/ui/Button'
-import { Field, Input, Select } from '../../components/ui/Field'
+import { Field, Input } from '../../components/ui/Field'
 import { Modal } from '../../components/ui/Modal'
 import { errorMessage } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
@@ -29,20 +29,19 @@ export function QuickClient({ onClose, onCreated }: { onClose: () => void; onCre
 }
 
 /** Add the sender / receiver company of a client on the spot. */
-export function QuickCompany({ clientId, inward, onClose, onCreated }: { clientId: string; inward: boolean; onClose: () => void; onCreated: (id: string) => void }) {
+export function QuickCompany({ clientId, onClose, onCreated }: { clientId: string; onClose: () => void; onCreated: (id: string) => void }) {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const [name, setName] = useState('')
-  const [kind, setKind] = useState(inward ? 'SENDER' : 'RECEIVER')
   const save = useMutation({
-    mutationFn: async () => { const { data, error } = await supabase.from('company_master').insert({ client_id: clientId, name: name.trim(), kind: kind as 'SENDER' }).select('id').single(); if (error) throw error; return data.id },
+    mutationFn: async () => { const { data, error } = await supabase.from('company_master').insert({ client_id: clientId, name: name.trim(), kind: 'BOTH' }).select('id').single(); if (error) throw error; return data.id },
     onSuccess: async (id) => { await qc.invalidateQueries({ queryKey: ['companies'] }); toast.success(t('gate.companyAdded')); onCreated(id) }, onError: async (e) => toast.error(await errorMessage(e)),
   })
   return (
     <Modal open title={t('gate.newCompany')} onClose={onClose} footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button loading={save.isPending} disabled={name.trim().length < 2} onClick={() => save.mutate()}>{t('common.save')}</Button></>}>
       <div className="grid gap-3">
         <Field label={t('common.name')} htmlFor="qco-name"><Input id="qco-name" className="h-12 text-base" value={name} onChange={(e) => setName(e.target.value)} autoFocus /></Field>
-        <Field label={t('gate.companyKind')} htmlFor="qco-kind"><Select id="qco-kind" value={kind} onChange={(e) => setKind(e.target.value)}>{['SENDER', 'RECEIVER', 'BOTH'].map((k) => <option key={k} value={k}>{t(`gate.kind.${k}`)}</option>)}</Select></Field>
+        <p className="text-sm text-slate-500">{t('gate.companyBothHelp')}</p>
       </div>
     </Modal>
   )
