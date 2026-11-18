@@ -62,7 +62,7 @@ function BackupCard() {
   )
 }
 
-function SecurityCard() {
+export function SecurityCard() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const st = useQuery({ queryKey: ['security_state_admin'], queryFn: async () => { const { data, error } = await supabase.rpc('my_security_state'); if (error) throw error; return data as unknown as { mfa_required: boolean; aal: string } } })
@@ -111,7 +111,7 @@ export function AdminOpsPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={t('ops.title')} subtitle={t('ops.subtitle')} actions={<Link to="/audit" className="text-sm font-medium text-brand-700 hover:underline">{t('nav.audit')}</Link>} />
-      <CronCard /><div className="grid gap-4 lg:grid-cols-2"><BackupCard /><SecurityCard /></div><RetentionCard />
+      <CronCard /><div className="grid gap-4 lg:grid-cols-2"><BackupCard /><Card className="p-4"><h2 className="mb-1 flex items-center gap-2 font-semibold"><ShieldCheck className="h-4 w-4" />{t('ops.securityTitle')}</h2><p className="text-sm text-slate-500">{t('ops.passwordRules')}</p></Card></div><RetentionCard />
     </div>
   )
 }

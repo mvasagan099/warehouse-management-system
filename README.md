@@ -280,3 +280,11 @@ alerts for the days its stock was in a zone; accountants have no access. Every c
 
 - PDFs (receipt, challan) are printed in English: the built-in PDF font has no Tamil glyphs. Embed a Tamil font in `src/features/pdf/documents.tsx` to print Tamil.
 - A client login can be created only by an administrator (Clients -> Create login); the temporary password must be changed at first sign-in.
+
+## Phase 5 (hiring, portal, hardening)
+- **Hiring and staff:** vacancies (salary range admin-only), applicants with private resume, interview rounds, offer-letter PDF, login + employee record in one step, staff list with admin-only ID/bank details, shifts/roster, phone check-in/out (optional GPS), manager corrections, monthly CSV, manager assignment with last-manager warning, crew log on receipts and challans.
+- **Client portal:** dashboard, support tickets with attachments, profile/GSTIN change requests (admin approves), alert contacts, documents with ZIP download, notifications centre, pay online (Razorpay flag).
+- **Admin/manager dashboards, data import (CSV with dry run), system-health page (cron jobs, backups, retention).**
+- **Offline:** installable app (manifest + service worker); gate entries, dock counts, temperature readings, scans and attendance are queued on the phone and synced; conflicts are asked, never overwritten.
+- **Security:** RLS matrix test (`scripts/rls/build.py` regenerates it), least-privilege grants, fast per-statement RLS, private buckets with signed URLs, CSP in `public/_headers`, rate limits, strong passwords (10+ chars, mixed). Admin sign-in is password only (two-factor is available in the database but switched off).
+- **Not finished:** CI pipelines, demo-data seed, pilot guides/UAT/go-live files, Lighthouse tuning, restore drill. See the final report in the chat.

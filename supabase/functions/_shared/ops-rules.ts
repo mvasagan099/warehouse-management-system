@@ -1,6 +1,6 @@
 // Pure helpers for the Phase 5 Edge Functions (no Deno or network imports, so Vitest tests the same file).
 
-export const DOWNLOAD_BUCKETS = ['invoices', 'signatures', 'gate-photos', 'tickets', 'hr', 'coldchain'] as const
+export const DOWNLOAD_BUCKETS = ['invoices', 'signatures', 'gate-photos', 'tickets', 'hr', 'coldchain', 'backups'] as const
 
 /** Validates a signed-download request. Paths may not climb out of the bucket. */
 export function parseDownloadRequest(body: unknown): { ok: true; bucket: string; path: string; expiresIn: number } | { ok: false; error: string } {

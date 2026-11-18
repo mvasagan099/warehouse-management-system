@@ -24,22 +24,22 @@ declare t text;
 begin
   foreach t in array array['stock_items', 'stock_movements', 'inward_receipts', 'inward_receipt_lines', 'delivery_challans', 'delivery_challan_lines', 'dispatch_requests',
                            'dispatch_request_lines', 'gate_entries', 'gate_entry_lines', 'slot_allocations', 'space_bookings'] loop
-    execute format('alter policy %I on public.%I using ((select public.is_admin()) or warehouse_id = any ((select public.readable_warehouse_ids())) or client_id = (select public.current_client_id()))', t || '_select', t);
+    execute format('alter policy %I on public.%I using ((select public.is_admin()) or warehouse_id = any (((select public.readable_warehouse_ids())::uuid[])) or client_id = (select public.current_client_id()))', t || '_select', t);
   end loop;
 end $$;
 
 -- warehouse-only rows
-alter policy labour_entries_select on public.labour_entries using ((select public.is_admin()) or warehouse_id = any ((select public.readable_warehouse_ids())));
-alter policy dispatch_picks_select on public.dispatch_picks using ((select public.is_admin()) or warehouse_id = any ((select public.readable_warehouse_ids())));
+alter policy labour_entries_select on public.labour_entries using ((select public.is_admin()) or warehouse_id = any (((select public.readable_warehouse_ids())::uuid[])));
+alter policy dispatch_picks_select on public.dispatch_picks using ((select public.is_admin()) or warehouse_id = any (((select public.readable_warehouse_ids())::uuid[])));
 alter policy audit_logs_select on public.audit_logs using ((select public.is_admin()));
 
 -- billing rows: admin, accountant, the manager of the warehouse, the client itself
-alter policy payments_select on public.payments using ((select public.is_admin()) or (select public.is_accountant()) or warehouse_id = any ((select public.managed_warehouse_ids())) or client_id = (select public.current_client_id()));
-alter policy adjustment_notes_select on public.adjustment_notes using ((select public.is_admin()) or (select public.is_accountant()) or warehouse_id = any ((select public.managed_warehouse_ids())) or client_id = (select public.current_client_id()));
+alter policy payments_select on public.payments using ((select public.is_admin()) or (select public.is_accountant()) or warehouse_id = any (((select public.managed_warehouse_ids())::uuid[])) or client_id = (select public.current_client_id()));
+alter policy adjustment_notes_select on public.adjustment_notes using ((select public.is_admin()) or (select public.is_accountant()) or warehouse_id = any (((select public.managed_warehouse_ids())::uuid[])) or client_id = (select public.current_client_id()));
 alter policy invoices_select on public.invoices using (
   (select public.is_admin()) or (select public.is_accountant())
   or (status <> all (array['DRAFT'::public.invoice_status, 'CANCELLED'::public.invoice_status])
-      and (warehouse_id = any ((select public.managed_warehouse_ids())) or client_id = (select public.current_client_id()))));
+      and (warehouse_id = any (((select public.managed_warehouse_ids())::uuid[])) or client_id = (select public.current_client_id()))));
 
 revoke execute on all functions in schema public from anon, public;
 -- (these two stay executable by signed-in users: row security policies run with the caller's own privileges)
