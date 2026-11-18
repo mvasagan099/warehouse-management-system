@@ -1,9 +1,10 @@
-import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
+import { Document, Image, Page, Path, Rect, StyleSheet, Svg, Text, View } from '@react-pdf/renderer'
 import type {
   Client, Company, DeliveryChallan, DeliveryChallanLine, GateEntry, InwardReceipt, InwardReceiptLine, Warehouse,
 } from '../../lib/types'
 import { APP_TIME_ZONE } from '../../lib/format'
-import type { Invoice, InvoiceLine, InvoiceTaxLine } from '../../lib/types'
+import type { Alert, AlertStock, ClientNotice, Invoice, InvoiceLine, InvoiceTaxLine, Sensor, Zone } from '../../lib/types'
+import { sparkPath } from '../coldchain/common'
 import { amountInWords, bpToPercent, formatIndian } from '../../lib/words'
 
 // Documents are printed in English with the built-in Helvetica font (Tamil needs an embedded font; see README).
@@ -313,6 +314,115 @@ export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark }: Invoi
           <Text style={s.sig}>For {String(sup.legal_name || sup.name || 'the supplier')}{'\n'}Authorised signatory</Text>
         </View>
         <Text style={s.foot} fixed render={({ pageNumber, totalPages }) => `${inv.invoice_no ?? 'DRAFT'} · page ${pageNumber} of ${totalPages} · computer generated invoice`} />
+      </Page>
+    </Document>
+  )
+}
+
+
+// ------------------------------------------------------------------ Cold chain (Phase 4) ------------------------------------------------------------------
+const fnum = (v: number | null | undefined, max = 1) => (v === null || v === undefined ? '-' : new Intl.NumberFormat('en-IN', { maximumFractionDigits: max }).format(v))
+const mins = (m: number) => (m >= 60 ? `${Math.floor(m / 60)} h ${Math.round(m % 60)} min` : `${Math.round(m)} min`)
+
+/** Readings chart drawn as SVG: the allowed range as a shaded band, the line broken wherever data is missing. */
+function ReadingsChart({ rows, lo, hi, width = 520, height = 150 }: { rows: { t: number; v: number }[]; lo: number | null; hi: number | null; width?: number; height?: number }) {
+  if (rows.length < 2) return <Text style={s.small}>Not enough readings to draw a chart.</Text>
+  const vs = rows.map((r) => r.v)
+  const min = Math.min(...vs, lo ?? Infinity), max = Math.max(...vs, hi ?? -Infinity)
+  const y = (v: number) => (max === min ? height / 2 : height - ((v - min) / (max - min)) * height)
+  return (
+    <View>
+      <Svg width={width} height={height + 4} viewBox={`0 0 ${width} ${height + 4}`}>
+        <Rect x={0} y={0} width={width} height={height} fill="#f8fafc" />
+        {lo !== null && hi !== null && <Rect x={0} y={y(hi)} width={width} height={Math.max(y(lo) - y(hi), 1)} fill="#d1fae5" />}
+        <Path d={sparkPath(rows, width, height, 15 * 60_000, lo ?? undefined, hi ?? undefined)} stroke="#0e7490" strokeWidth={1.2} fill="none" />
+      </Svg>
+      <Text style={s.small}>Range {fnum(min)} to {fnum(max)} C{lo !== null && hi !== null ? `; allowed ${fnum(lo)} to ${fnum(hi)} C (green band)` : ''}. A gap in the line means no data was received.</Text>
+    </View>
+  )
+}
+
+export interface ClientTempReportPdfData {
+  client: Client
+  from: string; to: string; generatedAt: string
+  periods: { zone_code: string; zone_name: string; temp_min: number | null; temp_max: number | null; slots: string[]; brigades: number; from_date: string; to_date: string; min_c: number | null; max_c: number | null; avg_c: number | null; readings: number; minutes_out: number; minutes_covered: number; minutes_period: number; approx: boolean }[]
+  lorry: { doc_type: string; doc_no: string; at: string; lorry_number: string | null; temp_c: number | null }[]
+}
+export function ClientTempReportPdf({ client, from, to, generatedAt, periods, lorry }: ClientTempReportPdfData) {
+  return (
+    <Document title={`Temperature report ${client.company_name}`}>
+      <Page size="A4" style={s.page}>
+        <View style={s.head}><View><Text style={s.title}>TEMPERATURE COMPLIANCE REPORT</Text><Text style={s.bold}>{client.company_name}</Text><Text>{client.gstin ? `GSTIN ${client.gstin}` : ''}</Text></View>
+          <View style={{ textAlign: 'right' }}><Text>Period: {d(from)} to {d(to)}</Text><Text>Generated: {dt(generatedAt)}</Text></View></View>
+        <Text style={s.small}>Only the places and days your stock was stored are included. Out of range is measured against the zone limits with no tolerance; minutes are the time between readings (gaps over 15 minutes are not counted as covered).</Text>
+        <Text style={[s.bold, { marginTop: 8 }]}>Storage zones and temperatures</Text>
+        <Table cols={[{ h: 'Zone', w: '17%' }, { h: 'Allowed', w: '11%' }, { h: 'Your stock there', w: '19%' }, { h: 'Min', w: '7%', right: true }, { h: 'Max', w: '7%', right: true }, { h: 'Avg', w: '7%', right: true }, { h: 'Out of range', w: '12%', right: true }, { h: 'Coverage', w: '12%', right: true }, { h: 'Readings', w: '8%', right: true }]}
+          rows={periods.map((p) => [`${p.zone_code} ${p.zone_name}`, p.temp_min !== null && p.temp_max !== null ? `${fnum(p.temp_min, 0)} to ${fnum(p.temp_max, 0)} C` : '-', `${d(p.from_date)} to ${d(p.to_date)}\n${p.brigades} Brigade(s): ${p.slots.join(', ')}`,
+            fnum(p.min_c), fnum(p.max_c), fnum(p.avg_c), mins(p.minutes_out), `${p.minutes_period > 0 ? Math.round((p.minutes_covered / p.minutes_period) * 100) : 0}%`, `${p.readings}${p.approx ? '*' : ''}`])} />
+        {periods.some((p) => p.approx) && <Text style={s.small}>* includes hourly summaries of older data: out-of-range time for those hours is counted per hour.</Text>}
+        {periods.length === 0 && <Text style={s.note}>No stock of this client was stored in any zone during this period.</Text>}
+        <Text style={[s.bold, { marginTop: 10 }]}>Lorry temperatures at arrival and dispatch</Text>
+        <Table cols={[{ h: 'Document', w: '26%' }, { h: 'Type', w: '20%' }, { h: 'Date and time', w: '26%' }, { h: 'Lorry', w: '16%' }, { h: 'Temp C', w: '12%', right: true }]}
+          rows={lorry.map((l) => [l.doc_no, l.doc_type === 'INWARD_RECEIPT' ? 'Arrival' : 'Dispatch', dt(l.at), l.lorry_number ?? '-', fnum(l.temp_c)])} />
+        <Text style={s.foot} fixed render={({ pageNumber, totalPages }) => `${client.company_name} · temperature report · page ${pageNumber} of ${totalPages}`} />
+      </Page>
+    </Document>
+  )
+}
+
+export interface EvidencePackPdfData {
+  alert: Alert; zone: Zone | null; warehouse: Warehouse | null; sensor: Sensor | null
+  evidence: { recorded_at: string; value: number; raw_value: number; source: string }[]
+  stock: AlertStock[]; notices: ClientNotice[]; clientNames: Record<string, string>; photos?: string[]; generatedAt?: string
+}
+export function EvidencePackPdf({ alert: a, zone, warehouse, sensor, evidence, stock, notices, clientNames, photos = [], generatedAt }: EvidencePackPdfData) {
+  const rows = evidence.map((e) => ({ t: Date.parse(e.recorded_at), v: e.value }))
+  const timeline: [string | null, string][] = [[a.event_start, 'Event start (first reading out of range)'], [a.opened_at, 'Alert opened'], [a.escalation_level > 0 ? a.escalated_at : null, `Escalated (level ${a.escalation_level})`],
+    [a.acknowledged_at, 'Acknowledged'], [a.recovered_at, 'Readings back in range'], [a.resolved_at, 'Resolved']]
+  const shown = evidence.length > 360 ? evidence.filter((_, i) => i % Math.ceil(evidence.length / 360) === 0) : evidence
+  return (
+    <Document title={`Evidence pack ${a.id.slice(0, 8)}`}>
+      <Page size="A4" style={s.page}>
+        <View style={s.head}><View><Text style={s.title}>TEMPERATURE EXCURSION: EVIDENCE PACK</Text><Text style={s.bold}>{warehouse?.name ?? ''} · zone {zone?.code ?? ''} {zone?.name ?? ''}</Text></View>
+          <View style={{ textAlign: 'right' }}><Text>Alert {a.id.slice(0, 8)}</Text><Text>Generated {dt(generatedAt ?? new Date().toISOString())}</Text></View></View>
+        <View style={s.row}>
+          <Party title="Event" name={`${a.kind.replace('_', ' ')} · ${a.severity}`} lines={[`Started ${dt(a.event_start)}`, a.recovered_at ? `Recovered ${dt(a.recovered_at)}` : 'Still in progress', `Duration ${mins(a.duration_min)}`]} />
+          <Party title="Measurements" name={`Peak ${fnum(a.peak_value)} C`} lines={[`Deviation beyond limit ${fnum(a.peak_deviation)} C`, `Limit ${fnum(a.limit_value)} C; allowed ${zone ? `${fnum(zone.temp_min, 0)} to ${fnum(zone.temp_max, 0)} C` : '-'}`, `Sensor ${sensor?.name ?? '-'} (${sensor?.serial_no ?? '-'})`]} />
+        </View>
+        <Text style={s.bold}>Readings chart</Text>
+        <ReadingsChart rows={rows} lo={zone?.temp_min ?? null} hi={zone?.temp_max ?? null} />
+        <Text style={[s.bold, { marginTop: 8 }]}>Timeline</Text>
+        {timeline.filter(([ts]) => ts).map(([ts, label]) => <Text key={label}>{dt(ts)}  -  {label}</Text>)}
+        {a.status === 'RESOLVED' && <View style={s.note}><Text style={s.bold}>Cause</Text><Text>{a.cause}</Text><Text style={s.bold}>Action taken</Text><Text>{a.action_taken}</Text><Text>Resolved {dt(a.resolved_at)}</Text></View>}
+        <Text style={[s.bold, { marginTop: 8 }]}>Affected stock (clients, batches, Brigades)</Text>
+        <Table cols={[{ h: 'Client', w: '28%' }, { h: 'Slot', w: '12%' }, { h: 'Item', w: '24%' }, { h: 'Batch', w: '18%' }, { h: 'Qty', w: '18%', right: true }]}
+          rows={stock.map((x) => [x.client_name, x.slot_code ?? '-', x.item_name ?? '-', x.batch_no ?? '-', x.quantity !== null ? `${fnum(x.quantity, 3)} ${x.unit ?? ''}` : '-'])} />
+        {notices.length > 0 && <><Text style={[s.bold, { marginTop: 8 }]}>Client notices</Text>
+          {notices.map((n) => <Text key={n.id}>{clientNames[n.client_id] ?? n.client_id}: {n.status}{n.approved_at ? ` (${dt(n.approved_at)})` : ''}</Text>)}</>}
+        <Text style={s.foot} fixed render={({ pageNumber, totalPages }) => `Evidence pack ${a.id.slice(0, 8)} · page ${pageNumber} of ${totalPages}`} />
+      </Page>
+      <Page size="A4" style={s.page}>
+        <Text style={s.bold}>Evidence readings ({evidence.length} raw readings from 30 minutes before the event{evidence.length > shown.length ? `; every ${Math.ceil(evidence.length / 360)}th shown` : ''})</Text>
+        <Table cols={[{ h: 'Time (IST)', w: '40%' }, { h: 'Value C', w: '20%', right: true }, { h: 'Raw C', w: '20%', right: true }, { h: 'Source', w: '20%' }]}
+          rows={shown.map((e) => [dt(e.recorded_at), fnum(e.value, 2), fnum(e.raw_value, 2), e.source])} />
+        {photos.length > 0 && <><Text style={[s.bold, { marginTop: 8 }]}>Photos</Text><View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{photos.map((p, i) => <Image key={i} src={p} style={{ width: 160, height: 120 }} />)}</View></>}
+        <Text style={s.foot} fixed render={({ pageNumber, totalPages }) => `Evidence pack ${a.id.slice(0, 8)} · page ${pageNumber} of ${totalPages}`} />
+      </Page>
+    </Document>
+  )
+}
+
+export interface RegisterPdfData { title: string; subtitle?: string; columns: { h: string; w: string; right?: boolean }[]; rows: (string | number)[][]; signature?: boolean; generatedAt?: string }
+/** One generic register: the daily log sheet (with a signature line), the calibration register and the alert register. */
+export function RegisterPdf({ title, subtitle, columns, rows, signature, generatedAt }: RegisterPdfData) {
+  return (
+    <Document title={title}>
+      <Page size="A4" style={s.page} orientation="landscape">
+        <View style={s.head}><View><Text style={s.title}>{title}</Text>{subtitle && <Text style={s.bold}>{subtitle}</Text>}</View><View style={{ textAlign: 'right' }}><Text>Generated {dt(generatedAt ?? new Date().toISOString())}</Text></View></View>
+        <Table cols={columns} rows={rows} />
+        {rows.length === 0 && <Text style={s.note}>No entries.</Text>}
+        {signature && <View style={s.sigRow} wrap={false}><Text style={s.sig}>Checked by (name and signature)</Text><Text style={s.sig}>Supervisor</Text><Text style={s.sig}>Date</Text></View>}
+        <Text style={s.foot} fixed render={({ pageNumber, totalPages }) => `${title} · page ${pageNumber} of ${totalPages}`} />
       </Page>
     </Document>
   )

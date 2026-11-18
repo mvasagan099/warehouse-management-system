@@ -1,11 +1,12 @@
-# Cold Storage WMS — Phases 1, 2 and 3
+# Cold Storage WMS — Phases 1 to 4
 
 Warehouse & cold-storage management for a Tamil Nadu business.
 
 - **Phase 1 (foundation):** auth and roles, warehouses, zones, brigade types and slots, managers and staff, hiring, audit log, dashboard.
 - **Phase 2 (operations):** clients and contracts, space booking, gate / lorry entry, inward receipt, stock, QR labels and scanning, dispatch, delivery challan, client portal.
 - **Phase 3 (billing):** rate cards with scope precedence, daily occupancy snapshots, rent and labour invoices with India GST, credit and debit notes, payments, client ledger and ageing, PDF / email / Razorpay link, GSTR-1 and Tally exports, ACCOUNTANT role. See *Phase 3: billing* below.
-- **Not built (by design):** temperature sensors and alerts, MQTT, WhatsApp / SMS, calling the government e-invoice portal, Tamil invoice printing.
+- **Phase 4 (cold chain):** sensors with per-device keys, HTTPS ingest, manual readings, live zone dashboard (Realtime), alert engine with escalation, affected-stock lookup, client notices, calibration, client temperature reports, evidence packs, equipment and maintenance. See [docs/cold-chain.md](docs/cold-chain.md).
+- **Not built (by design):** MQTT broker, WhatsApp / SMS providers (stub only), mobile push, predictive maintenance, energy cost tracking, calling the government e-invoice portal, Tamil invoice printing.
 **No custom backend:** a React SPA talks directly to Supabase (Postgres + Auth + Storage). All
 authorisation lives in Postgres Row Level Security; the only privileged code is one Edge Function
 (`create-user`) that holds the service key server-side.
@@ -54,10 +55,10 @@ Local password-reset emails are caught by Mailpit at http://127.0.0.1:54324.
 ## Tests
 
 ```bash
-npm test                  # Vitest (136): schemas, GSTIN, roles, receipt / pick / stock logic, amount in words, CSV, Razorpay signature, i18n key coverage, route guards, create-user rules
-npm run test:db           # pgTAP (299): RLS per role, confirm functions, FEFO, rollback, numbering, cancellation, plus Phase 3: rates, occupancy, rent / labour / GST maths, immutability, notes, payments (needs `supabase start`)
+npm test                  # Vitest (156): schemas, GSTIN, roles, receipt / pick / stock logic, amount in words, CSV, Razorpay signature, i18n key coverage, route guards, create-user rules
+npm run test:db           # pgTAP (427): RLS per role, confirm functions, FEFO, rollback, numbering, cancellation, plus Phase 3: rates, occupancy, rent / labour / GST maths, immutability, notes, payments (needs `supabase start`)
 npm run test:concurrency  # 30 parallel sessions for document numbers, 20 parallel issue_invoice calls: never skip or duplicate
-npm run test:e2e          # Playwright: Phase 2 (client -> booking -> gate -> receipt -> dispatch -> challan -> portal) and Phase 3 (rates -> stock -> advance days -> invoice -> issue -> payment -> client PDF -> accountant)
+npm run test:e2e          # Playwright: Phase 2 (client -> booking -> gate -> receipt -> dispatch -> challan -> portal) and Phase 3 (rates -> stock -> advance days -> invoice -> issue -> payment -> client PDF -> accountant) and Phase 4 (sensor -> curl readings -> live tile -> excursion -> alert -> acknowledge -> resolve -> client temperature report and evidence pack)
 npm run test:all          # all of the above
 npm run typecheck && npm run build
 ```
@@ -143,8 +144,8 @@ src/
 | Supabase | `npx supabase start` (Docker) | project ref `zzbpramdnuguymeaovma`, region ap-northeast-2 |
 | API URL | `http://127.0.0.1:54321` | `https://zzbpramdnuguymeaovma.supabase.co` |
 | Frontend key | anon key from `npx supabase status` | publishable key (Dashboard → Project Settings → API Keys) |
-| Migrations | applied by `supabase db reset` | 19 migrations applied (5 for Phase 1, 7 for Phase 2, 7 for Phase 3); versions match the files in `supabase/migrations` |
-| Edge Functions | `npx supabase functions serve` | `create-user`, `send-invoice`, `razorpay-link` (verify JWT on), `razorpay-webhook` (JWT off: HMAC signature) and `send-reminders` (JWT off: checks an administrator JWT or the `x-cron-secret` header itself) |
+| Migrations | applied by `supabase db reset` | 23 migrations applied (5 for Phase 1, 7 for Phase 2, 7 for Phase 3, 4 for Phase 4); versions match the files in `supabase/migrations` |
+| Edge Functions | `npx supabase functions serve` | `create-user`, `send-invoice`, `razorpay-link` (verify JWT on), `razorpay-webhook` (JWT off: HMAC signature) `send-reminders` (JWT off: checks an administrator JWT or the `x-cron-secret` header itself), `ingest-reading` (JWT off: the device key is the credential) and `notify-alert` (JWT off: `x-cron-secret` or an administrator JWT) |
 
 Git: `origin` pushes to two repositories at once —
 `warehousemanagementadmin099-web/warehouse` and `mvasagan099/warehouse-management-system` — each
@@ -240,6 +241,40 @@ ledger and rate summary and downloads PDFs. Every create / update / issue / canc
 10. Ageing is by days since the invoice date (0-30, 31-60, 61-90, 90+).
 11. The e-invoice JSON follows the IRP 1.1 shape for upload; the government portal is not called (IRN and QR fields are stored empty).
 12. A day already on an invoice is never recomputed; correct an invoice only with a credit or debit note.
+
+## Phase 4: cold-chain monitoring
+
+Full guide, curl and ESP32 samples: [docs/cold-chain.md](docs/cold-chain.md).
+
+**Tables (new):** `sensors`, `device_keys` (hash only), `calibration_log`, `readings` (partitioned by month) and `readings_hourly`, `alert_rules`,
+`defrost_windows`, `alerts`, `alert_evidence`, `alert_stock`, `client_notices`, `notifications`, `notification_outbox`, `equipment`,
+`maintenance_tasks`, `internal_secrets`. New settings keys `coldchain` and `notifications`. Private storage bucket `coldchain`.
+
+**Functions:** `ingest_readings` (service role only), `create_device_key`, `rotate_device_key`, `revoke_device_key`, `record_calibration`,
+`add_manual_reading`, `evaluate_alerts`, `acknowledge_alert`, `resolve_alert`, `affected_stock`, `approve_client_notice`, `reject_client_notice`,
+`rollup_readings`, `ensure_reading_partitions`, `cold_chain_overview`, `zone_series`, `client_temperature_report`, `client_lorry_temps`,
+`complete_maintenance_task`, `update_maintenance_task`, `maintenance_reminders`, `dispatch_notifications`, `mark_notifications_read`.
+Error codes: `WMS40` bad device key, `WMS41` bad batch, `WMS43` impossible manual value.
+
+**Cron (UTC):** `wms-evaluate-alerts` and `wms-notify-dispatch` every minute, `wms-readings-rollup` `30 20 * * *` (02:00 India), `wms-maintenance-reminders` `30 2 * * *` (08:00 India).
+
+**Edge Functions:** `ingest-reading` (sensors post here), `notify-alert` (sends the queued email; WhatsApp / SMS are a stub). Secrets: `RESEND_API_KEY`, `CRON_SECRET`.
+
+**Access:** administrator everything; manager and staff their warehouses; staff add manual readings, acknowledge alerts and update tasks but cannot
+change rules, sensors, keys or calibration, resolve alerts or approve client notices; a client sees only the temperature reports and the readings and
+alerts for the days its stock was in a zone; accountants have no access. Every change to rules, keys, calibration and alerts is in the audit log.
+
+### Assumptions to confirm
+
+1. Alert levels: out of range = beyond the zone limit plus the tolerance; WARNING after the delay (10 min); CRITICAL when more than 5 C beyond the limit or after 30 minutes. All are editable per zone.
+2. An alert closes by itself after the readings stay in range for the recovery time (5 min) but stays on the list until a person resolves it.
+3. Escalation: staff first, then the managers, then administrators, every 15 minutes while a CRITICAL alert is unacknowledged. If nobody exists at a level the next level is told at once.
+4. A sensor is offline after 15 minutes of silence; a manual-only zone counts as stale after 12 hours.
+5. A client's right to see readings follows the India calendar days of its allocations in the zone (start day to end day inclusive), not the exact hour.
+6. Affected stock = allocations overlapping the event days plus stock items in those slots that had arrived and not left before the event (a batch moved to another zone before the event is not listed).
+7. Client temperature reports measure "out of range" against the zone limits with no tolerance; time is the span between readings, and gaps over 15 minutes are not counted as covered.
+8. The manual reading sensor of a zone is created automatically; manual readings are not corrected by calibration.
+9. Raw readings are kept 30 days, hourly summaries 2 years (settings). About 150 bytes per reading: 6.5 MB per sensor-month at one reading per minute.
 
 ## Notes
 

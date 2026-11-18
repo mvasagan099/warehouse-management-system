@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import {
-  BarChart3, BookOpen, Boxes, Building2, CalendarClock, ClipboardCheck, ClipboardList, FileText, Grid3x3, KeyRound, LayoutDashboard,
+  Activity, AlertTriangle, BarChart3, BookOpen, Cpu, Thermometer, Wrench, SlidersHorizontal, FileBarChart, Boxes, Building2, CalendarClock, ClipboardCheck, ClipboardList, FileText, Grid3x3, KeyRound, LayoutDashboard,
   LogOut, Menu, PackageCheck, Package, Percent, QrCode, Receipt, Ruler, ScanLine, Settings, Snowflake, Truck, UserPlus, Users, Wallet, Warehouse, X,
 } from 'lucide-react'
 import { useEffect, useState, type ComponentType } from 'react'
@@ -9,6 +9,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
 import { navFor, type Area } from '../../auth/roles'
 import { LanguageSwitch } from './LanguageSwitch'
+import { NotificationBell } from './NotificationBell'
 
 const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   dashboard: LayoutDashboard,
@@ -35,6 +36,13 @@ const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   ledger: BookOpen,
   billingReports: BarChart3,
   billingSettings: Settings,
+  coldChain: Activity,
+  manualReading: Thermometer,
+  alerts: AlertTriangle,
+  sensors: Cpu,
+  alertRules: SlidersHorizontal,
+  equipment: Wrench,
+  coldReports: FileBarChart,
 }
 
 export function AppLayout() {
@@ -114,6 +122,7 @@ export function AppLayout() {
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex-1" />
+          <NotificationBell />
           <LanguageSwitch userId={profile?.id} />
           <div className="hidden text-right sm:block">
             <div className="text-sm font-medium leading-tight">{profile?.full_name || profile?.email}</div>

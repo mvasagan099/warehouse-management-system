@@ -25,6 +25,13 @@ export type Area =
   | 'ledger'
   | 'billingReports'
   | 'billingSettings'
+  | 'coldChain'
+  | 'sensors'
+  | 'manualReading'
+  | 'alerts'
+  | 'alertRules'
+  | 'coldReports'
+  | 'equipment'
 
 const A: AppRole = 'SUPER_ADMIN'
 const M: AppRole = 'WAREHOUSE_MANAGER'
@@ -58,6 +65,13 @@ export const AREA_ACCESS: Record<Area, readonly AppRole[]> = {
   ledger: [A, X, C],
   billingReports: [A, X],
   billingSettings: [A, X],
+  coldChain: [A, M, S],
+  sensors: [A, M, S],
+  manualReading: [A, M, S],
+  alerts: [A, M, S],
+  alertRules: [A, M, S],
+  coldReports: [A, M, S, C],
+  equipment: [A, M, S],
 }
 
 /** Which roles can create / edit in each area. */
@@ -86,6 +100,13 @@ export const AREA_WRITE: Record<Area, readonly AppRole[]> = {
   ledger: [],
   billingReports: [],
   billingSettings: [A],
+  coldChain: [],
+  sensors: [A, M],          // staff read sensors; managers register and calibrate
+  manualReading: [A, M, S],
+  alerts: [A, M, S],        // staff acknowledge; managers and administrators resolve (checked by canDecide)
+  alertRules: [A, M],
+  coldReports: [],
+  equipment: [A, M],        // staff update their maintenance tasks
 }
 
 export function canAccess(role: AppRole | null | undefined, area: Area): boolean {
@@ -138,6 +159,13 @@ export const NAV_ITEMS: { area: Area; path: string; labelKey: string }[] = [
   { area: 'rates', path: '/rates', labelKey: 'nav.rates' },
   { area: 'billingReports', path: '/billing-reports', labelKey: 'nav.billingReports' },
   { area: 'billingSettings', path: '/billing-settings', labelKey: 'nav.billingSettings' },
+  { area: 'coldChain', path: '/cold-chain', labelKey: 'nav.coldChain' },
+  { area: 'manualReading', path: '/manual-reading', labelKey: 'nav.manualReading' },
+  { area: 'alerts', path: '/alerts', labelKey: 'nav.alerts' },
+  { area: 'sensors', path: '/sensors', labelKey: 'nav.sensors' },
+  { area: 'alertRules', path: '/alert-rules', labelKey: 'nav.alertRules' },
+  { area: 'equipment', path: '/equipment', labelKey: 'nav.equipment' },
+  { area: 'coldReports', path: '/cold-reports', labelKey: 'nav.coldReports' },
 ]
 
 export function navFor(role: AppRole | null | undefined) {

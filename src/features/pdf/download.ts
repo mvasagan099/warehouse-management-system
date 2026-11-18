@@ -1,6 +1,6 @@
 import { createElement } from 'react'
 import { supabase } from '../../lib/supabase'
-import type { ChallanPdfData, InvoicePdfData, ReceiptPdfData } from './documents'
+import type { ChallanPdfData, ClientTempReportPdfData, EvidencePackPdfData, InvoicePdfData, ReceiptPdfData, RegisterPdfData } from './documents'
 
 function save(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -50,4 +50,31 @@ export async function invoicePdfBlob(data: InvoicePdfData): Promise<Blob> {
 export async function downloadInvoicePdf(data: InvoicePdfData) {
   const blob = await invoicePdfBlob(data)
   save(blob, `${fileSafe(data.invoice.invoice_no ?? 'draft-invoice')}.pdf`)
+}
+
+async function toBlobFrom(element: (m: typeof import('./documents')) => unknown): Promise<Blob> {
+  const [{ pdf }, docs] = await Promise.all([import('@react-pdf/renderer'), import('./documents')])
+  return await pdf(element(docs) as never).toBlob()
+}
+
+export async function downloadClientTempReportPdf(data: ClientTempReportPdfData) {
+  save(await toBlobFrom((m) => createElement(m.ClientTempReportPdf, data)), `temperature-report-${fileSafe(data.client.company_name)}-${data.from}-${data.to}.pdf`)
+}
+
+/** Manual-reading photos taken during the event are embedded in the pack (read from the private bucket). */
+export async function downloadEvidencePackPdf(data: Omit<EvidencePackPdfData, 'photos'>) {
+  const photos: string[] = []
+  if (data.sensor) {
+    const from = new Date(Date.parse(data.alert.event_start) - 30 * 60_000).toISOString()
+    const { data: rows } = await supabase.from('readings').select('photo_path').eq('sensor_id', data.sensor.id).gte('recorded_at', from).lte('recorded_at', data.alert.recovered_at ?? new Date().toISOString()).not('photo_path', 'is', null).limit(4)
+    for (const r of rows ?? []) {
+      const f = await supabase.storage.from('coldchain').download(r.photo_path as string)
+      if (f.data && /image\/(png|jpeg)/.test(f.data.type)) photos.push(await new Promise<string>((res) => { const fr = new FileReader(); fr.onloadend = () => res(String(fr.result)); fr.readAsDataURL(f.data) }))
+    }
+  }
+  save(await toBlobFrom((m) => createElement(m.EvidencePackPdf, { ...data, photos, generatedAt: new Date().toISOString() })), `evidence-pack-${data.alert.id.slice(0, 8)}.pdf`)
+}
+
+export async function downloadRegisterPdf(data: RegisterPdfData, filename: string) {
+  save(await toBlobFrom((m) => createElement(m.RegisterPdf, data)), `${fileSafe(filename)}.pdf`)
 }

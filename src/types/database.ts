@@ -162,6 +162,367 @@ export type Database = {
           },
         ];
       };
+      alert_evidence: {
+        Row: {
+          alert_id: string;
+          raw_value: number;
+          recorded_at: string;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          alert_id: string;
+          raw_value: number;
+          recorded_at: string;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        Update: {
+          alert_id?: string;
+          raw_value?: number;
+          recorded_at?: string;
+          sensor_id?: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alert_evidence_alert_id_fkey";
+            columns: ["alert_id"];
+            isOneToOne: false;
+            referencedRelation: "alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alert_evidence_sensor_id_fkey";
+            columns: ["sensor_id"];
+            isOneToOne: false;
+            referencedRelation: "sensors";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      alert_rules: {
+        Row: {
+          battery_low_pct: number | null;
+          calibration_warn_days: number | null;
+          created_at: string;
+          critical_ack_min: number | null;
+          critical_after_min: number | null;
+          critical_deviation_deg: number | null;
+          delay_min: number | null;
+          door_open_after_min: number | null;
+          enabled: boolean;
+          humidity_delay_min: number | null;
+          humidity_max: number | null;
+          humidity_min: number | null;
+          max_temp: number | null;
+          min_temp: number | null;
+          offline_after_min: number | null;
+          recovery_min: number | null;
+          tolerance_deg: number | null;
+          updated_at: string;
+          warehouse_id: string;
+          zone_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          battery_low_pct?: number | null;
+          calibration_warn_days?: number | null;
+          created_at?: string;
+          critical_ack_min?: number | null;
+          critical_after_min?: number | null;
+          critical_deviation_deg?: number | null;
+          delay_min?: number | null;
+          door_open_after_min?: number | null;
+          enabled?: boolean;
+          humidity_delay_min?: number | null;
+          humidity_max?: number | null;
+          humidity_min?: number | null;
+          max_temp?: number | null;
+          min_temp?: number | null;
+          offline_after_min?: number | null;
+          recovery_min?: number | null;
+          tolerance_deg?: number | null;
+          updated_at?: string;
+          warehouse_id: string;
+          zone_id: string;
+        };
+        Update: {
+          battery_low_pct?: number | null;
+          calibration_warn_days?: number | null;
+          created_at?: string;
+          critical_ack_min?: number | null;
+          critical_after_min?: number | null;
+          critical_deviation_deg?: number | null;
+          delay_min?: number | null;
+          door_open_after_min?: number | null;
+          enabled?: boolean;
+          humidity_delay_min?: number | null;
+          humidity_max?: number | null;
+          humidity_min?: number | null;
+          max_temp?: number | null;
+          min_temp?: number | null;
+          offline_after_min?: number | null;
+          recovery_min?: number | null;
+          tolerance_deg?: number | null;
+          updated_at?: string;
+          warehouse_id?: string;
+          zone_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alert_rules_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "alert_rules_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alert_rules_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: true;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["zone_id"];
+          },
+          {
+            foreignKeyName: "alert_rules_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: true;
+            referencedRelation: "zones";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      alert_stock: {
+        Row: {
+          alert_id: string;
+          batch_no: string | null;
+          client_id: string;
+          client_name: string;
+          expiry_date: string | null;
+          id: string;
+          item_name: string | null;
+          quantity: number | null;
+          slot_code: string | null;
+          slot_id: string | null;
+          stock_item_id: string | null;
+          unit: string | null;
+          zone_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          alert_id: string;
+          batch_no?: string | null;
+          client_id: string;
+          client_name: string;
+          expiry_date?: string | null;
+          id?: string;
+          item_name?: string | null;
+          quantity?: number | null;
+          slot_code?: string | null;
+          slot_id?: string | null;
+          stock_item_id?: string | null;
+          unit?: string | null;
+          zone_id: string;
+        };
+        Update: {
+          alert_id?: string;
+          batch_no?: string | null;
+          client_id?: string;
+          client_name?: string;
+          expiry_date?: string | null;
+          id?: string;
+          item_name?: string | null;
+          quantity?: number | null;
+          slot_code?: string | null;
+          slot_id?: string | null;
+          stock_item_id?: string | null;
+          unit?: string | null;
+          zone_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alert_stock_alert_id_fkey";
+            columns: ["alert_id"];
+            isOneToOne: false;
+            referencedRelation: "alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alert_stock_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alert_stock_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["zone_id"];
+          },
+          {
+            foreignKeyName: "alert_stock_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "zones";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      alerts: {
+        Row: {
+          acknowledged_at: string | null;
+          acknowledged_by: string | null;
+          action_taken: string | null;
+          cause: string | null;
+          created_at: string;
+          details: Json | null;
+          duration_min: number;
+          equipment_id: string | null;
+          escalated_at: string | null;
+          escalation_level: number;
+          event_start: string;
+          id: string;
+          kind: Database["public"]["Enums"]["alert_kind"];
+          limit_value: number | null;
+          maintenance_task_id: string | null;
+          opened_at: string;
+          peak_deviation: number;
+          peak_value: number | null;
+          recovered_at: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          sensor_id: string | null;
+          severity: Database["public"]["Enums"]["alert_severity"];
+          status: Database["public"]["Enums"]["alert_status"];
+          updated_at: string;
+          warehouse_id: string;
+          zone_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          acknowledged_at?: string | null;
+          acknowledged_by?: string | null;
+          action_taken?: string | null;
+          cause?: string | null;
+          created_at?: string;
+          details?: Json | null;
+          duration_min?: number;
+          equipment_id?: string | null;
+          escalated_at?: string | null;
+          escalation_level?: number;
+          event_start: string;
+          id?: string;
+          kind: Database["public"]["Enums"]["alert_kind"];
+          limit_value?: number | null;
+          maintenance_task_id?: string | null;
+          opened_at: string;
+          peak_deviation?: number;
+          peak_value?: number | null;
+          recovered_at?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          sensor_id?: string | null;
+          severity: Database["public"]["Enums"]["alert_severity"];
+          status?: Database["public"]["Enums"]["alert_status"];
+          updated_at?: string;
+          warehouse_id: string;
+          zone_id: string;
+        };
+        Update: {
+          acknowledged_at?: string | null;
+          acknowledged_by?: string | null;
+          action_taken?: string | null;
+          cause?: string | null;
+          created_at?: string;
+          details?: Json | null;
+          duration_min?: number;
+          equipment_id?: string | null;
+          escalated_at?: string | null;
+          escalation_level?: number;
+          event_start?: string;
+          id?: string;
+          kind?: Database["public"]["Enums"]["alert_kind"];
+          limit_value?: number | null;
+          maintenance_task_id?: string | null;
+          opened_at?: string;
+          peak_deviation?: number;
+          peak_value?: number | null;
+          recovered_at?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          sensor_id?: string | null;
+          severity?: Database["public"]["Enums"]["alert_severity"];
+          status?: Database["public"]["Enums"]["alert_status"];
+          updated_at?: string;
+          warehouse_id?: string;
+          zone_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alerts_equipment_id_fkey";
+            columns: ["equipment_id"];
+            isOneToOne: false;
+            referencedRelation: "equipment";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alerts_maintenance_task_id_fkey";
+            columns: ["maintenance_task_id"];
+            isOneToOne: false;
+            referencedRelation: "maintenance_tasks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alerts_sensor_id_fkey";
+            columns: ["sensor_id"];
+            isOneToOne: false;
+            referencedRelation: "sensors";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alerts_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "alerts_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alerts_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["zone_id"];
+          },
+          {
+            foreignKeyName: "alerts_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "zones";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       app_settings: {
         Row: {
           description: string | null;
@@ -487,6 +848,71 @@ export type Database = {
         };
         Relationships: [];
       };
+      calibration_log: {
+        Row: {
+          calibrated_on: string;
+          certificate_path: string | null;
+          created_at: string;
+          done_by: string | null;
+          id: string;
+          notes: string | null;
+          offset_applied: number;
+          reference_value: number;
+          sensor_id: string;
+          sensor_value: number;
+          warehouse_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          calibrated_on: string;
+          certificate_path?: string | null;
+          created_at?: string;
+          done_by?: string | null;
+          id?: string;
+          notes?: string | null;
+          offset_applied: number;
+          reference_value: number;
+          sensor_id: string;
+          sensor_value: number;
+          warehouse_id: string;
+        };
+        Update: {
+          calibrated_on?: string;
+          certificate_path?: string | null;
+          created_at?: string;
+          done_by?: string | null;
+          id?: string;
+          notes?: string | null;
+          offset_applied?: number;
+          reference_value?: number;
+          sensor_id?: string;
+          sensor_value?: number;
+          warehouse_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "calibration_log_sensor_id_fkey";
+            columns: ["sensor_id"];
+            isOneToOne: false;
+            referencedRelation: "sensors";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calibration_log_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "calibration_log_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       client_groups: {
         Row: {
           created_at: string;
@@ -511,6 +937,75 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      client_notices: {
+        Row: {
+          alert_id: string;
+          approved_at: string | null;
+          approved_by: string | null;
+          body: string;
+          client_id: string;
+          created_at: string;
+          id: string;
+          status: string;
+          subject: string;
+          warehouse_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          alert_id: string;
+          approved_at?: string | null;
+          approved_by?: string | null;
+          body: string;
+          client_id: string;
+          created_at?: string;
+          id?: string;
+          status?: string;
+          subject: string;
+          warehouse_id: string;
+        };
+        Update: {
+          alert_id?: string;
+          approved_at?: string | null;
+          approved_by?: string | null;
+          body?: string;
+          client_id?: string;
+          created_at?: string;
+          id?: string;
+          status?: string;
+          subject?: string;
+          warehouse_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "client_notices_alert_id_fkey";
+            columns: ["alert_id"];
+            isOneToOne: false;
+            referencedRelation: "alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_notices_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "client_notices_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "client_notices_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       clients: {
         Row: {
@@ -867,6 +1362,75 @@ export type Database = {
           },
         ];
       };
+      defrost_windows: {
+        Row: {
+          created_at: string;
+          days: number[] | null;
+          end_time: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          start_time: string;
+          updated_at: string;
+          warehouse_id: string;
+          zone_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          days?: number[] | null;
+          end_time: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          start_time: string;
+          updated_at?: string;
+          warehouse_id: string;
+          zone_id: string;
+        };
+        Update: {
+          created_at?: string;
+          days?: number[] | null;
+          end_time?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          start_time?: string;
+          updated_at?: string;
+          warehouse_id?: string;
+          zone_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "defrost_windows_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "defrost_windows_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "defrost_windows_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["zone_id"];
+          },
+          {
+            foreignKeyName: "defrost_windows_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "zones";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       delivery_challan_lines: {
         Row: {
           batch_no: string | null;
@@ -1109,6 +1673,68 @@ export type Database = {
           },
           {
             foreignKeyName: "delivery_challans_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      device_keys: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          key_hash: string;
+          key_prefix: string;
+          label: string;
+          last_used_at: string | null;
+          revoked_at: string | null;
+          sensor_id: string | null;
+          warehouse_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          key_hash: string;
+          key_prefix: string;
+          label: string;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+          sensor_id?: string | null;
+          warehouse_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          key_hash?: string;
+          key_prefix?: string;
+          label?: string;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+          sensor_id?: string | null;
+          warehouse_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "device_keys_sensor_id_fkey";
+            columns: ["sensor_id"];
+            isOneToOne: false;
+            referencedRelation: "sensors";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "device_keys_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "device_keys_warehouse_id_fkey";
             columns: ["warehouse_id"];
             isOneToOne: false;
             referencedRelation: "warehouses";
@@ -1461,6 +2087,96 @@ export type Database = {
         };
         Relationships: [];
       };
+      equipment: {
+        Row: {
+          code: string | null;
+          created_at: string;
+          deleted_at: string | null;
+          id: string;
+          last_service_on: string | null;
+          name: string;
+          next_service_due: string | null;
+          notes: string | null;
+          service_interval_days: number | null;
+          status: string;
+          type: Database["public"]["Enums"]["equipment_type"];
+          updated_at: string;
+          vendor: string | null;
+          vendor_phone: string | null;
+          warehouse_id: string;
+          warranty_end: string | null;
+          zone_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          code?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          last_service_on?: string | null;
+          name: string;
+          next_service_due?: string | null;
+          notes?: string | null;
+          service_interval_days?: number | null;
+          status?: string;
+          type?: Database["public"]["Enums"]["equipment_type"];
+          updated_at?: string;
+          vendor?: string | null;
+          vendor_phone?: string | null;
+          warehouse_id: string;
+          warranty_end?: string | null;
+          zone_id?: string | null;
+        };
+        Update: {
+          code?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          last_service_on?: string | null;
+          name?: string;
+          next_service_due?: string | null;
+          notes?: string | null;
+          service_interval_days?: number | null;
+          status?: string;
+          type?: Database["public"]["Enums"]["equipment_type"];
+          updated_at?: string;
+          vendor?: string | null;
+          vendor_phone?: string | null;
+          warehouse_id?: string;
+          warranty_end?: string | null;
+          zone_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "equipment_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "equipment_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "equipment_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["zone_id"];
+          },
+          {
+            foreignKeyName: "equipment_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "zones";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       gate_entries: {
         Row: {
           cancel_reason: string | null;
@@ -1748,6 +2464,22 @@ export type Database = {
         Update: {
           code?: string;
           name?: string;
+        };
+        Relationships: [];
+      };
+      internal_secrets: {
+        Row: {
+          key: string;
+          value: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          key: string;
+          value: string;
+        };
+        Update: {
+          key?: string;
+          value?: string;
         };
         Relationships: [];
       };
@@ -2467,6 +3199,223 @@ export type Database = {
           },
         ];
       };
+      maintenance_tasks: {
+        Row: {
+          alert_id: string | null;
+          assigned_to: string | null;
+          completed_at: string | null;
+          completed_by: string | null;
+          created_at: string;
+          created_by: string | null;
+          due_date: string;
+          equipment_id: string;
+          id: string;
+          notes: string | null;
+          photos: string[];
+          reminded_1: boolean;
+          reminded_7: boolean;
+          status: Database["public"]["Enums"]["task_status"];
+          title: string;
+          updated_at: string;
+          warehouse_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          alert_id?: string | null;
+          assigned_to?: string | null;
+          completed_at?: string | null;
+          completed_by?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          due_date: string;
+          equipment_id: string;
+          id?: string;
+          notes?: string | null;
+          photos?: string[];
+          reminded_1?: boolean;
+          reminded_7?: boolean;
+          status?: Database["public"]["Enums"]["task_status"];
+          title?: string;
+          updated_at?: string;
+          warehouse_id: string;
+        };
+        Update: {
+          alert_id?: string | null;
+          assigned_to?: string | null;
+          completed_at?: string | null;
+          completed_by?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          due_date?: string;
+          equipment_id?: string;
+          id?: string;
+          notes?: string | null;
+          photos?: string[];
+          reminded_1?: boolean;
+          reminded_7?: boolean;
+          status?: Database["public"]["Enums"]["task_status"];
+          title?: string;
+          updated_at?: string;
+          warehouse_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_tasks_alert_fk";
+            columns: ["alert_id"];
+            isOneToOne: false;
+            referencedRelation: "alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "maintenance_tasks_assigned_to_fkey";
+            columns: ["assigned_to"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "maintenance_tasks_equipment_id_fkey";
+            columns: ["equipment_id"];
+            isOneToOne: false;
+            referencedRelation: "equipment";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "maintenance_tasks_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "maintenance_tasks_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notification_outbox: {
+        Row: {
+          alert_id: string | null;
+          attempts: number;
+          body: string;
+          channel: string;
+          created_at: string;
+          error: string | null;
+          id: string;
+          sent_at: string | null;
+          status: string;
+          subject: string | null;
+          task_id: string | null;
+          to_address: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          alert_id?: string | null;
+          attempts?: number;
+          body: string;
+          channel: string;
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          sent_at?: string | null;
+          status?: string;
+          subject?: string | null;
+          task_id?: string | null;
+          to_address: string;
+        };
+        Update: {
+          alert_id?: string | null;
+          attempts?: number;
+          body?: string;
+          channel?: string;
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          sent_at?: string | null;
+          status?: string;
+          subject?: string | null;
+          task_id?: string | null;
+          to_address?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_outbox_alert_id_fkey";
+            columns: ["alert_id"];
+            isOneToOne: false;
+            referencedRelation: "alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notification_outbox_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "maintenance_tasks";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          alert_id: string | null;
+          body: string | null;
+          created_at: string;
+          id: string;
+          kind: string;
+          read_at: string | null;
+          task_id: string | null;
+          title: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          alert_id?: string | null;
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          read_at?: string | null;
+          task_id?: string | null;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          alert_id?: string | null;
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          read_at?: string | null;
+          task_id?: string | null;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_alert_id_fkey";
+            columns: ["alert_id"];
+            isOneToOne: false;
+            referencedRelation: "alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "maintenance_tasks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       occupancy_runs: {
         Row: {
           occ_date: string;
@@ -2815,6 +3764,288 @@ export type Database = {
           },
         ];
       };
+      readings: {
+        Row: {
+          note: string | null;
+          photo_path: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by: string | null;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by?: string | null;
+          sensor_id: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        Update: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value?: number;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          sensor_id?: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "readings_sensor_id_fkey";
+            columns: ["sensor_id"];
+            isOneToOne: false;
+            referencedRelation: "sensors";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      readings_hourly: {
+        Row: {
+          avg_value: number;
+          hour: string;
+          max_value: number;
+          min_value: number;
+          n: number;
+          sensor_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          avg_value: number;
+          hour: string;
+          max_value: number;
+          min_value: number;
+          n: number;
+          sensor_id: string;
+        };
+        Update: {
+          avg_value?: number;
+          hour?: string;
+          max_value?: number;
+          min_value?: number;
+          n?: number;
+          sensor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "readings_hourly_sensor_id_fkey";
+            columns: ["sensor_id"];
+            isOneToOne: false;
+            referencedRelation: "sensors";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      readings_y2026m09: {
+        Row: {
+          note: string | null;
+          photo_path: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by: string | null;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by?: string | null;
+          sensor_id: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        Update: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value?: number;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          sensor_id?: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value?: number;
+        };
+        Relationships: [];
+      };
+      readings_y2026m10: {
+        Row: {
+          note: string | null;
+          photo_path: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by: string | null;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by?: string | null;
+          sensor_id: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        Update: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value?: number;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          sensor_id?: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value?: number;
+        };
+        Relationships: [];
+      };
+      readings_y2026m11: {
+        Row: {
+          note: string | null;
+          photo_path: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by: string | null;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by?: string | null;
+          sensor_id: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        Update: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value?: number;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          sensor_id?: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value?: number;
+        };
+        Relationships: [];
+      };
+      readings_y2026m12: {
+        Row: {
+          note: string | null;
+          photo_path: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by: string | null;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by?: string | null;
+          sensor_id: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        Update: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value?: number;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          sensor_id?: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value?: number;
+        };
+        Relationships: [];
+      };
+      readings_y2027m01: {
+        Row: {
+          note: string | null;
+          photo_path: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by: string | null;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by?: string | null;
+          sensor_id: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        Update: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value?: number;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          sensor_id?: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value?: number;
+        };
+        Relationships: [];
+      };
+      readings_y2027m02: {
+        Row: {
+          note: string | null;
+          photo_path: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by: string | null;
+          sensor_id: string;
+          source: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value: number;
+          recorded_at: string;
+          recorded_by?: string | null;
+          sensor_id: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value: number;
+        };
+        Update: {
+          note?: string | null;
+          photo_path?: string | null;
+          raw_value?: number;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          sensor_id?: string;
+          source?: Database["public"]["Enums"]["reading_source"];
+          value?: number;
+        };
+        Relationships: [];
+      };
       reminder_queue: {
         Row: {
           client_id: string;
@@ -2933,6 +4164,108 @@ export type Database = {
             columns: ["rate_card_id"];
             isOneToOne: false;
             referencedRelation: "rate_cards";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sensors: {
+        Row: {
+          battery_pct: number | null;
+          calibration_due_at: string | null;
+          calibration_offset: number;
+          created_at: string;
+          deleted_at: string | null;
+          id: string;
+          installed_on: string | null;
+          is_manual: boolean;
+          last_calibrated_at: string | null;
+          last_raw_value: number | null;
+          last_seen_at: string | null;
+          last_value: number | null;
+          name: string;
+          notes: string | null;
+          serial_no: string;
+          status: Database["public"]["Enums"]["sensor_status"];
+          type: Database["public"]["Enums"]["sensor_type"];
+          unit: string;
+          updated_at: string;
+          warehouse_id: string;
+          zone_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          battery_pct?: number | null;
+          calibration_due_at?: string | null;
+          calibration_offset?: number;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          installed_on?: string | null;
+          is_manual?: boolean;
+          last_calibrated_at?: string | null;
+          last_raw_value?: number | null;
+          last_seen_at?: string | null;
+          last_value?: number | null;
+          name: string;
+          notes?: string | null;
+          serial_no: string;
+          status?: Database["public"]["Enums"]["sensor_status"];
+          type?: Database["public"]["Enums"]["sensor_type"];
+          unit?: string;
+          updated_at?: string;
+          warehouse_id: string;
+          zone_id: string;
+        };
+        Update: {
+          battery_pct?: number | null;
+          calibration_due_at?: string | null;
+          calibration_offset?: number;
+          created_at?: string;
+          deleted_at?: string | null;
+          id?: string;
+          installed_on?: string | null;
+          is_manual?: boolean;
+          last_calibrated_at?: string | null;
+          last_raw_value?: number | null;
+          last_seen_at?: string | null;
+          last_value?: number | null;
+          name?: string;
+          notes?: string | null;
+          serial_no?: string;
+          status?: Database["public"]["Enums"]["sensor_status"];
+          type?: Database["public"]["Enums"]["sensor_type"];
+          unit?: string;
+          updated_at?: string;
+          warehouse_id?: string;
+          zone_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sensors_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["warehouse_id"];
+          },
+          {
+            foreignKeyName: "sensors_warehouse_id_fkey";
+            columns: ["warehouse_id"];
+            isOneToOne: false;
+            referencedRelation: "warehouses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sensors_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "v_zone_slot_summary";
+            referencedColumns: ["zone_id"];
+          },
+          {
+            foreignKeyName: "sensors_zone_id_fkey";
+            columns: ["zone_id"];
+            isOneToOne: false;
+            referencedRelation: "zones";
             referencedColumns: ["id"];
           },
         ];
@@ -3738,6 +5071,11 @@ export type Database = {
         Returns: undefined;
       };
       _rupees: { Args: { p: number }; Returns: string };
+      acknowledge_alert: { Args: { p_alert_id: string }; Returns: undefined };
+      add_manual_reading: {
+        Args: { p_note?: string; p_photo_path?: string; p_value: number; p_zone_id: string };
+        Returns: string;
+      };
       add_other_charge: {
         Args: {
           p_amount_paise: number;
@@ -3755,6 +5093,21 @@ export type Database = {
         Args: { p_new_quantity: number; p_reason: string; p_stock_item_id: string };
         Returns: undefined;
       };
+      affected_stock: {
+        Args: { p_from: string; p_to: string; p_zone_id: string };
+        Returns: {
+          batch_no: string;
+          client_id: string;
+          client_name: string;
+          expiry_date: string;
+          item_name: string;
+          quantity: number;
+          slot_code: string;
+          slot_id: string;
+          stock_item_id: string;
+          unit: string;
+        }[];
+      };
       ageing_report: {
         Args: { p_as_of?: string };
         Returns: {
@@ -3769,6 +5122,14 @@ export type Database = {
           outstanding_paise: number;
         }[];
       };
+      alert_recipients: {
+        Args: { p_level: number; p_warehouse_id: string };
+        Returns: {
+          email: string;
+          phone: string;
+          user_id: string;
+        }[];
+      };
       alloc_counts_on: {
         Args: { p_day: string; p_end: string; p_start: string };
         Returns: boolean;
@@ -3776,6 +5137,10 @@ export type Database = {
       alloc_days: { Args: { p_end: string; p_start: string }; Returns: number };
       apply_advances: { Args: { p_client_id: string }; Returns: undefined };
       approve_booking: { Args: { p_booking_id: string; p_note?: string }; Returns: number };
+      approve_client_notice: {
+        Args: { p_body?: string; p_notice_id: string; p_subject?: string };
+        Returns: undefined;
+      };
       approve_dispatch_request: {
         Args: { p_note?: string; p_request_id: string };
         Returns: number;
@@ -3800,6 +5165,7 @@ export type Database = {
         Args: { p_reason: string; p_receipt_id: string };
         Returns: undefined;
       };
+      cc: { Args: { p_default: number; p_key: string }; Returns: number };
       check_space_availability: {
         Args: {
           p_brigade_type_id?: string;
@@ -3819,6 +5185,7 @@ export type Database = {
           zone_name: string;
         }[];
       };
+      client_affected_by_alert: { Args: { p_alert_id: string }; Returns: boolean };
       client_has_active_contract: {
         Args: { p_client_id: string; p_on?: string; p_warehouse_id: string };
         Returns: boolean;
@@ -3836,10 +5203,69 @@ export type Database = {
           entry_date: string;
         }[];
       };
+      client_lorry_temps: {
+        Args: { p_client_id: string; p_from: string; p_to: string };
+        Returns: {
+          at: string;
+          doc_no: string;
+          doc_type: string;
+          lorry_number: string;
+          temp_c: number;
+        }[];
+      };
       client_sees_warehouse: { Args: { p_warehouse_id: string }; Returns: boolean };
+      client_temperature_report: {
+        Args: { p_client_id: string; p_from: string; p_to: string };
+        Returns: {
+          approx: boolean;
+          avg_c: number;
+          brigades: number;
+          from_date: string;
+          max_c: number;
+          min_c: number;
+          minutes_covered: number;
+          minutes_out: number;
+          minutes_period: number;
+          readings: number;
+          slots: string[];
+          temp_max: number;
+          temp_min: number;
+          to_date: string;
+          zone_code: string;
+          zone_id: string;
+          zone_name: string;
+        }[];
+      };
+      close_alert: {
+        Args: { p_alert_id: string; p_now: string; p_recovered: string };
+        Returns: undefined;
+      };
+      cold_chain_overview: {
+        Args: { p_warehouse_id: string };
+        Returns: {
+          current_value: number;
+          last_at: string;
+          manual_only: boolean;
+          offline_after_min: number;
+          open_alerts: number;
+          sensor_count: number;
+          spark: Json;
+          storage_type: Database["public"]["Enums"]["storage_type"];
+          temp_max: number;
+          temp_min: number;
+          worst_severity: string;
+          zone_code: string;
+          zone_id: string;
+          zone_name: string;
+        }[];
+      };
       company_belongs_to_client: {
         Args: { p_client_id: string; p_company_id: string };
         Returns: boolean;
+      };
+      complete_maintenance_task: {
+        Args: { p_notes?: string; p_photos?: string[]; p_task_id: string };
+        Returns: undefined;
       };
       confirm_delivery_challan: {
         Args: {
@@ -3864,6 +5290,7 @@ export type Database = {
         };
         Returns: string;
       };
+      copy_alert_evidence: { Args: { p_alert_id: string; p_now?: string }; Returns: number };
       create_brigade_slots: {
         Args: {
           p_aisle_start?: number;
@@ -3876,6 +5303,10 @@ export type Database = {
         };
         Returns: number;
       };
+      create_device_key: {
+        Args: { p_label: string; p_sensor_id: string; p_warehouse_id: string };
+        Returns: string;
+      };
       current_app_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["app_role"];
@@ -3885,7 +5316,20 @@ export type Database = {
         Args: { p_invoice_id: string; p_reason: string };
         Returns: undefined;
       };
+      dispatch_notifications: { Args: Record<PropertyKey, never>; Returns: boolean };
+      effective_rule: {
+        Args: { p_zone_id: string };
+        Returns: Database["public"]["CompositeTypes"]["effective_rule"];
+        SetofOptions: {
+          from: "*";
+          to: "effective_rule";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       einvoice_json: { Args: { p_invoice_id: string }; Returns: Json };
+      ensure_reading_partitions: { Args: { p_ahead?: number; p_back?: number }; Returns: number };
+      evaluate_alerts: { Args: { p_now?: string }; Returns: number };
       financial_year_label: { Args: { p_date: string }; Returns: string };
       fix_invoice_line: {
         Args: {
@@ -3940,9 +5384,15 @@ export type Database = {
           taxable_paise: number;
         }[];
       };
+      in_defrost: { Args: { p_ts: string; p_zone_id: string }; Returns: boolean };
+      ingest_readings: {
+        Args: { p_key_hash: string; p_now?: string; p_readings: Json };
+        Returns: Json;
+      };
       invoice_outstanding: { Args: { p_invoice_id: string }; Returns: number };
       is_accountant: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_client: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_my_client: { Args: { p_client_id: string }; Returns: boolean };
       is_staff_of: { Args: { p_warehouse_id: string }; Returns: boolean };
       is_valid_gstin: { Args: { p: string }; Returns: boolean };
@@ -3978,7 +5428,10 @@ export type Database = {
           source: string;
         }[];
       };
+      maintenance_reminders: { Args: { p_now?: string }; Returns: number };
       manages_warehouse: { Args: { p_warehouse_id: string }; Returns: boolean };
+      manual_sensor_for_zone: { Args: { p_zone_id: string }; Returns: string };
+      mark_notifications_read: { Args: { p_ids?: string[] }; Returns: undefined };
       mark_overdue_invoices: { Args: Record<PropertyKey, never>; Returns: number };
       my_rate_summary: {
         Args: Record<PropertyKey, never>;
@@ -3994,6 +5447,10 @@ export type Database = {
       next_doc_number: {
         Args: { p_date?: string; p_doc_type: string; p_warehouse_id: string };
         Returns: string;
+      };
+      notify_alert: {
+        Args: { p_alert_id: string; p_headline: string; p_level: number };
+        Returns: number;
       };
       occupy_slot: {
         Args: {
@@ -4032,8 +5489,49 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      open_alert: {
+        Args: {
+          p_dev: number;
+          p_headline: string;
+          p_kind: Database["public"]["Enums"]["alert_kind"];
+          p_limit: number;
+          p_now: string;
+          p_peak: number;
+          p_sensor: string;
+          p_sev: Database["public"]["Enums"]["alert_severity"];
+          p_start: string;
+          p_zone: string;
+        };
+        Returns: string;
+      };
       path_warehouse_id: { Args: { p_name: string }; Returns: string };
+      queue_message: {
+        Args: {
+          p_alert?: string;
+          p_body: string;
+          p_email: string;
+          p_kind: string;
+          p_phone: string;
+          p_task?: string;
+          p_title: string;
+          p_user: string;
+        };
+        Returns: undefined;
+      };
+      reading_visible_to_client: { Args: { p_sensor_id: string; p_ts: string }; Returns: boolean };
       recalculate_invoice: { Args: { p_invoice_id: string }; Returns: undefined };
+      record_calibration: {
+        Args: {
+          p_certificate_path?: string;
+          p_date: string;
+          p_next_due?: string;
+          p_notes?: string;
+          p_reference: number;
+          p_sensor_id: string;
+          p_sensor_value: number;
+        };
+        Returns: string;
+      };
       record_challan_pod: {
         Args: { p_challan_id: string; p_receiver_name: string; p_signature_path: string };
         Returns: undefined;
@@ -4084,6 +5582,7 @@ export type Database = {
       };
       refresh_invoice_state: { Args: { p_invoice_id: string }; Returns: undefined };
       reject_booking: { Args: { p_booking_id: string; p_note: string }; Returns: undefined };
+      reject_client_notice: { Args: { p_notice_id: string }; Returns: undefined };
       reject_dispatch_request: {
         Args: { p_note: string; p_request_id: string };
         Returns: undefined;
@@ -4138,6 +5637,17 @@ export type Database = {
           warehouse: string;
           warehouse_id: string;
         }[];
+      };
+      resolve_alert: {
+        Args: {
+          p_action: string;
+          p_alert_id: string;
+          p_cause: string;
+          p_create_task?: boolean;
+          p_equipment_id?: string;
+          p_task_due?: string;
+        };
+        Returns: undefined;
       };
       resolve_labour_rate: {
         Args: {
@@ -4202,12 +5712,17 @@ export type Database = {
         }[];
       };
       reverse_payment: { Args: { p_payment_id: string; p_reason: string }; Returns: undefined };
+      revoke_device_key: { Args: { p_key_id: string }; Returns: undefined };
+      rollup_readings: { Args: { p_now?: string }; Returns: Json };
+      rotate_device_key: { Args: { p_key_id: string }; Returns: string };
       set_billing_override: {
         Args: { p_client_id: string; p_reason: string; p_until: string };
         Returns: undefined;
       };
+      set_internal_secret: { Args: { p_key: string; p_value: string }; Returns: undefined };
       setting_json: { Args: { p_key: string }; Returns: Json };
       slot_load_kg: { Args: { p_slot_id: string }; Returns: number };
+      snapshot_alert_stock: { Args: { p_alert_id: string; p_now?: string }; Returns: number };
       snapshot_occupancy: { Args: { p_date: string }; Returns: number };
       snapshot_occupancy_backfill: {
         Args: { p_force?: boolean; p_from?: string; p_to?: string };
@@ -4235,6 +5750,17 @@ export type Database = {
         }[];
       };
       tally_export_xml: { Args: { p_from: string; p_to: string }; Returns: string };
+      temp_dev: {
+        Args: {
+          p_hi: number;
+          p_lo: number;
+          p_tol: number;
+          p_ts: string;
+          p_value: number;
+          p_zone: string;
+        };
+        Returns: number;
+      };
       today_ist: { Args: Record<PropertyKey, never>; Returns: string };
       transfer_stock: {
         Args: {
@@ -4244,6 +5770,15 @@ export type Database = {
           p_to_slot_id: string;
         };
         Returns: string;
+      };
+      update_maintenance_task: {
+        Args: {
+          p_notes?: string;
+          p_photos?: string[];
+          p_status: Database["public"]["Enums"]["task_status"];
+          p_task_id: string;
+        };
+        Returns: undefined;
       };
       zone_matches_temp: {
         Args: {
@@ -4257,8 +5792,30 @@ export type Database = {
         };
         Returns: boolean;
       };
+      zone_series: {
+        Args: { p_bucket_min?: number; p_from: string; p_to: string; p_zone_id: string };
+        Returns: {
+          avg_v: number;
+          bucket: string;
+          max_v: number;
+          min_v: number;
+          n: number;
+        }[];
+      };
     };
     Enums: {
+      alert_kind:
+        | "TEMP_HIGH"
+        | "TEMP_LOW"
+        | "OFFLINE"
+        | "DOOR_OPEN"
+        | "POWER_FAILURE"
+        | "COMPRESSOR_FAULT"
+        | "HUMIDITY"
+        | "CALIBRATION_DUE"
+        | "BATTERY_LOW";
+      alert_severity: "WARNING" | "CRITICAL";
+      alert_status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED";
       app_role: "SUPER_ADMIN" | "WAREHOUSE_MANAGER" | "STAFF" | "CLIENT" | "ACCOUNTANT";
       applicant_status: "APPLIED" | "INTERVIEW" | "OFFERED" | "JOINED" | "REJECTED";
       audit_action: "INSERT" | "UPDATE" | "DELETE";
@@ -4277,6 +5834,7 @@ export type Database = {
         | "DISPATCHED"
         | "CANCELLED";
       document_status: "CONFIRMED" | "CANCELLED";
+      equipment_type: "CHILLER" | "COMPRESSOR" | "GENERATOR" | "FORKLIFT" | "RACK" | "OTHER";
       gate_direction: "INWARD" | "OUTWARD";
       gate_status: "AT_GATE" | "UNLOADING" | "RECEIVED" | "LOADING" | "DISPATCHED" | "CANCELLED";
       invoice_section: "RENT" | "LABOUR" | "OTHER";
@@ -4302,14 +5860,35 @@ export type Database = {
       pick_rule: "FEFO" | "FIFO";
       premium_type: "NONE" | "PERCENT" | "AMOUNT";
       rate_scope: "CLIENT" | "GROUP" | "WAREHOUSE" | "GLOBAL";
+      reading_source: "SENSOR" | "MANUAL";
       rent_basis: "PER_BRIGADE" | "PER_M3";
+      sensor_status: "ACTIVE" | "OFFLINE" | "FAULTY" | "RETIRED";
+      sensor_type: "TEMPERATURE" | "HUMIDITY" | "DOOR" | "POWER" | "COMPRESSOR";
       slot_status: "FREE" | "RESERVED" | "OCCUPIED" | "BLOCKED";
       stock_condition: "GOOD" | "DAMAGED";
       storage_type: "DRY" | "CHILLED" | "FROZEN" | "DEEP_FREEZE" | "BONDED" | "HAZMAT";
+      task_status: "OPEN" | "IN_PROGRESS" | "DONE" | "CANCELLED";
       vacancy_status: "OPEN" | "ON_HOLD" | "CLOSED";
     };
     CompositeTypes: {
-      [_ in never]: never;
+      effective_rule: {
+        enabled: boolean | null;
+        min_temp: number | null;
+        max_temp: number | null;
+        tolerance_deg: number | null;
+        delay_min: number | null;
+        critical_deviation_deg: number | null;
+        critical_after_min: number | null;
+        recovery_min: number | null;
+        offline_after_min: number | null;
+        door_open_after_min: number | null;
+        humidity_min: number | null;
+        humidity_max: number | null;
+        humidity_delay_min: number | null;
+        battery_low_pct: number | null;
+        calibration_warn_days: number | null;
+        critical_ack_min: number | null;
+      };
     };
   };
 };
@@ -4422,6 +6001,19 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      alert_kind: [
+        "TEMP_HIGH",
+        "TEMP_LOW",
+        "OFFLINE",
+        "DOOR_OPEN",
+        "POWER_FAILURE",
+        "COMPRESSOR_FAULT",
+        "HUMIDITY",
+        "CALIBRATION_DUE",
+        "BATTERY_LOW",
+      ],
+      alert_severity: ["WARNING", "CRITICAL"],
+      alert_status: ["OPEN", "ACKNOWLEDGED", "RESOLVED"],
       app_role: ["SUPER_ADMIN", "WAREHOUSE_MANAGER", "STAFF", "CLIENT", "ACCOUNTANT"],
       applicant_status: ["APPLIED", "INTERVIEW", "OFFERED", "JOINED", "REJECTED"],
       audit_action: ["INSERT", "UPDATE", "DELETE"],
@@ -4434,6 +6026,7 @@ export const Constants = {
       contract_status: ["DRAFT", "ACTIVE", "EXPIRED", "TERMINATED"],
       dispatch_status: ["REQUESTED", "APPROVED", "REJECTED", "PICKING", "DISPATCHED", "CANCELLED"],
       document_status: ["CONFIRMED", "CANCELLED"],
+      equipment_type: ["CHILLER", "COMPRESSOR", "GENERATOR", "FORKLIFT", "RACK", "OTHER"],
       gate_direction: ["INWARD", "OUTWARD"],
       gate_status: ["AT_GATE", "UNLOADING", "RECEIVED", "LOADING", "DISPATCHED", "CANCELLED"],
       invoice_section: ["RENT", "LABOUR", "OTHER"],
@@ -4455,10 +6048,14 @@ export const Constants = {
       pick_rule: ["FEFO", "FIFO"],
       premium_type: ["NONE", "PERCENT", "AMOUNT"],
       rate_scope: ["CLIENT", "GROUP", "WAREHOUSE", "GLOBAL"],
+      reading_source: ["SENSOR", "MANUAL"],
       rent_basis: ["PER_BRIGADE", "PER_M3"],
+      sensor_status: ["ACTIVE", "OFFLINE", "FAULTY", "RETIRED"],
+      sensor_type: ["TEMPERATURE", "HUMIDITY", "DOOR", "POWER", "COMPRESSOR"],
       slot_status: ["FREE", "RESERVED", "OCCUPIED", "BLOCKED"],
       stock_condition: ["GOOD", "DAMAGED"],
       storage_type: ["DRY", "CHILLED", "FROZEN", "DEEP_FREEZE", "BONDED", "HAZMAT"],
+      task_status: ["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"],
       vacancy_status: ["OPEN", "ON_HOLD", "CLOSED"],
     },
   },

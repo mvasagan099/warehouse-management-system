@@ -39,6 +39,14 @@ const LedgerPage = lazy(() => import('./features/billing/LedgerPage').then((m) =
 const RatesPage = lazy(() => import('./features/billing/RatesPage').then((m) => ({ default: m.RatesPage })))
 const BillingReportsPage = lazy(() => import('./features/billing/BillingReportsPage').then((m) => ({ default: m.BillingReportsPage })))
 const BillingSettingsPage = lazy(() => import('./features/billing/BillingSettingsPage').then((m) => ({ default: m.BillingSettingsPage })))
+const LiveDashboard = lazy(() => import('./features/coldchain/LiveDashboard').then((m) => ({ default: m.LiveDashboard })))
+const ZoneDetail = lazy(() => import('./features/coldchain/ZoneDetail').then((m) => ({ default: m.ZoneDetail })))
+const ManualReadingPage = lazy(() => import('./features/coldchain/ManualReadingPage').then((m) => ({ default: m.ManualReadingPage })))
+const AlertsPage = lazy(() => import('./features/coldchain/AlertsPage').then((m) => ({ default: m.AlertsPage })))
+const SensorsPage = lazy(() => import('./features/coldchain/SensorsPage').then((m) => ({ default: m.SensorsPage })))
+const RulesPage = lazy(() => import('./features/coldchain/RulesPage').then((m) => ({ default: m.RulesPage })))
+const EquipmentPage = lazy(() => import('./features/coldchain/EquipmentPage').then((m) => ({ default: m.EquipmentPage })))
+const ColdReportsPage = lazy(() => import('./features/coldchain/ColdReportsPage').then((m) => ({ default: m.ColdReportsPage })))
 const AuditLogPage = lazy(() => import('./features/audit/AuditLogPage').then((m) => ({ default: m.AuditLogPage })))
 
 /** Staff / managers / admins see the dashboard; a client login sees its own portal home. */
@@ -86,6 +94,14 @@ export function AppRoutes() {
             <Route path="ledger" element={<RequireArea area="ledger"><LedgerPage /></RequireArea>} />
             <Route path="rates" element={<RequireArea area="rates"><RatesPage /></RequireArea>} />
             <Route path="billing-reports" element={<RequireArea area="billingReports"><BillingReportsPage /></RequireArea>} />
+            <Route path="cold-chain" element={<RequireArea area="coldChain"><LiveDashboard /></RequireArea>} />
+            <Route path="cold-chain/zones/:id" element={<RequireArea area="coldChain"><ZoneDetail /></RequireArea>} />
+            <Route path="manual-reading" element={<RequireArea area="manualReading"><ManualReadingPage /></RequireArea>} />
+            <Route path="alerts" element={<RequireArea area="alerts"><AlertsPage /></RequireArea>} />
+            <Route path="sensors" element={<RequireArea area="sensors"><SensorsPage /></RequireArea>} />
+            <Route path="alert-rules" element={<RequireArea area="alertRules"><RulesPage /></RequireArea>} />
+            <Route path="equipment" element={<RequireArea area="equipment"><EquipmentPage /></RequireArea>} />
+            <Route path="cold-reports" element={<RequireArea area="coldReports"><ColdReportsPage /></RequireArea>} />
             <Route path="billing-settings" element={<RequireArea area="billingSettings"><BillingSettingsPage /></RequireArea>} />
             <Route path="*" element={<MessagePage titleKey="auth.notFoundTitle" />} />
           </Route>

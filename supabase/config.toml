@@ -430,3 +430,9 @@ enabled = true
 
 [functions.razorpay-webhook]
 verify_jwt = false
+
+[functions.ingest-reading]
+verify_jwt = false
+
+[functions.notify-alert]
+verify_jwt = false

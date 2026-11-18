@@ -1,0 +1,191 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { ColumnDef } from '@tanstack/react-table'
+import { Copy, Gauge, KeyRound, Pencil, Plus } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
+import { useAuth } from '../../auth/AuthProvider'
+import { canWrite } from '../../auth/roles'
+import { Button } from '../../components/ui/Button'
+import { DataTable } from '../../components/ui/DataTable'
+import { Field, Input, Select, Textarea } from '../../components/ui/Field'
+import { Modal } from '../../components/ui/Modal'
+import { Badge, Card, PageHeader, Toolbar } from '../../components/ui/misc'
+import { errorMessage } from '../../lib/errors'
+import { formatDate, formatDateTime } from '../../lib/format'
+import { supabase } from '../../lib/supabase'
+import type { CalibrationLog, DeviceKey, Sensor, SensorStatus, SensorType } from '../../lib/types'
+import { useWarehouses, useZones } from '../shared/queries'
+import { ageText } from './common'
+import { useNow, useSensors } from './queries'
+
+const TYPES: SensorType[] = ['TEMPERATURE', 'HUMIDITY', 'DOOR', 'POWER', 'COMPRESSOR']
+const STATUSES: SensorStatus[] = ['ACTIVE', 'OFFLINE', 'FAULTY', 'RETIRED']
+const UNIT: Record<SensorType, string> = { TEMPERATURE: 'C', HUMIDITY: '%', DOOR: '', POWER: '', COMPRESSOR: '' }
+const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ingest-reading`
+
+function SensorForm({ sensor, onClose }: { sensor: Sensor | null; onClose: () => void }) {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const zones = useZones()
+  const whs = useWarehouses()
+  const wh = new Map((whs.data ?? []).map((w) => [w.id, w.code]))
+  const [f, setF] = useState({ zone_id: sensor?.zone_id ?? '', name: sensor?.name ?? '', type: (sensor?.type ?? 'TEMPERATURE') as SensorType, serial_no: sensor?.serial_no ?? '', installed_on: sensor?.installed_on ?? new Date().toISOString().slice(0, 10), status: (sensor?.status ?? 'ACTIVE') as SensorStatus, notes: sensor?.notes ?? '' })
+  const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF({ ...f, [k]: v })
+  const save = useMutation({
+    mutationFn: async () => {
+      const row = { zone_id: f.zone_id, name: f.name.trim(), type: f.type, unit: UNIT[f.type], serial_no: f.serial_no.trim(), installed_on: f.installed_on || null, status: f.status, notes: f.notes.trim() || null }
+      const { error } = sensor ? await supabase.from('sensors').update(row).eq('id', sensor.id) : await supabase.from('sensors').insert(row as never)
+      if (error) throw error
+    },
+    onSuccess: () => { toast.success(t('common.saved')); void qc.invalidateQueries({ queryKey: ['sensors'] }); onClose() },
+    onError: async (e) => toast.error(await errorMessage(e)),
+  })
+  return (
+    <Modal open title={sensor ? t('cold.editSensor') : t('cold.addSensor')} onClose={onClose} footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+      <Button loading={save.isPending} disabled={!f.zone_id || !f.name.trim() || !f.serial_no.trim()} onClick={() => save.mutate()}>{t('common.save')}</Button></>}>
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <Field label={t('common.zone')} htmlFor="sn-zone" className="col-span-2"><Select id="sn-zone" value={f.zone_id} onChange={(e) => set('zone_id', e.target.value)}><option value="">{t('common.select')}</option>
+          {(zones.data ?? []).filter((z) => z.is_active).map((z) => <option key={z.id} value={z.id}>{wh.get(z.warehouse_id)} · {z.code} · {z.name}</option>)}</Select></Field>
+        <Field label={t('common.name')} htmlFor="sn-name"><Input id="sn-name" value={f.name} onChange={(e) => set('name', e.target.value)} /></Field>
+        <Field label={t('cold.serial')} htmlFor="sn-serial" hint={t('cold.serialHelp')}><Input id="sn-serial" value={f.serial_no} disabled={!!sensor} onChange={(e) => set('serial_no', e.target.value)} /></Field>
+        <Field label={t('cold.sensorType')} htmlFor="sn-type"><Select id="sn-type" value={f.type} onChange={(e) => set('type', e.target.value as SensorType)}>{TYPES.map((x) => <option key={x} value={x}>{t(`cold.type.${x}`)}</option>)}</Select></Field>
+        <Field label={t('cold.installedOn')} htmlFor="sn-inst"><Input id="sn-inst" type="date" value={f.installed_on} onChange={(e) => set('installed_on', e.target.value)} /></Field>
+        <Field label={t('common.status')} htmlFor="sn-status" className="col-span-2"><Select id="sn-status" value={f.status} onChange={(e) => set('status', e.target.value as SensorStatus)}>{STATUSES.map((x) => <option key={x} value={x}>{t(`cold.sensorStatus.${x}`)}</option>)}</Select></Field>
+        <Field label={t('common.notes')} htmlFor="sn-notes" optional className="col-span-2"><Textarea id="sn-notes" value={f.notes} onChange={(e) => set('notes', e.target.value)} /></Field>
+      </div>
+    </Modal>
+  )
+}
+
+/** Device keys: generated by the administrator, shown once, only the hash is stored; rotate or revoke at any time. */
+function KeysDialog({ sensor, onClose }: { sensor: Sensor; onClose: () => void }) {
+  const { t, i18n } = useTranslation()
+  const qc = useQueryClient()
+  const [shown, setShown] = useState<{ key: string; label: string } | null>(null)
+  const keys = useQuery({ queryKey: ['device_keys', sensor.id], queryFn: async () => { const { data, error } = await supabase.from('device_keys').select('*').eq('warehouse_id', sensor.warehouse_id).order('created_at', { ascending: false }); if (error) throw error; return data } })
+  const mine = (keys.data ?? []).filter((k) => k.sensor_id === sensor.id || k.sensor_id === null)
+  const refresh = () => void qc.invalidateQueries({ queryKey: ['device_keys'] })
+  const create = useMutation({
+    mutationFn: async (gateway: boolean) => { const { data, error } = await supabase.rpc('create_device_key', { p_warehouse_id: sensor.warehouse_id, p_sensor_id: (gateway ? null : sensor.id) as string, p_label: gateway ? `Gateway ${sensor.warehouse_id.slice(0, 4)}` : sensor.name }); if (error) throw error; return { key: data as string, label: gateway ? 'gateway' : sensor.name } },
+    onSuccess: (k) => { setShown(k); refresh() }, onError: async (e) => toast.error(await errorMessage(e)),
+  })
+  const rotate = useMutation({
+    mutationFn: async (k: DeviceKey) => { const { data, error } = await supabase.rpc('rotate_device_key', { p_key_id: k.id }); if (error) throw error; return { key: data as string, label: k.label } },
+    onSuccess: (k) => { setShown(k); refresh() }, onError: async (e) => toast.error(await errorMessage(e)),
+  })
+  const revoke = useMutation({
+    mutationFn: async (k: DeviceKey) => { const { error } = await supabase.rpc('revoke_device_key', { p_key_id: k.id }); if (error) throw error },
+    onSuccess: () => { toast.success(t('cold.keyRevoked')); refresh() }, onError: async (e) => toast.error(await errorMessage(e)),
+  })
+  const curl = shown ? `curl -X POST '${FN_URL}' \\\n  -H 'X-Device-Key: ${shown.key}' -H 'Content-Type: application/json' \\\n  -d '{"sensor":"${sensor.serial_no}","value":-19.4,"unit":"${sensor.unit || ''}"}'` : ''
+  return (
+    <Modal open size="lg" title={`${t('cold.deviceKeys')} · ${sensor.name}`} onClose={onClose} footer={<>
+      <Button variant="secondary" loading={create.isPending && create.variables === true} onClick={() => create.mutate(true)}>{t('cold.newGatewayKey')}</Button>
+      <Button icon={<KeyRound className="h-4 w-4" />} loading={create.isPending && create.variables === false} onClick={() => create.mutate(false)}>{t('cold.newSensorKey')}</Button></>}>
+      <div className="space-y-4 text-sm">
+        {shown && <div className="space-y-2 rounded-lg border-2 border-amber-400 bg-amber-50 p-3" data-testid="new-key">
+          <p className="font-medium text-amber-900">{t('cold.keyShownOnce')}</p>
+          <div className="flex items-center gap-2"><code className="break-all rounded bg-white px-2 py-1 font-mono text-xs" data-testid="key-value">{shown.key}</code>
+            <Button size="sm" variant="secondary" icon={<Copy className="h-4 w-4" />} onClick={() => { void navigator.clipboard.writeText(shown.key); toast.success(t('billing.linkCopied')) }}>{t('billing.copyLink')}</Button></div>
+          <pre className="overflow-x-auto rounded bg-slate-900 p-2 text-[11px] text-slate-100" data-testid="curl-sample">{curl}</pre>
+        </div>}
+        <table className="min-w-full text-xs"><thead className="text-left uppercase text-slate-500"><tr><th className="py-1">{t('cold.keyLabel')}</th><th>{t('cold.keyPrefix')}</th><th>{t('cold.scope')}</th><th>{t('cold.lastUsed')}</th><th>{t('common.status')}</th><th /></tr></thead>
+          <tbody>{mine.map((k) => <tr key={k.id} className="border-t border-slate-100"><td className="py-1.5">{k.label}</td><td className="font-mono">{k.key_prefix}…</td><td>{k.sensor_id ? t('cold.thisSensor') : t('cold.wholeWarehouse')}</td>
+            <td>{k.last_used_at ? formatDateTime(k.last_used_at, i18n.resolvedLanguage) : '—'}</td><td>{k.revoked_at ? <Badge tone="red">{t('cold.revoked')}</Badge> : <Badge tone="green">{t('common.active')}</Badge>}</td>
+            <td className="whitespace-nowrap">{!k.revoked_at && <><Button size="sm" variant="ghost" onClick={() => rotate.mutate(k)}>{t('cold.rotate')}</Button><Button size="sm" variant="ghost" onClick={() => revoke.mutate(k)}>{t('cold.revoke')}</Button></>}</td></tr>)}
+            {!mine.length && <tr><td colSpan={6} className="py-4 text-center text-slate-500">{t('cold.noKeys')}</td></tr>}</tbody></table>
+      </div>
+    </Modal>
+  )
+}
+
+function CalibrationDialog({ sensor, onClose }: { sensor: Sensor; onClose: () => void }) {
+  const { t, i18n } = useTranslation()
+  const qc = useQueryClient()
+  const today = new Date().toISOString().slice(0, 10)
+  const [date, setDate] = useState(today)
+  const [ref, setRef] = useState('')
+  const [reading, setReading] = useState('')
+  const [next, setNext] = useState('')
+  const [notes, setNotes] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const history = useQuery({ queryKey: ['calibrations', sensor.id], queryFn: async () => { const { data, error } = await supabase.from('calibration_log').select('*').eq('sensor_id', sensor.id).order('calibrated_on', { ascending: false }); if (error) throw error; return data } })
+  const r = Number(ref), s = Number(reading)
+  const ok = ref.trim() !== '' && reading.trim() !== '' && Number.isFinite(r) && Number.isFinite(s)
+  const offset = ok ? Math.round((r - s) * 100) / 100 : null
+  const save = useMutation({
+    mutationFn: async () => {
+      let path: string | undefined
+      if (file) { path = `${sensor.warehouse_id}/calibration/${crypto.randomUUID()}-${file.name.replace(/[^A-Za-z0-9._-]+/g, '-')}`; const up = await supabase.storage.from('coldchain').upload(path, file, { contentType: file.type }); if (up.error) throw up.error }
+      const { error } = await supabase.rpc('record_calibration', { p_sensor_id: sensor.id, p_date: date, p_reference: r, p_sensor_value: s, p_certificate_path: path, p_notes: notes.trim() || undefined, p_next_due: next || undefined })
+      if (error) throw error
+    },
+    onSuccess: () => { toast.success(t('cold.calibrationSaved')); void qc.invalidateQueries({ queryKey: ['calibrations'] }); void qc.invalidateQueries({ queryKey: ['sensors'] }); onClose() },
+    onError: async (e) => toast.error(await errorMessage(e)),
+  })
+  const certificate = async (c: CalibrationLog) => { const { data } = await supabase.storage.from('coldchain').createSignedUrl(c.certificate_path!, 120); if (data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener') }
+  return (
+    <Modal open size="lg" title={`${t('cold.calibration')} · ${sensor.name}`} onClose={onClose} footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+      <Button loading={save.isPending} disabled={!ok || !date} onClick={() => save.mutate()}>{t('common.save')}</Button></>}>
+      <div className="space-y-4 text-sm">
+        <p className="text-slate-600">{t('cold.calibrationHelp')} {t('cold.currentOffset')}: <b>{sensor.calibration_offset} °C</b></p>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={t('common.date')} htmlFor="cb-date"><Input id="cb-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+          <Field label={t('cold.nextDue')} htmlFor="cb-next" optional hint={t('cold.nextDueHelp')}><Input id="cb-next" type="date" value={next} onChange={(e) => setNext(e.target.value)} /></Field>
+          <Field label={t('cold.referenceReading')} htmlFor="cb-ref"><Input id="cb-ref" inputMode="decimal" value={ref} onChange={(e) => setRef(e.target.value)} /></Field>
+          <Field label={t('cold.sensorReading')} htmlFor="cb-read" hint={t('cold.rawHelp')}><Input id="cb-read" inputMode="decimal" value={reading} onChange={(e) => setReading(e.target.value)} /></Field>
+        </div>
+        {offset !== null && <p className="rounded-lg bg-slate-50 p-2">{t('cold.offsetApplied')}: <b data-testid="offset-preview">{offset > 0 ? '+' : ''}{offset} °C</b></p>}
+        <Field label={t('cold.certificate')} htmlFor="cb-file" optional><input id="cb-file" type="file" accept="application/pdf,image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="block w-full text-sm" /></Field>
+        <Field label={t('common.notes')} htmlFor="cb-notes" optional><Input id="cb-notes" value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
+        {!!history.data?.length && <table className="min-w-full text-xs"><thead className="text-left uppercase text-slate-500"><tr><th className="py-1">{t('common.date')}</th><th>{t('cold.referenceReading')}</th><th>{t('cold.sensorReading')}</th><th>{t('cold.offsetApplied')}</th><th /></tr></thead>
+          <tbody>{history.data.map((c) => <tr key={c.id} className="border-t border-slate-100"><td className="py-1.5">{formatDate(c.calibrated_on, i18n.resolvedLanguage)}</td><td>{c.reference_value}</td><td>{c.sensor_value}</td><td>{c.offset_applied}</td>
+            <td>{c.certificate_path && <Button size="sm" variant="ghost" onClick={() => certificate(c)}>{t('cold.certificate')}</Button>}</td></tr>)}</tbody></table>}
+      </div>
+    </Modal>
+  )
+}
+
+export function SensorsPage() {
+  const { t, i18n } = useTranslation()
+  const lang = i18n.resolvedLanguage
+  const { profile } = useAuth()
+  const manage = canWrite(profile?.role, 'sensors')
+  const admin = profile?.role === 'SUPER_ADMIN'
+  const sensors = useSensors()
+  const zones = useZones()
+  const now = useNow()
+  const [search, setSearch] = useState('')
+  const [form, setForm] = useState<{ sensor: Sensor | null } | null>(null)
+  const [keys, setKeys] = useState<Sensor | null>(null)
+  const [cal, setCal] = useState<Sensor | null>(null)
+  const zone = useMemo(() => new Map((zones.data ?? []).map((z) => [z.id, `${z.code} · ${z.name}`])), [zones.data])
+  const columns = useMemo<ColumnDef<Sensor>[]>(() => [
+    { accessorKey: 'name', header: t('common.name'), cell: (c) => <span className="font-medium">{c.getValue<string>()}</span> },
+    { id: 'zone', header: t('common.zone'), accessorFn: (r) => zone.get(r.zone_id) ?? '' },
+    { accessorKey: 'type', header: t('cold.sensorType'), cell: (c) => t(`cold.type.${c.getValue<string>()}`) },
+    { accessorKey: 'serial_no', header: t('cold.serial'), cell: (c) => <span className="font-mono text-xs">{c.getValue<string>()}</span> },
+    { accessorKey: 'status', header: t('common.status'), cell: (c) => <Badge tone={c.getValue() === 'ACTIVE' ? 'green' : c.getValue() === 'RETIRED' ? 'gray' : 'amber'}>{t(`cold.sensorStatus.${c.getValue<string>()}`)}</Badge> },
+    { id: 'seen', header: t('cold.lastSeen'), accessorFn: (r) => r.last_seen_at ?? '', cell: ({ row }) => row.original.is_manual ? t('cold.manualSensor') : row.original.last_seen_at ? `${ageText(row.original.last_seen_at, now)} ${t('cold.ago')}` : t('cold.neverReported') },
+    { id: 'cal', header: t('cold.calibrationDue'), accessorFn: (r) => r.calibration_due_at ?? '', cell: ({ row }) => row.original.calibration_due_at ? formatDate(row.original.calibration_due_at, lang) : '—' },
+    { accessorKey: 'calibration_offset', header: t('cold.offsetApplied'), cell: (c) => `${c.getValue<number>()} °C` },
+    { id: 'act', header: '', cell: ({ row }) => manage && !row.original.is_manual ? (
+      <div className="flex gap-1">
+        <Button size="sm" variant="ghost" icon={<Pencil className="h-4 w-4" />} onClick={() => setForm({ sensor: row.original })}>{t('common.edit')}</Button>
+        <Button size="sm" variant="ghost" icon={<Gauge className="h-4 w-4" />} onClick={() => setCal(row.original)}>{t('cold.calibrate')}</Button>
+        {admin && <Button size="sm" variant="ghost" icon={<KeyRound className="h-4 w-4" />} onClick={() => setKeys(row.original)}>{t('cold.keys')}</Button>}
+      </div>) : null },
+  ], [t, lang, zone, now, manage, admin])
+  return (
+    <div>
+      <PageHeader title={t('cold.sensorsTitle')} actions={manage && <Button icon={<Plus className="h-4 w-4" />} onClick={() => setForm({ sensor: null })}>{t('cold.addSensor')}</Button>} />
+      {!manage && <p className="mb-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">{t('common.readOnly')}</p>}
+      <Card><Toolbar><Input placeholder={t('common.search')} aria-label={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="sm:w-64" /></Toolbar>
+        <DataTable data={sensors.data} columns={columns} loading={sensors.isPending} error={sensors.error ? t('common.error') : null} onRetry={() => sensors.refetch()} search={search} emptyMessage={t('cold.noSensors')} /></Card>
+      {form && <SensorForm sensor={form.sensor} onClose={() => setForm(null)} />}
+      {keys && <KeysDialog sensor={keys} onClose={() => setKeys(null)} />}
+      {cal && <CalibrationDialog sensor={cal} onClose={() => setCal(null)} />}
+    </div>
+  )
+}

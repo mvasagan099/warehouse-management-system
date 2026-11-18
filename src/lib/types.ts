@@ -78,3 +78,23 @@ export type LabourRate = Tables<'labour_rates'>
 export type OtherCharge = Tables<'other_charges'>
 export type TaxRule = Tables<'tax_rules'>
 export type ClientGroup = Tables<'client_groups'>
+
+// ---- Phase 4: cold chain ----
+export type SensorType = Enums<'sensor_type'>
+export type SensorStatus = Enums<'sensor_status'>
+export type AlertKind = Enums<'alert_kind'>
+export type AlertSeverity = Enums<'alert_severity'>
+export type AlertStatus = Enums<'alert_status'>
+export type EquipmentType = Enums<'equipment_type'>
+export type TaskStatus = Enums<'task_status'>
+export type Sensor = Tables<'sensors'>
+export type DeviceKey = Tables<'device_keys'>
+export type CalibrationLog = Tables<'calibration_log'>
+export type AlertRule = Tables<'alert_rules'>
+export type DefrostWindow = Tables<'defrost_windows'>
+export type Alert = Tables<'alerts'>
+export type AlertStock = Tables<'alert_stock'>
+export type ClientNotice = Tables<'client_notices'>
+export type Equipment = Tables<'equipment'>
+export type MaintenanceTask = Tables<'maintenance_tasks'>
+export type AppNotification = Tables<'notifications'>
