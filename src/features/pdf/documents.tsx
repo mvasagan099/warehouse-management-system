@@ -44,18 +44,45 @@ function Party({ title, name, lines }: { title: string; name?: string | null; li
 const addr = (p: { address_line1?: string | null; address_line2?: string | null; city?: string | null; district?: string | null; state?: string | null; pincode?: string | null }) =>
   [p.address_line1, p.address_line2, [p.city, p.district].filter(Boolean).join(', '), [p.state, p.pincode].filter(Boolean).join(' - ')].filter(Boolean).join(', ')
 
-function Table({ cols, rows }: { cols: { h: string; w: string; right?: boolean }[]; rows: (string | number)[][] }) {
+const isBlank = (c: string | number | null | undefined) => c === '-' || c === '' || c === 0 || c === '0' || c === null || c === undefined
+
+/**
+ * Line table. Columns marked `optional` disappear when every row is empty (for example no batch, expiry or weight on a load),
+ * the remaining widths are scaled to fill the page, long codes use a smaller font and an optional totals row closes the table.
+ */
+function Table({ cols, rows, totals }: { cols: { h: string; w: string; right?: boolean; optional?: boolean; code?: boolean }[]; rows: (string | number)[][]; totals?: (string | number)[] }) {
+  const keep = cols.map((c, i) => !c.optional || rows.some((r) => !isBlank(r[i])))
+  const shown = cols.map((c, i) => ({ ...c, i })).filter((c) => keep[c.i])
+  const total = shown.reduce((sum, c) => sum + parseFloat(c.w), 0)
+  const width = (w: string) => `${(parseFloat(w) * 100 / total).toFixed(2)}%`
   return (
-    <View style={{ marginTop: 4 }}>
-      <View style={[s.tr, s.th]}>{cols.map((c) => <Text key={c.h} style={[s.td, { width: c.w, textAlign: c.right ? 'right' : 'left' }]}>{c.h}</Text>)}</View>
-      {rows.map((r, i) => (
-        <View key={i} style={s.tr} wrap={false}>
-          {r.map((cell, j) => <Text key={j} style={[s.td, { width: cols[j].w, textAlign: cols[j].right ? 'right' : 'left' }]}>{cell}</Text>)}
+    <View style={{ marginTop: 6 }}>
+      <View style={[s.tr, s.th]} fixed>{shown.map((c) => <Text key={c.h} style={[s.td, { width: width(c.w), textAlign: c.right ? 'right' : 'left' }]}>{c.h}</Text>)}</View>
+      {rows.map((r, ri) => (
+        <View key={ri} style={[s.tr, ri % 2 ? { backgroundColor: '#f8fafc' } : {}]} wrap={false}>
+          {shown.map((c) => <Text key={c.h} style={[s.td, { width: width(c.w), textAlign: c.right ? 'right' : 'left' }, c.code ? { fontSize: 7 } : {}]}>{isBlank(r[c.i]) && c.optional ? '' : r[c.i]}</Text>)}
         </View>
       ))}
+      {totals && (
+        <View style={[s.tr, { backgroundColor: '#e2e8f0', fontWeight: 'bold' }]} wrap={false}>
+          {shown.map((c) => <Text key={c.h} style={[s.td, { width: width(c.w), textAlign: c.right ? 'right' : 'left', fontWeight: 'bold' }]}>{totals[c.i] ?? ''}</Text>)}
+        </View>
+      )}
     </View>
   )
 }
+
+/** One "Label: value" line that is left out when there is nothing to say. */
+function Fact({ label, value, bold }: { label: string; value: string | number | null | undefined; bold?: boolean }) {
+  if (value === null || value === undefined || value === '' || value === '-') return null
+  return <Text>{label}: <Text style={bold ? s.bold : undefined}>{value}</Text></Text>
+}
+
+function PageFooter({ text }: { text: string }) {
+  return <Text style={s.foot} fixed render={({ pageNumber, totalPages }) => `${text} · Page ${pageNumber} of ${totalPages}`} />
+}
+
+const sum = (xs: (number | null | undefined)[]) => xs.reduce<number>((t, x) => t + Number(x ?? 0), 0)
 
 export interface ReceiptPdfData {
   receipt: InwardReceipt
@@ -92,31 +119,34 @@ export function ReceiptPdf({ receipt, lines, warehouse, client, company, gate }:
         <View style={s.row}>
           <View style={s.box}>
             <Text style={s.label}>Lorry and driver</Text>
-            <Text>Lorry: <Text style={s.bold}>{gate.lorry_number}</Text> {gate.lorry_type ? `(${gate.lorry_type})` : ''}</Text>
-            <Text>Driver: {gate.driver_name ?? '-'} {gate.driver_phone ?? ''}</Text>
-            <Text>Licence: {gate.driver_licence_no ?? '-'}</Text>
-            <Text>Transporter: {gate.transporter_name ?? '-'}</Text>
+            <Fact label="Lorry" value={`${gate.lorry_number}${gate.lorry_type ? ` (${gate.lorry_type})` : ''}`} bold />
+            <Fact label="Driver" value={[gate.driver_name, gate.driver_phone].filter(Boolean).join(' · ')} />
+            <Fact label="Licence" value={gate.driver_licence_no} />
+            <Fact label="Transporter" value={gate.transporter_name} />
           </View>
           <View style={s.box}>
             <Text style={s.label}>Documents and seal</Text>
-            <Text>E-way bill: {gate.eway_bill_number ?? '-'} (valid until {dt(gate.eway_valid_until)})</Text>
-            <Text>LR no: {gate.lr_number ?? '-'}   Invoice: {gate.invoice_number ?? '-'}</Text>
-            <Text>Seal on arrival: {gate.seal_number_arrival ?? '-'}</Text>
-            <Text>Arrival temperature: {gate.lorry_temp_c !== null ? `${gate.lorry_temp_c} C` : '-'}</Text>
-            <Text>Gate pass: {gate.gate_pass_no} · Gate in: {dt(gate.gate_in_at)}</Text>
+            <Fact label="E-way bill" value={gate.eway_bill_number ? `${gate.eway_bill_number}${gate.eway_valid_until ? ` (valid until ${dt(gate.eway_valid_until)})` : ''}` : null} />
+            <Fact label="LR no" value={gate.lr_number} />
+            <Fact label="Invoice" value={gate.invoice_number} />
+            <Fact label="Seal on arrival" value={gate.seal_number_arrival} />
+            <Fact label="Arrival temperature" value={gate.lorry_temp_c !== null ? `${gate.lorry_temp_c} °C` : null} />
+            <Fact label="Gate pass" value={gate.gate_pass_no} />
+            <Fact label="Gate in" value={dt(gate.gate_in_at)} />
           </View>
         </View>
 
         <Table
           cols={[
-            { h: '#', w: '4%' }, { h: 'Item / SKU / Batch', w: '26%' }, { h: 'Expiry', w: '10%' }, { h: 'Declared', w: '9%', right: true },
-            { h: 'Accepted', w: '9%', right: true }, { h: 'Short', w: '7%', right: true }, { h: 'Damaged', w: '8%', right: true },
-            { h: 'Weight kg', w: '9%', right: true }, { h: 'Slots', w: '18%' },
+            { h: '#', w: '4%' }, { h: 'Item / SKU / Batch', w: '25%' }, { h: 'Expiry', w: '10%', optional: true }, { h: 'Declared', w: '10%', right: true },
+            { h: 'Accepted', w: '9%', right: true }, { h: 'Short', w: '7%', right: true, optional: true }, { h: 'Damaged', w: '8%', right: true, optional: true },
+            { h: 'Weight kg', w: '9%', right: true, optional: true }, { h: 'Slots', w: '18%', code: true },
           ]}
           rows={lines.map((l) => [
-            l.line_no, `${l.item_name}${l.sku ? ` / ${l.sku}` : ''}${l.batch_no ? ` / ${l.batch_no}` : ''}`, d(l.expiry_date),
+            l.line_no, `${l.item_name}${l.sku ? ` / ${l.sku}` : ''}${l.batch_no ? ` / ${l.batch_no}` : ''}`, l.expiry_date ? d(l.expiry_date) : '',
             `${n(l.declared_qty)} ${l.unit}`, n(l.accepted_qty), n(l.short_qty), n(l.damaged_qty), n(l.weight_kg), l.slot_codes.join(', '),
           ])}
+          totals={lines.length > 1 ? ['', 'Total', '', n(sum(lines.map((l) => l.declared_qty))), n(sum(lines.map((l) => l.accepted_qty))), n(sum(lines.map((l) => l.short_qty))), n(sum(lines.map((l) => l.damaged_qty))), n(sum(lines.map((l) => l.weight_kg))), ''] : undefined}
         />
 
         {issues.length > 0 && (
@@ -132,12 +162,12 @@ export function ReceiptPdf({ receipt, lines, warehouse, client, company, gate }:
         {receipt.remarks && <Text style={{ marginTop: 6 }}>Remarks: {receipt.remarks}</Text>}
         {receipt.status === 'CANCELLED' && <Text style={{ marginTop: 6, color: '#dc2626' }}>Cancelled: {receipt.cancel_reason}</Text>}
 
-        <View style={s.sigRow}>
+        <View style={s.sigRow} wrap={false}>
           <Text style={s.sig}>Received by (warehouse)</Text>
           <Text style={s.sig}>Driver</Text>
           <Text style={s.sig}>Client representative</Text>
         </View>
-        <Text style={s.foot} fixed>Computer generated receipt · {receipt.receipt_no}</Text>
+        <PageFooter text={`Computer generated receipt · ${receipt.receipt_no}`} />
       </Page>
     </Document>
   )
@@ -177,30 +207,32 @@ export function ChallanPdf({ challan, lines, warehouse, client, toCompany, gate,
         <View style={s.row}>
           <View style={s.box}>
             <Text style={s.label}>Lorry and driver</Text>
-            <Text>Lorry: <Text style={s.bold}>{gate?.lorry_number ?? '-'}</Text> {gate?.lorry_type ? `(${gate.lorry_type})` : ''}</Text>
-            <Text>Driver: {gate?.driver_name ?? '-'} {gate?.driver_phone ?? ''}</Text>
-            <Text>Licence: {gate?.driver_licence_no ?? '-'}</Text>
+            <Fact label="Lorry" value={`${gate?.lorry_number ?? ''}${gate?.lorry_type ? ` (${gate.lorry_type})` : ''}`} bold />
+            <Fact label="Driver" value={[gate?.driver_name, gate?.driver_phone].filter(Boolean).join(' · ')} />
+            <Fact label="Licence" value={gate?.driver_licence_no} />
+            <Fact label="Transporter" value={gate?.transporter_name} />
           </View>
           <View style={s.box}>
             <Text style={s.label}>Dispatch details</Text>
-            <Text>E-way bill: {gate?.eway_bill_number ?? '-'} (valid until {dt(gate?.eway_valid_until)})</Text>
-            <Text>Seal number: {challan.seal_number ?? '-'}</Text>
-            <Text>Dispatch temperature: {challan.dispatch_temp_c !== null ? `${challan.dispatch_temp_c} C` : '-'}</Text>
-            <Text>Gate pass: {gate?.gate_pass_no ?? '-'}</Text>
+            <Fact label="E-way bill" value={gate?.eway_bill_number ? `${gate.eway_bill_number}${gate.eway_valid_until ? ` (valid until ${dt(gate.eway_valid_until)})` : ''}` : null} />
+            <Fact label="Seal number" value={challan.seal_number} />
+            <Fact label="Dispatch temperature" value={challan.dispatch_temp_c !== null ? `${challan.dispatch_temp_c} °C` : null} />
+            <Fact label="Gate pass" value={gate?.gate_pass_no} />
           </View>
         </View>
 
         <Table
           cols={[
-            { h: '#', w: '4%' }, { h: 'Item / SKU', w: '28%' }, { h: 'Batch', w: '14%' }, { h: 'Expiry', w: '12%' },
-            { h: 'Quantity', w: '12%', right: true }, { h: 'Packages', w: '9%', right: true }, { h: 'Weight kg', w: '10%', right: true }, { h: 'Slot', w: '11%' },
+            { h: '#', w: '4%' }, { h: 'Item / SKU', w: '26%' }, { h: 'Batch', w: '12%', optional: true }, { h: 'Expiry', w: '11%', optional: true },
+            { h: 'Quantity', w: '13%', right: true }, { h: 'Packages', w: '9%', right: true, optional: true }, { h: 'Weight kg', w: '10%', right: true, optional: true }, { h: 'Slot', w: '19%', code: true },
           ]}
-          rows={lines.map((l) => [l.line_no, `${l.item_name}${l.sku ? ` / ${l.sku}` : ''}`, l.batch_no ?? '-', d(l.expiry_date), `${n(l.quantity)} ${l.unit}`, n(l.packages, 0), n(l.weight_kg), l.slot_code])}
+          rows={lines.map((l) => [l.line_no, `${l.item_name}${l.sku ? ` / ${l.sku}` : ''}`, l.batch_no ?? '', l.expiry_date ? d(l.expiry_date) : '', `${n(l.quantity)} ${l.unit}`, n(l.packages, 0), n(l.weight_kg), l.slot_code])}
+          totals={lines.length > 1 ? ['', 'Total', '', '', n(sum(lines.map((l) => l.quantity))), n(sum(lines.map((l) => l.packages)), 0), n(sum(lines.map((l) => l.weight_kg))), ''] : undefined}
         />
         {challan.remarks && <Text style={{ marginTop: 6 }}>Remarks: {challan.remarks}</Text>}
         {challan.status === 'CANCELLED' && <Text style={{ marginTop: 6, color: '#dc2626' }}>Cancelled: {challan.cancel_reason}</Text>}
 
-        <View style={s.sigRow}>
+        <View style={s.sigRow} wrap={false}>
           <Text style={s.sig}>Issued by (warehouse)</Text>
           <Text style={s.sig}>Driver</Text>
           <View style={{ width: '34%', alignItems: 'center' }}>
@@ -208,7 +240,7 @@ export function ChallanPdf({ challan, lines, warehouse, client, toCompany, gate,
             <Text style={[s.sig, { width: '100%' }]}>Receiver: {challan.receiver_name ?? ''} {challan.pod_signed_at ? `(${dt(challan.pod_signed_at)})` : ''}</Text>
           </View>
         </View>
-        <Text style={s.foot} fixed>Computer generated challan · {challan.challan_no}</Text>
+        <PageFooter text={`Computer generated challan · ${challan.challan_no}`} />
       </Page>
     </Document>
   )
