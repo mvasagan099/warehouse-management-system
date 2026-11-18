@@ -611,7 +611,17 @@
     "goToDispatch": "Go to dispatch",
     "cancelTitle": "Cancel gate entry",
     "cancelled": "Gate entry cancelled",
-    "counted": "Counted"
+    "counted": "Counted",
+    "newClient": "New client",
+    "clientAdded": "Client added",
+    "newCompany": "New sender / receiver",
+    "companyAdded": "Company added",
+    "companyKind": "Type",
+    "kind": {
+      "SENDER": "Sender",
+      "RECEIVER": "Receiver",
+      "BOTH": "Both"
+    }
   },
   "receive": {
     "title": "Inward receipt",

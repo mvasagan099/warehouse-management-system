@@ -103,7 +103,7 @@ export const AREA_WRITE: Record<Area, readonly AppRole[]> = {
   gate: [A, M, S],
   receipts: [],             // created only by confirming a gate entry
   stock: [A, M, S],         // transfers; adjustments need canDecide
-  dispatch: [A, M, C],      // requests; staff pick and confirm
+  dispatch: [A, M, S, C],   // requests (staff too); managers approve; staff pick and confirm
   challans: [],
   labels: [],
   scan: [],

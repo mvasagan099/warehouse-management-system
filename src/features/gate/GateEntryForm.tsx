@@ -1,10 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../../components/ui/Button'
 import { Field, Input, Select, Textarea } from '../../components/ui/Field'
 import { Modal } from '../../components/ui/Modal'
 import { useClients, useCompanies, useWarehouses } from '../shared/queries'
+import { QuickClient, QuickCompany } from './QuickAdd'
 import { gateEntrySchema, type GateFormInput, type GateFormOutput } from './schema'
 
 /** Mobile-first: the few fields staff need at the gate are big and first; the rest sit under "more details". */
@@ -14,12 +16,13 @@ export function GateEntryForm({ initial, saving, onClose, onSubmit }: {
   const { t } = useTranslation()
   const clients = useClients()
   const warehouses = useWarehouses()
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<GateFormInput, unknown, GateFormOutput>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<GateFormInput, unknown, GateFormOutput>({
     resolver: zodResolver(gateEntrySchema), defaultValues: initial,
   })
   const clientId = watch('client_id')
   const companies = useCompanies(clientId || '')
   const inward = initial.direction === 'INWARD'
+  const [adding, setAdding] = useState<'client' | 'company' | null>(null)
   const big = 'h-12 text-base'
   const f = (name: keyof GateFormInput, label: string, opts: { optional?: boolean; type?: string; mode?: 'decimal' | 'numeric' | 'tel'; className?: string } = {}) => (
     <Field label={label} htmlFor={`ge-${name}`} error={errors[name]?.message} optional={opts.optional}>
@@ -51,12 +54,14 @@ export function GateEntryForm({ initial, saving, onClose, onSubmit }: {
               <option value="">{t('common.select')}</option>
               {clients.data?.filter((c) => c.status === 'ACTIVE').map((c) => <option key={c.id} value={c.id}>{c.code} · {c.company_name}</option>)}
             </Select>
+            <button type="button" className="mt-1 text-sm font-medium text-brand-700 hover:underline" onClick={() => setAdding('client')}>+ {t('gate.newClient')}</button>
           </Field>
           <Field label={inward ? t('gate.fromCompany') : t('gate.toCompany')} htmlFor="ge-company_id" optional error={errors.company_id?.message}>
             <Select id="ge-company_id" className={big} {...register('company_id')}>
               <option value="">{t('common.select')}</option>
               {companies.data?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Select>
+            {clientId && <button type="button" className="mt-1 text-sm font-medium text-brand-700 hover:underline" onClick={() => setAdding('company')}>+ {t('gate.newCompany')}</button>}
           </Field>
           {f('lorry_number', t('gate.lorryNumber'), { className: `${big} uppercase font-mono` })}
           {f('driver_name', t('gate.driverName'), { optional: true, className: big })}
@@ -79,6 +84,8 @@ export function GateEntryForm({ initial, saving, onClose, onSubmit }: {
           </div>
         </details>
       </form>
+      {adding === 'client' && <QuickClient onClose={() => setAdding(null)} onCreated={(id) => { setValue('client_id', id); setAdding(null) }} />}
+      {adding === 'company' && clientId && <QuickCompany clientId={clientId} inward={inward} onClose={() => setAdding(null)} onCreated={(id) => { setValue('company_id', id); setAdding(null) }} />}
     </Modal>
   )
 }

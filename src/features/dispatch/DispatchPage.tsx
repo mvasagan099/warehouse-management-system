@@ -227,7 +227,7 @@ export function DispatchPage() {
   ], [t, lang, isClient, decide, operate, clientName, whName, approve])
 
   const active = (warehouses.data ?? []).filter((w) => w.is_active)
-  const canCreate = decide || isClient
+  const canCreate = decide || isClient || operate
 
   return (
     <div>

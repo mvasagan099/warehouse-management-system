@@ -3090,6 +3090,9 @@ isOneToOne: false
 "maintenance_reminders":
 { Args: { "p_now"?: string }; Returns: number
                            },
+"managed_warehouse_ids":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
 "manager_dashboard":
 { Args: { "p_warehouse_id": string }; Returns: Json
                            },
@@ -3167,8 +3170,14 @@ isOneToOne: false
 "queue_message":
 { Args: { "p_alert"?: string,"p_body": string,"p_email": string,"p_kind": string,"p_phone": string,"p_task"?: string,"p_title": string,"p_user": string }; Returns: undefined
                            },
+"quick_create_client":
+{ Args: { "p_gstin"?: string,"p_name": string,"p_phone"?: string }; Returns: string
+                           },
 "rate_limit_hit":
 { Args: { "p_key": string,"p_max": number,"p_window_seconds": number }; Returns: boolean
+                           },
+"readable_warehouse_ids":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
                            },
 "reading_visible_to_client":
 { Args: { "p_sensor_id": string,"p_ts": string }; Returns: boolean
@@ -3246,6 +3255,9 @@ isOneToOne: false
 { Args: { "p_from": string,"p_group"?: string,"p_to": string }; Returns: {
               "bucket": string,"labour_paise": number,"other_paise": number,"rent_paise": number,"tax_paise": number,"total_paise": number
             }[]
+                           },
+"report_rows":
+{ Args: { "p_client"?: string,"p_from": string,"p_limit"?: number,"p_offset"?: number,"p_report": string,"p_to": string,"p_warehouse"?: string }; Returns: Json
                            },
 "report_utilisation":
 { Args: { "p_from": string,"p_to": string }; Returns: {
