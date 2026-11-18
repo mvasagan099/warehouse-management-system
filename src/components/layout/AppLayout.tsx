@@ -73,7 +73,7 @@ export function AppLayout() {
   }, [profile?.preferred_language, i18n])
 
   const nav = (
-    <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Main">
+    <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4" aria-label="Main">
       {items.map((item) => {
         const Icon = ICONS[item.area]
         return (
@@ -104,9 +104,9 @@ export function AppLayout() {
   )
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-dvh overflow-hidden">
       {/* desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col bg-slate-900 lg:flex">
+      <aside className="hidden h-full w-64 shrink-0 flex-col bg-slate-900 lg:flex">
         {brand}
         {nav}
       </aside>
@@ -115,7 +115,7 @@ export function AppLayout() {
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-slate-900/50" onClick={() => setOpen(false)} />
-          <aside className="relative flex h-full w-72 flex-col bg-slate-900">
+          <aside className="relative flex h-full w-72 flex-col overflow-hidden bg-slate-900">
             <button className="absolute right-3 top-4 text-slate-300" onClick={() => setOpen(false)} aria-label={t('common.close')}>
               <X className="h-5 w-5" />
             </button>
