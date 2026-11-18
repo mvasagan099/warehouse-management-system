@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
-select plan(329);
+select plan(337);
 
 -- RLS matrix fixtures: two warehouses, two clients, one user per role (plus a second manager/staff), rows in every tenant-scoped table.
 -- Included by supabase/tests/database/rls_matrix.test.sql and by scripts/rls/draft.sql.
@@ -203,6 +203,8 @@ insert into expected values
   ('invoice_lines', '?????', '?????', '-----', '-----'),
   ('invoice_tax_lines', '?????', '?????', '-----', '-----'),
   ('invoices', 'app-a', '-----', '-----', '-----'),
+  ('inward_advice_lines', '?????', '?????', '-----', '-----'),
+  ('inward_advices', '?????', '?????', '-----', '-----'),
   ('inward_receipt_lines', '?????', '?????', '-----', '-----'),
   ('inward_receipts', 'appp-', '-----', '-----', '-----'),
   ('labour_entries', 'a-pp-', '-----', '-----', '-----'),

@@ -1535,6 +1535,76 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"inward_advice_lines": {
+                  Row: {
+                    "advice_id": string,"batch_no": string | null,"expiry_date": string | null,"id": string,"item_name": string,"line_no": number,"packages": number,"quantity": number,"required_temp_c": number | null,"sku": string | null,"storage_type": Database["public"]['Enums']["storage_type"] | null,"unit": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "advice_id": string,"batch_no"?: string | null,"expiry_date"?: string | null,"id"?: string,"item_name": string,"line_no": number,"packages"?: number,"quantity": number,"required_temp_c"?: number | null,"sku"?: string | null,"storage_type"?: Database["public"]['Enums']["storage_type"] | null,"unit"?: string
+                  }
+                  Update: {
+                    "advice_id"?: string,"batch_no"?: string | null,"expiry_date"?: string | null,"id"?: string,"item_name"?: string,"line_no"?: number,"packages"?: number,"quantity"?: number,"required_temp_c"?: number | null,"sku"?: string | null,"storage_type"?: Database["public"]['Enums']["storage_type"] | null,"unit"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inward_advice_lines_advice_id_fkey"
+      columns: ["advice_id"]
+isOneToOne: false
+      referencedRelation: "inward_advices"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"inward_advices": {
+                  Row: {
+                    "advice_no": string,"client_id": string,"company_id": string | null,"created_at": string,"created_by": string | null,"driver_name": string | null,"driver_phone": string | null,"expected_date": string,"gate_entry_id": string | null,"id": string,"lorry_number": string | null,"remarks": string | null,"status": string,"updated_at": string,"warehouse_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "advice_no"?: string,"client_id": string,"company_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"driver_name"?: string | null,"driver_phone"?: string | null,"expected_date": string,"gate_entry_id"?: string | null,"id"?: string,"lorry_number"?: string | null,"remarks"?: string | null,"status"?: string,"updated_at"?: string,"warehouse_id": string
+                  }
+                  Update: {
+                    "advice_no"?: string,"client_id"?: string,"company_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"driver_name"?: string | null,"driver_phone"?: string | null,"expected_date"?: string,"gate_entry_id"?: string | null,"id"?: string,"lorry_number"?: string | null,"remarks"?: string | null,"status"?: string,"updated_at"?: string,"warehouse_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inward_advices_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inward_advices_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "company_master"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inward_advices_gate_entry_id_fkey"
+      columns: ["gate_entry_id"]
+isOneToOne: false
+      referencedRelation: "gate_entries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inward_advices_warehouse_id_fkey"
+      columns: ["warehouse_id"]
+isOneToOne: false
+      referencedRelation: "v_zone_slot_summary"
+      referencedColumns: ["warehouse_id"]
+    },{
+      foreignKeyName: "inward_advices_warehouse_id_fkey"
+      columns: ["warehouse_id"]
+isOneToOne: false
+      referencedRelation: "warehouse_manager_counts"
+      referencedColumns: ["warehouse_id"]
+    },{
+      foreignKeyName: "inward_advices_warehouse_id_fkey"
+      columns: ["warehouse_id"]
+isOneToOne: false
+      referencedRelation: "warehouses"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"inward_receipt_lines": {
                   Row: {
                     "accepted_qty": number,"batch_no": string | null,"client_id": string,"condition": Database["public"]['Enums']["line_condition"],"created_at": string,"damaged_qty": number,"declared_qty": number,"deleted_at": string | null,"expiry_date": string | null,"gate_entry_line_id": string,"id": string,"item_name": string,"line_no": number,"mfg_date": string | null,"packages": number,"receipt_id": string,"remarks": string | null,"required_temp_c": number | null,"short_qty": number,"sku": string | null,"slot_codes": (string)[],"storage_type": Database["public"]['Enums']["storage_type"] | null,"unit": string,"updated_at": string,"warehouse_id": string,"weight_kg": number
@@ -2887,6 +2957,9 @@ isOneToOne: false
 "cancel_dispatch_request":
 { Args: { "p_reason": string,"p_request_id": string }; Returns: undefined
                            },
+"cancel_inward_advice":
+{ Args: { "p_advice_id": string }; Returns: undefined
+                           },
 "cancel_inward_receipt":
 { Args: { "p_reason": string,"p_receipt_id": string }; Returns: undefined
                            },
@@ -2962,6 +3035,9 @@ isOneToOne: false
                            },
 "create_device_key":
 { Args: { "p_label": string,"p_sensor_id": string,"p_warehouse_id": string }; Returns: string
+                           },
+"create_inward_advice":
+{ Args: { "p_client_id"?: string,"p_company_id": string,"p_driver_name": string,"p_driver_phone": string,"p_expected": string,"p_lines": Json,"p_lorry": string,"p_remarks": string,"p_warehouse_id": string }; Returns: string
                            },
 "cron_health":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -3101,6 +3177,9 @@ isOneToOne: false
                            },
 "manual_sensor_for_zone":
 { Args: { "p_zone_id": string }; Returns: string
+                           },
+"mark_advice_arrived":
+{ Args: { "p_advice_id": string,"p_lorry"?: string }; Returns: string
                            },
 "mark_notifications_read":
 { Args: { "p_ids"?: (string)[] }; Returns: undefined

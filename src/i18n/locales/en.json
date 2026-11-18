@@ -107,7 +107,8 @@
     "profile": "My details",
     "staff": "Staff",
     "support": "Support",
-    "companies": "Senders & Receivers"
+    "companies": "Senders & Receivers",
+    "advice": "Inward Advice"
   },
   "header": {
     "language": "Language",
@@ -1725,5 +1726,30 @@
     "coldChain": "Live cold chain dashboard",
     "offTitle": "Switched off",
     "offBody": "The administrator has switched this feature off for now."
+  },
+  "advice": {
+    "title": "Inward Advice",
+    "helpClient": "Tell the warehouse what is coming. It is optional and helps the gate receive your lorry faster.",
+    "helpStaff": "Consignments clients have announced. Tap Arrived when the lorry is at the gate and the gate entry is made for you.",
+    "new": "New advice",
+    "send": "Send advice",
+    "sent": "Advice sent to the warehouse",
+    "expectedDate": "Expected date",
+    "lorryHint": "If you already know it",
+    "goods": "Goods",
+    "expected": "Expected",
+    "arrived": "Arrived",
+    "arrivedDone": "Gate entry created. Check it, then receive the goods.",
+    "lorryNeeded": "Which lorry came?",
+    "none": "No advice.",
+    "filter": {
+      "open": "Expected",
+      "all": "All"
+    },
+    "status": {
+      "ADVISED": "Expected",
+      "ARRIVED": "Arrived",
+      "CANCELLED": "Cancelled"
+    }
   }
 }

@@ -8,7 +8,7 @@ describe('role access map', () => {
       'stock', 'dispatch', 'challans', 'labels', 'scan', 'users', 'hiring', 'audit',
       'invoices', 'payments', 'ledger', 'rates', 'billingReports', 'billingSettings',
       'coldChain', 'manualReading', 'alerts', 'sensors', 'alertRules', 'equipment', 'coldReports',
-      'companies', 'staff', 'attendance', 'support', 'imports', 'ops',
+      'advice', 'companies', 'staff', 'attendance', 'support', 'imports', 'ops',
     ])
   })
   it('hides admin-only pages from managers', () => {
@@ -24,7 +24,7 @@ describe('role access map', () => {
     expect(canAccess('STAFF', 'users')).toBe(false)
   })
   it('gives a client only its own portal pages', () => {
-    expect(navFor('CLIENT').map((n) => n.area)).toEqual(['portal', 'bookings', 'receipts', 'stock', 'dispatch', 'challans', 'invoices', 'payments', 'ledger', 'coldReports', 'documents', 'support', 'profile', 'notices'])
+    expect(navFor('CLIENT').map((n) => n.area)).toEqual(['portal', 'bookings', 'receipts', 'stock', 'dispatch', 'challans', 'invoices', 'payments', 'ledger', 'coldReports', 'advice', 'documents', 'support', 'profile', 'notices'])
     for (const area of ['dashboard', 'warehouses', 'zones', 'slots', 'clients', 'gate', 'users', 'audit', 'labels', 'scan', 'rates', 'billingReports', 'billingSettings', 'coldChain', 'sensors', 'alerts', 'equipment', 'manualReading'] as const)
       expect(canAccess('CLIENT', area)).toBe(false)
   })

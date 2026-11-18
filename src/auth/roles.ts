@@ -32,6 +32,7 @@ export type Area =
   | 'alertRules'
   | 'coldReports'
   | 'equipment'
+  | 'advice'
   | 'staff'
   | 'companies'
   | 'attendance'
@@ -82,6 +83,7 @@ export const AREA_ACCESS: Record<Area, readonly AppRole[]> = {
   coldReports: [A, M, S, C],
   equipment: [A, M, S],
   staff: [A, M],
+  advice: [A, M, S, C],
   companies: [A, M, S],
   attendance: [A, M, S],
   imports: [A],
@@ -126,6 +128,7 @@ export const AREA_WRITE: Record<Area, readonly AppRole[]> = {
   coldReports: [],
   equipment: [A, M],        // staff update their maintenance tasks
   staff: [A, M],
+  advice: [A, M, S, C],
   companies: [A, M, S],
   attendance: [A, M, S],    // everyone checks in; managers approve (checked by canDecide)
   imports: [A],
@@ -193,6 +196,7 @@ export const NAV_ITEMS: { area: Area; path: string; labelKey: string }[] = [
   { area: 'alertRules', path: '/alert-rules', labelKey: 'nav.alertRules' },
   { area: 'equipment', path: '/equipment', labelKey: 'nav.equipment' },
   { area: 'coldReports', path: '/cold-reports', labelKey: 'nav.coldReports' },
+  { area: 'advice', path: '/advice', labelKey: 'nav.advice' },
   { area: 'companies', path: '/companies', labelKey: 'nav.companies' },
   { area: 'staff', path: '/staff', labelKey: 'nav.staff' },
   { area: 'attendance', path: '/attendance', labelKey: 'nav.attendance' },

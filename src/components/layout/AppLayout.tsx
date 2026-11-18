@@ -46,6 +46,7 @@ const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   equipment: Wrench,
   coldReports: FileBarChart,
   staff: UserCog,
+  advice: Truck,
   companies: Building2,
   attendance: CalendarCheck,
   imports: FileUp,
