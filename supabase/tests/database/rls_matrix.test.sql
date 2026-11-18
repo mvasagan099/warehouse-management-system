@@ -96,7 +96,7 @@ begin
   for t in select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind in ('r','p') and not c.relispartition order by 1 loop
     execute format('select count(*) from public.%I', t) into total;
     if total > 0 then
-      execute format('create temp table %I as select * from public.%I limit 1', 'tpl_' || t, t);
+      execute format('create temp table %I as select * from public.%I order by ctid limit 1', 'tpl_' || t, t);
       execute format('grant select on pg_temp.%I to authenticated', 'tpl_' || t);
     end if;
     for i in 1..5 loop
@@ -235,7 +235,7 @@ insert into expected values
   ('vacancies', 'a-p--', 'a-a--', 'a-p--', 'x----'),
   ('vacancy_salaries', 'a----', 'a----', 'a----', 'a----'),
   ('warehouse_managers', 'a-p--', 'a----', 'a----', 'a----'),
-  ('warehouses', 'apppa', 'a----', 'a----', 'x----'),
+  ('warehouses', 'aappa', 'a----', 'a----', 'x----'),
   ('zones', 'a-pp-', 'a-a--', 'a-p--', 'x-x--');
 
 -- schema level

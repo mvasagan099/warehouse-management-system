@@ -7,6 +7,8 @@ create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 
 select plan(114);
+-- these tests cover the strict mode; contracts are optional by default (migration 8)
+update public.app_settings set value = '{"required": true}' where key = 'contracts';
 
 -- ---------------------------------------------------------------------
 -- Fixtures (as postgres)

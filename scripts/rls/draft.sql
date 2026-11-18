@@ -12,7 +12,7 @@ begin
   for t in select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind in ('r','p') and not c.relispartition order by 1 loop
     execute format('select count(*) from public.%I', t) into total;
     if total > 0 then
-      execute format('create temp table %I as select * from public.%I limit 1', 'tpl_' || t, t);
+      execute format('create temp table %I as select * from public.%I order by ctid limit 1', 'tpl_' || t, t);
       execute format('grant select on pg_temp.%I to authenticated', 'tpl_' || t);
     end if;
     for i in 1..5 loop
