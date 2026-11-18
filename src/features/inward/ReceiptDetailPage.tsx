@@ -42,7 +42,8 @@ export function ReceiptDetailPage() {
       ])
       if (lines.error) throw lines.error
       if (gate.error) throw gate.error
-      return { receipt: rc, lines: lines.data, gate: gate.data, client: client.data, warehouse: wh.data, company: company.data, labour: labour.data ?? [] }
+      const adv = await supabase.from('inward_advices').select('advice_no, expected_date').eq('gate_entry_id', rc.gate_entry_id).maybeSingle()
+      return { advice: adv.data, receipt: rc, lines: lines.data, gate: gate.data, client: client.data, warehouse: wh.data, company: company.data, labour: labour.data ?? [] }
     },
   })
 
@@ -57,7 +58,7 @@ export function ReceiptDetailPage() {
 
   if (q.isPending) return <FullPageSpinner />
   if (q.error || !q.data) return <ErrorState message={t('common.error')} onRetry={() => q.refetch()} retryLabel={t('common.retry')} />
-  const { receipt, lines, gate, client, warehouse, company, labour } = q.data
+  const { receipt, lines, gate, client, warehouse, company, labour, advice } = q.data
 
   const download = async () => {
     setBusy(true)
@@ -91,6 +92,7 @@ export function ReceiptDetailPage() {
           {kv(t('gate.ewayBill'), gate.eway_bill_number)}
           {kv(t('gate.sealArrival'), gate.seal_number_arrival)}
           {kv(t('gate.lorryTemp'), gate.lorry_temp_c !== null ? `${gate.lorry_temp_c} °C` : null)}
+          {advice && kv(t('advice.title'), <span>{advice.advice_no} · {t('advice.expected')} {formatDate(advice.expected_date, lang)}</span>)}
           {kv(t('gate.passNo'), <Link className="text-brand-700 hover:underline" to={`/gate/${gate.id}`}>{gate.gate_pass_no}</Link>)}
         </dl>
         {receipt.remarks && <p className="mt-3 text-sm">{receipt.remarks}</p>}
