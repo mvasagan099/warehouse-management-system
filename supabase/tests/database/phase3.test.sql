@@ -156,7 +156,7 @@ select is((select count(*)::int from public.rent_rate_candidates('c3000000-0000-
 -- ---------------------------------------------------------------------
 -- B. Daily occupancy
 -- ---------------------------------------------------------------------
-select throws_ok($$ select public.snapshot_occupancy(public.today_ist()) $$, 'WMS22', null, 'today is not finished: it cannot be snapshotted');
+select throws_ok($$ select public.snapshot_occupancy(public.today_ist() + 1) $$, 'WMS22', null, 'a future day cannot be snapshotted (today can: it is provisional)');
 select is(public.snapshot_occupancy_backfill(), 10, 'backfill creates every missing finished day (T-10 .. T-1)');
 select is((select sum(brigades)::int from public.daily_occupancy where occ_date = public.today_ist() - 8 and client_id = 'c3000000-0000-0000-0000-00000000000a' and storage_type = 'FROZEN'), 3,
   'client A holds 3 frozen brigades on T-8');
@@ -199,8 +199,8 @@ select is((select grand_total_paise || ' ' || round_off_paise from public.invoic
 select is((select string_agg(sac_code || ':' || gst_rate_bp, ',' order by sac_code) from public.invoice_tax_lines where invoice_id = (select v from t3 where k = 'invA_rent')), '996721:1800,996729:1800', 'SAC code and GST rate per storage type come from the tax rules table');
 select throws_ok($$ select public.generate_invoice_draft('c3000000-0000-0000-0000-00000000000a', 'a3000000-0000-0000-0000-000000000001', public.today_ist() - 5, public.today_ist() - 2, 'RENT_ONLY') $$,
   'WMS26', null, 'rent days already on an invoice cannot be billed again');
-select throws_ok($$ select public.generate_invoice_draft('c3000000-0000-0000-0000-00000000000a', 'a3000000-0000-0000-0000-000000000001', public.today_ist() - 5, public.today_ist(), 'RENT_ONLY') $$,
-  'WMS22', null, 'only finished days can be billed');
+select throws_ok($$ select public.generate_invoice_draft('c3000000-0000-0000-0000-00000000000a', 'a3000000-0000-0000-0000-000000000001', public.today_ist() - 5, public.today_ist() + 1, 'RENT_ONLY') $$,
+  'WMS22', null, 'a period ending in the future cannot be billed (today can)');
 select public.discard_draft_invoice((select v from t3 where k = 'invA_rent'), 'rebuild with labour');
 
 -- ---------------------------------------------------------------------

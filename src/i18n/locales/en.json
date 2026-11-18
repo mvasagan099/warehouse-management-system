@@ -1755,7 +1755,7 @@
   "quickBill": {
     "button": "Bill and collect cash",
     "title": "Bill {{name}}",
-    "help": "Calculates rent and labour not yet invoiced, up to yesterday, and issues the GST invoice.",
+    "help": "Calculates all rent and labour not yet invoiced, including today, and issues the GST invoice. Today counts as a full day.",
     "calculate": "Calculate and issue invoice",
     "invoice": "Invoice",
     "period": "Period {{from}} to {{to}}",
@@ -1766,7 +1766,7 @@
     "paidDone": "Payment recorded",
     "recorded": "Payment recorded and matched to this invoice.",
     "downloadInvoice": "Download invoice PDF",
-    "note": "Only finished days are billed, so today's rent and today's loading labour appear on the next invoice.",
+    "note": "Today is billed as a full day, including a slot emptied by today's dispatch. Anything done after you issue this invoice goes on the next one.",
     "methods": {
       "CASH": "Cash",
       "UPI": "UPI",
