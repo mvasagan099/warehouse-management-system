@@ -51,10 +51,9 @@ end $$;
 
 create or replace function public.cron_health() returns table (job text, status text, last_ok_at timestamptz, last_error text, stale boolean)
 language sql stable security definer set search_path = '' as $$
-  select s.job, s.last_status, s.last_ok_at, s.last_error,
-         (s.last_ok_at is null or s.last_ok_at < now() - make_interval(mins => s.max_age_minutes)) as stale
+  select s.job, s.last_status, s.last_ok_at, s.last_error, (s.last_ok_at < now() - make_interval(mins => s.max_age_minutes)) as stale
   from public.cron_job_state s where public.is_admin()
-    and (s.last_status = 'FAILED' or s.last_ok_at is null or s.last_ok_at < now() - make_interval(mins => s.max_age_minutes))
+    and (s.last_status = 'FAILED' or (s.last_ok_at is not null and s.last_ok_at < now() - make_interval(mins => s.max_age_minutes)))
   order by s.job $$;
 
 -- expected jobs that have never run yet are listed so a missing job is also a warning
