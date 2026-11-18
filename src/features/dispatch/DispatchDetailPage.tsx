@@ -14,6 +14,7 @@ import { Badge, Card, ErrorState, PageHeader } from '../../components/ui/misc'
 import { FullPageSpinner } from '../../components/ui/Spinner'
 import { errorMessage } from '../../lib/errors'
 import { formatDate, formatNumber } from '../../lib/format'
+import { useFeatureFlags } from '../../lib/features'
 import { isNetworkError } from '../../lib/offline/queue'
 import { useOfflineQueue } from '../../lib/offline/useOfflineQueue'
 import { supabase } from '../../lib/supabase'
@@ -59,6 +60,8 @@ export function DispatchDetailPage() {
       return { request: r.data, lines: lines.data, picks: picks.data ?? [], client: client.data, company: company.data, gates: gates.data ?? [] }
     },
   })
+  const flags = useFeatureFlags()
+  const qrOn = flags.data?.qr !== false
   const fail = async (e: unknown) => toast.error(await errorMessage(e))
   const refresh = () => { void qc.invalidateQueries({ queryKey: ['dispatch', id] }); void qc.invalidateQueries({ queryKey: ['dispatch_requests'] }) }
 
@@ -148,8 +151,8 @@ export function DispatchDetailPage() {
           </div>
           {picking && (
             <div className="space-y-2 border-b border-slate-100 p-4">
-              <p className="text-sm text-slate-600">{t('dispatch.scanHelp')}</p>
-              <ScannerInput onScan={onScan} autoFocus />
+              <p className="text-sm text-slate-600">{qrOn ? t('dispatch.scanHelp') : t('dispatch.tapHelp')}</p>
+              {qrOn && <ScannerInput onScan={onScan} autoFocus />}
               {lastScan && <p className={`rounded-lg p-2 text-sm ${lastScan.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-700'}`} role={lastScan.ok ? 'status' : 'alert'} data-testid="scan-result">{lastScan.text}</p>}
             </div>
           )}
@@ -162,6 +165,7 @@ export function DispatchDetailPage() {
                   <div className="text-xs text-slate-500">{t('common.slot')}: <span className="font-mono">{p.slot_code}</span>{p.expiry_date && ` · ${t('common.expiry')} ${formatDate(p.expiry_date, lang)}`}</div>
                 </div>
                 <div className="font-semibold">{formatNumber(p.quantity, lang, 3)}</div>
+                {picking && !p.picked && <Button size="sm" className="min-h-11" loading={scan.isPending} onClick={() => scan.mutate(`WMS:STOCK:${p.stock_item_id}`)} data-testid={`mark-picked-${p.pick_seq}`}>{t('dispatch.markPicked')}</Button>}
               </li>
             ))}
           </ul>
