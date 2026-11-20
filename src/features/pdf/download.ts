@@ -42,10 +42,22 @@ export async function downloadChallanPdf(data: Omit<ChallanPdfData, 'signatureDa
   save(blob, `${fileSafe(data.challan.challan_no)}.pdf`)
 }
 
+/** A UPI QR for the balance, when the supplier has a UPI id and something is still owed. */
+async function upiQrFor(data: InvoicePdfData): Promise<string | null> {
+  const sup = (data.invoice.supplier_snapshot ?? {}) as Record<string, string | null | undefined>
+  const due = data.invoice.grand_total_paise - data.invoice.paid_paise - data.invoice.credit_paise
+  if (!sup.upi_id || due <= 0 || !data.invoice.invoice_no) return null
+  try {
+    const QR = await import('qrcode')
+    const url = `upi://pay?pa=${encodeURIComponent(String(sup.upi_id))}&pn=${encodeURIComponent(String(sup.legal_name || sup.name || 'Warehouse'))}&am=${(due / 100).toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Invoice ${data.invoice.invoice_no}`)}`
+    return await QR.toDataURL(url, { margin: 1, width: 180 })
+  } catch { return null }
+}
+
 /** Renders the tax invoice PDF in the browser (the renderer is loaded on demand). */
 export async function invoicePdfBlob(data: InvoicePdfData): Promise<Blob> {
   const [{ pdf }, { InvoicePdf }] = await Promise.all([import('@react-pdf/renderer'), import('./documents')])
-  return await pdf(createElement(InvoicePdf, data) as never).toBlob()
+  return await pdf(createElement(InvoicePdf, { ...data, upiQr: data.upiQr ?? (await upiQrFor(data)) }) as never).toBlob()
 }
 
 export async function downloadInvoicePdf(data: InvoicePdfData) {

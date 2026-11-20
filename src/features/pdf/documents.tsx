@@ -12,12 +12,21 @@ const s = StyleSheet.create({
   page: { padding: 28, fontSize: 9, fontFamily: 'Helvetica', color: '#0f172a' },
   head: { flexDirection: 'row', justifyContent: 'space-between', borderBottom: '1pt solid #0e7490', paddingBottom: 8, marginBottom: 10 },
   title: { fontSize: 15, fontWeight: 'bold', color: '#0e7490' },
+  band: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#0e7490', color: '#ffffff', padding: 12, borderRadius: 4, marginBottom: 10 },
+  bandTitle: { fontSize: 17, fontWeight: 'bold', color: '#ffffff', letterSpacing: 1 },
+  bandText: { fontSize: 8.5, color: '#e0f2fe' },
+  bandBold: { fontSize: 12, fontWeight: 'bold', color: '#ffffff' },
+  stat: { flex: 1, borderRadius: 3, padding: 6, backgroundColor: '#f1f5f9' },
+  statNum: { fontSize: 13, fontWeight: 'bold', marginTop: 1 },
+  chipOk: { alignSelf: 'flex-end', backgroundColor: '#dcfce7', color: '#166534', padding: '2 6', borderRadius: 8, fontSize: 8, fontWeight: 'bold' },
+  chipWarn: { alignSelf: 'flex-end', backgroundColor: '#fef3c7', color: '#92400e', padding: '2 6', borderRadius: 8, fontSize: 8, fontWeight: 'bold' },
+  chipBad: { alignSelf: 'flex-end', backgroundColor: '#fee2e2', color: '#991b1b', padding: '2 6', borderRadius: 8, fontSize: 8, fontWeight: 'bold' },
   small: { fontSize: 8, color: '#475569' },
   bold: { fontWeight: 'bold' },
   row: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   box: { flex: 1, border: '0.5pt solid #cbd5e1', borderRadius: 3, padding: 6 },
   label: { fontSize: 7, color: '#64748b', textTransform: 'uppercase', marginBottom: 1 },
-  th: { backgroundColor: '#f1f5f9', fontWeight: 'bold', fontSize: 8 },
+  th: { backgroundColor: '#0e7490', color: '#ffffff', fontWeight: 'bold', fontSize: 8 },
   tr: { flexDirection: 'row', borderBottom: '0.5pt solid #e2e8f0' },
   td: { padding: 3 },
   sigRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 34 },
@@ -82,6 +91,10 @@ function PageFooter({ text }: { text: string }) {
   return <Text style={s.foot} fixed render={({ pageNumber, totalPages }) => `${text} · Page ${pageNumber} of ${totalPages}`} />
 }
 
+function Stat({ label, value, tone }: { label: string; value: string | number; tone?: 'warn' | 'bad' }) {
+  return <View style={[s.stat, tone === 'warn' ? { backgroundColor: '#fef3c7' } : tone === 'bad' ? { backgroundColor: '#fee2e2' } : {}]}><Text style={s.label}>{label}</Text><Text style={s.statNum}>{value}</Text></View>
+}
+
 const sum = (xs: (number | null | undefined)[]) => xs.reduce<number>((t, x) => t + Number(x ?? 0), 0)
 
 export interface ReceiptPdfData {
@@ -98,17 +111,25 @@ export function ReceiptPdf({ receipt, lines, warehouse, client, company, gate }:
   return (
     <Document title={receipt.receipt_no} author={warehouse?.name ?? 'Cold Storage WMS'}>
       <Page size="A4" style={s.page}>
-        <View style={s.head}>
+        <View style={s.band}>
           <View>
-            <Text style={s.title}>INWARD RECEIPT (GRN)</Text>
-            <Text style={s.small}>{warehouse?.name} · {addr(warehouse ?? {})}</Text>
-            {warehouse?.contact_phone && <Text style={s.small}>Phone: {warehouse.contact_phone}</Text>}
+            <Text style={s.bandTitle}>INWARD RECEIPT (GRN)</Text>
+            <Text style={s.bandText}>{warehouse?.name}{warehouse?.code ? ` (${warehouse.code})` : ''}</Text>
+            <Text style={s.bandText}>{addr(warehouse ?? {})}{warehouse?.contact_phone ? ` · Phone ${warehouse.contact_phone}` : ''}</Text>
           </View>
           <View style={{ textAlign: 'right' }}>
-            <Text style={[s.bold, { fontSize: 12 }]}>{receipt.receipt_no}</Text>
-            <Text style={s.small}>Received: {dt(receipt.received_at)}</Text>
-            {receipt.status === 'CANCELLED' && <Text style={{ color: '#dc2626', fontWeight: 'bold' }}>CANCELLED</Text>}
+            <Text style={s.bandBold}>{receipt.receipt_no}</Text>
+            <Text style={s.bandText}>Received: {dt(receipt.received_at)}</Text>
+            {receipt.status === 'CANCELLED' ? <Text style={[s.chipBad, { marginTop: 3 }]}>CANCELLED</Text> : <Text style={[s.chipOk, { marginTop: 3 }]}>RECEIVED</Text>}
           </View>
+        </View>
+        <View style={s.row}>
+          <Stat label="Items" value={lines.length} />
+          <Stat label="Declared" value={n(sum(lines.map((l) => l.declared_qty)))} />
+          <Stat label="Accepted" value={n(sum(lines.map((l) => l.accepted_qty)))} />
+          <Stat label="Short" value={n(sum(lines.map((l) => l.short_qty)))} tone={sum(lines.map((l) => l.short_qty)) > 0 ? 'warn' : undefined} />
+          <Stat label="Damaged" value={n(sum(lines.map((l) => l.damaged_qty)))} tone={sum(lines.map((l) => l.damaged_qty)) > 0 ? 'bad' : undefined} />
+          {gate.lorry_temp_c !== null && <Stat label="Arrival temp" value={`${gate.lorry_temp_c} °C`} />}
         </View>
 
         <View style={s.row}>
@@ -187,16 +208,23 @@ export function ChallanPdf({ challan, lines, warehouse, client, toCompany, gate,
   return (
     <Document title={challan.challan_no} author={warehouse?.name ?? 'Cold Storage WMS'}>
       <Page size="A4" style={s.page}>
-        <View style={s.head}>
+        <View style={s.band}>
           <View>
-            <Text style={s.title}>DELIVERY CHALLAN</Text>
-            <Text style={s.small}>{warehouse?.name} · {addr(warehouse ?? {})}</Text>
+            <Text style={s.bandTitle}>DELIVERY CHALLAN</Text>
+            <Text style={s.bandText}>{warehouse?.name}{warehouse?.code ? ` (${warehouse.code})` : ''}</Text>
+            <Text style={s.bandText}>{addr(warehouse ?? {})}{warehouse?.contact_phone ? ` · Phone ${warehouse.contact_phone}` : ''}</Text>
           </View>
           <View style={{ textAlign: 'right' }}>
-            <Text style={[s.bold, { fontSize: 12 }]}>{challan.challan_no}</Text>
-            <Text style={s.small}>Dispatched: {dt(challan.dispatched_at)}</Text>
-            {challan.status === 'CANCELLED' && <Text style={{ color: '#dc2626', fontWeight: 'bold' }}>CANCELLED</Text>}
+            <Text style={s.bandBold}>{challan.challan_no}</Text>
+            <Text style={s.bandText}>Dispatched: {dt(challan.dispatched_at)}</Text>
+            {challan.status === 'CANCELLED' && <Text style={[s.chipBad, { marginTop: 3 }]}>CANCELLED</Text>}
           </View>
+        </View>
+        <View style={s.row}>
+          <Stat label="Items" value={lines.length} />
+          <Stat label="Total quantity" value={n(sum(lines.map((l) => l.quantity)))} />
+          <Stat label="Packages" value={n(sum(lines.map((l) => l.packages)), 0)} />
+          <Stat label="Weight kg" value={n(sum(lines.map((l) => l.weight_kg)))} />
         </View>
 
         <View style={s.row}>
@@ -255,6 +283,8 @@ export interface InvoicePdfData {
   terms?: string | null
   /** shown on the draft preview only */
   watermark?: string | null
+  /** UPI payment QR (data URL) for the balance, made when the PDF is generated */
+  upiQr?: string | null
 }
 
 type Snap = Record<string, string | boolean | null | undefined>
@@ -262,7 +292,7 @@ const SECTION_TITLE = { RENT: 'A. Rent (storage)', LABOUR: 'B. Labour (handling)
 const SUPPLY_LABEL = { INTRA: 'Intra-state supply: CGST + SGST', INTER: 'Inter-state supply: IGST', CONSUMER: 'Unregistered recipient: CGST + SGST' } as const
 const money = (p: number) => formatIndian(p)
 
-export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark }: InvoicePdfData) {
+export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark, upiQr }: InvoicePdfData) {
   const sup = (inv.supplier_snapshot ?? {}) as Snap
   const cli = (inv.client_snapshot ?? {}) as Snap
   const sections = (['RENT', 'LABOUR', 'OTHER'] as const).filter((sec) => lines.some((l) => l.section === sec))
@@ -273,20 +303,21 @@ export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark }: Invoi
     <Document title={inv.invoice_no ?? 'Draft invoice'}>
       <Page size="A4" style={s.page}>
         {watermark && <Text style={{ position: 'absolute', top: 300, left: 90, fontSize: 70, color: '#e2e8f0', transform: 'rotate(-30deg)' }}>{watermark}</Text>}
-        <View style={s.head}>
-          <View>
-            <Text style={s.title}>TAX INVOICE</Text>
-            <Text style={s.bold}>{String(sup.legal_name || sup.name || '')}</Text>
-            <Text>{String(sup.address ?? '')}</Text>
-            <Text>GSTIN: {String(sup.gstin || '-')}   PAN: {String(sup.pan || '-')}</Text>
-            <Text>State: {String(sup.state_name ?? '')} ({String(sup.state_code ?? '')})</Text>
+        <View style={s.band}>
+          <View style={{ maxWidth: '58%' }}>
+            <Text style={s.bandTitle}>TAX INVOICE</Text>
+            <Text style={[s.bandBold, { marginTop: 2 }]}>{String(sup.legal_name || sup.name || '')}</Text>
+            <Text style={s.bandText}>{String(sup.address ?? '')}</Text>
+            <Text style={s.bandText}>GSTIN: {String(sup.gstin || '-')}{sup.pan ? `   PAN: ${String(sup.pan)}` : ''}</Text>
+            {sup.state_name ? <Text style={s.bandText}>State: {String(sup.state_name)}{sup.state_code ? ` (${String(sup.state_code)})` : ''}</Text> : null}
           </View>
           <View style={{ textAlign: 'right' }}>
-            <Text style={s.bold}>Invoice no: {inv.invoice_no ?? 'DRAFT'}</Text>
-            <Text>Date: {d(inv.invoice_date)}</Text>
-            <Text>Due date: {d(inv.due_date)}</Text>
-            <Text>Period: {d(inv.period_from)} to {d(inv.period_to)}</Text>
-            <Text>{inv.irn ? `IRN: ${inv.irn}` : ''}</Text>
+            <Text style={s.bandBold}>{inv.invoice_no ?? 'DRAFT'}</Text>
+            <Text style={s.bandText}>Date: {d(inv.invoice_date)}</Text>
+            <Text style={s.bandText}>Due: {d(inv.due_date)}</Text>
+            <Text style={s.bandText}>Period: {d(inv.period_from)} to {d(inv.period_to)}</Text>
+            {inv.irn ? <Text style={s.bandText}>IRN: {inv.irn}</Text> : null}
+            <Text style={[inv.status === 'PAID' ? s.chipOk : inv.status === 'OVERDUE' ? s.chipBad : s.chipWarn, { marginTop: 3 }]}>{String(inv.status).replace('_', ' ')}</Text>
           </View>
         </View>
         <View style={s.row}>
@@ -326,6 +357,15 @@ export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark }: Invoi
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTop: '1pt solid #0f172a', marginTop: 2, paddingTop: 2 }}>
             <Text style={s.bold}>Grand total (INR)</Text><Text style={s.bold}>{money(inv.grand_total_paise)}</Text>
           </View>
+          {(inv.paid_paise > 0 || inv.credit_paise > 0) && (
+            <View style={{ marginTop: 4 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text>Paid</Text><Text>- {money(inv.paid_paise)}</Text></View>
+              {inv.credit_paise > 0 && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text>Credit notes</Text><Text>- {money(inv.credit_paise)}</Text></View>}
+            </View>
+          )}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#0e7490', marginTop: 4, padding: 5, borderRadius: 3 }}>
+            <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Balance due (INR)</Text><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{money(Math.max(inv.grand_total_paise - inv.paid_paise - inv.credit_paise, 0))}</Text>
+          </View>
         </View>
         <Text style={{ marginTop: 6 }}><Text style={s.bold}>Amount in words: </Text>{amountInWords(inv.grand_total_paise)}</Text>
 
@@ -335,12 +375,14 @@ export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark }: Invoi
             <Text>{String(sup.bank_name ?? '')} {String(sup.bank_branch ?? '')}</Text>
             <Text>A/c: {String(sup.bank_account ?? '-')}   IFSC: {String(sup.bank_ifsc ?? '-')}</Text>
             {sup.upi_id ? <Text>UPI: {String(sup.upi_id)}</Text> : null}
+            {upiQr ? <View style={{ marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 6 }}><Image src={upiQr} style={{ width: 58, height: 58 }} /><Text style={s.small}>Scan to pay the balance by UPI</Text></View> : null}
           </View>
           <View style={s.box}>
             <Text style={s.label}>Terms</Text>
             <Text>{terms ?? ''}</Text>
           </View>
         </View>
+        <Text style={{ marginTop: 8, textAlign: 'center', color: '#0e7490', fontWeight: 'bold' }}>Thank you for your business.</Text>
         <View style={s.sigRow} wrap={false}>
           <Text style={s.sig}>Receiver's signature</Text>
           <Text style={s.sig}>For {String(sup.legal_name || sup.name || 'the supplier')}{'\n'}Authorised signatory</Text>
