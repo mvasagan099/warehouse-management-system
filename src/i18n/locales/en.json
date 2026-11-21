@@ -65,7 +65,8 @@
     "remove": "Remove",
     "slot": "Slot",
     "unit": "Unit",
-    "view": "View"
+    "view": "View",
+    "noMatches": "No match. Try another word."
   },
   "nav": {
     "dashboard": "Dashboard",
