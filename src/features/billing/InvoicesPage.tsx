@@ -26,9 +26,9 @@ import { useInvoices } from './queries'
 const iso = (d: Date) => d.toISOString().slice(0, 10)
 function lastFullMonth(): [string, string] {
   const now = new Date(Date.now() + 5.5 * 3600_000)
-  const first = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1))
-  const last = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0))
-  return [iso(first), iso(last)]
+  // this month so far: today can be billed and counts as a full day
+  const first = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+  return [iso(first), iso(now)]
 }
 
 function GenerateDialog({ onClose, onDone }: { onClose: () => void; onDone: (id: string) => void }) {
