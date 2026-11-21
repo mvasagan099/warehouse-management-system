@@ -40,7 +40,7 @@ function NewAdvice({ onClose }: { onClose: () => void }) {
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('create_inward_advice', {
-        p_warehouse_id: warehouse, p_expected: f.date, p_company_id: (f.company || undefined) as string, p_lorry: f.lorry, p_driver_name: f.driver, p_driver_phone: f.phone, p_remarks: f.remarks,
+        p_warehouse_id: warehouse, p_expected: f.date, p_company_id: (f.company || null) as unknown as string, p_lorry: f.lorry, p_driver_name: f.driver, p_driver_phone: f.phone, p_remarks: f.remarks,
         p_client_id: isClient ? undefined : f.client,
         p_lines: lines.map((l) => ({ item_name: l.item_name, quantity: Number(l.quantity), unit: l.unit, batch_no: l.batch_no, expiry_date: l.expiry_date, required_temp_c: l.required_temp_c === '' ? null : Number(l.required_temp_c), storage_type: l.storage_type })) as never,
       })
