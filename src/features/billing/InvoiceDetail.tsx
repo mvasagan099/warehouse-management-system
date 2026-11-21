@@ -18,7 +18,7 @@ import type { InvoiceLine, InvoiceSection } from '../../lib/types'
 import { bpToPercent } from '../../lib/words'
 import { downloadInvoicePdf, invoicePdfBlob } from '../pdf/download'
 import { useSetting } from '../shared/queries'
-import { STATUS_TONE, downloadText, owed } from './common'
+import { STATUS_TONE, downloadText, owed, ONLINE_PAYMENTS } from './common'
 import { AddChargeDialog, FixLineDialog, NoteDialog, PaymentDialog, refreshBilling } from './InvoiceDialogs'
 import { useInvoiceDetail } from './queries'
 
@@ -106,9 +106,9 @@ export function InvoiceDetail({ id, onClose }: { id: string; onClose: () => void
           <Button variant="secondary" icon={<FilePlus2 className="h-4 w-4" />} onClick={() => setNoting(true)}>{t('billing.newNote')}</Button>
           {owed(inv) > 0 && <Button variant="secondary" icon={<Wallet className="h-4 w-4" />} onClick={() => setPaying(true)}>{t('billing.recordPayment')}</Button>}
           {emailFlag.data?.enabled && <Button variant="secondary" icon={<Mail className="h-4 w-4" />} loading={busy} onClick={() => email()}>{t('billing.sendEmail')}</Button>}
-          {rzpFlag.data?.enabled && owed(inv) > 0 && <Button variant="secondary" icon={<Link2 className="h-4 w-4" />} loading={busy} onClick={makeLink}>{t('billing.paymentLink')}</Button>}
+          {ONLINE_PAYMENTS && rzpFlag.data?.enabled && owed(inv) > 0 && <Button variant="secondary" icon={<Link2 className="h-4 w-4" />} loading={busy} onClick={makeLink}>{t('billing.paymentLink')}</Button>}
         </>}
-        {profile?.role === 'CLIENT' && !isDraft && rzpFlag.data?.enabled && owed(inv) > 0 && inv.status !== 'CANCELLED' && (
+        {profile?.role === 'CLIENT' && !isDraft && ONLINE_PAYMENTS && rzpFlag.data?.enabled && owed(inv) > 0 && inv.status !== 'CANCELLED' && (
           <Button icon={<Wallet className="h-4 w-4" />} loading={busy} onClick={payNow} data-testid="pay-online">{t('billing.payOnline')} {formatINR(owed(inv))}</Button>)}
         {!isDraft && !!profile && profile.role !== 'CLIENT' && inv.status !== 'CANCELLED' && <Button variant="secondary" icon={<Braces className="h-4 w-4" />} loading={busy} onClick={einvoice}>{t('billing.einvoiceJson')}</Button>}
         <Button variant={isDraft ? 'secondary' : 'primary'} icon={<Download className="h-4 w-4" />} loading={busy} onClick={download}>{t('common.downloadPdf')}</Button>

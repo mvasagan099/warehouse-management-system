@@ -166,7 +166,7 @@ export function NoteDialog({ invoice, onClose }: { invoice: Invoice; onClose: ()
 export function PaymentDialog({ clientId, warehouseId, invoice, onClose }: { clientId?: string; warehouseId?: string; invoice?: Invoice; onClose: () => void }) {
   const { t } = useTranslation()
   const qc = useQueryClient()
-  const [method, setMethod] = useState<PaymentMethod>('UPI')
+  const [method, setMethod] = useState<PaymentMethod>('CASH')
   const [amount, setAmount] = useState(invoice ? (owed(invoice) / 100).toFixed(2) : '')
   const [reference, setReference] = useState('')
   const [date, setDate] = useState(todayIso())

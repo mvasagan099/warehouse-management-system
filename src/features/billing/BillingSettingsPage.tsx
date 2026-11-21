@@ -11,6 +11,7 @@ import { Card, PageHeader } from '../../components/ui/misc'
 import { errorMessage } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 import { qk } from '../shared/queries'
+import { ONLINE_PAYMENTS } from './common'
 
 type Json = Record<string, any>
 function useSettings() {
@@ -100,7 +101,7 @@ export function BillingSettingsPage() {
       {sectionCard(t('billing.remindersTitle'), <div className="space-y-2">
         <Checkbox label={t('billing.remindersEnabled')} disabled={!admin} checked={reminders.enabled !== false} onChange={(e) => setReminders({ ...reminders, enabled: e.target.checked })} />
         <Field label={t('billing.reminderDays')} htmlFor="rm-days" hint={t('billing.reminderDaysHelp')}><Input id="rm-days" disabled={!admin} defaultValue={days} key={days} onBlur={(e) => setReminders({ ...reminders, days_after_due: e.target.value.split(',').map((x) => Math.trunc(Number(x.trim()))).filter((n) => Number.isFinite(n) && n > 0) })} /></Field></div>, 'reminders')}
-      {sectionCard(t('billing.razorpayTitle'), <Checkbox label={t('billing.razorpayEnabled')} disabled={!admin} checked={rzp} onChange={(e) => setRzp(e.target.checked)} />, 'razorpay', t('billing.razorpayHelp'))}
+      {ONLINE_PAYMENTS && sectionCard(t('billing.razorpayTitle'), <Checkbox label={t('billing.razorpayEnabled')} disabled={!admin} checked={rzp} onChange={(e) => setRzp(e.target.checked)} />, 'razorpay', t('billing.razorpayHelp'))}
       {admin && <Card className="p-4"><h2 className="font-semibold">{t('billing.occupancy')}</h2><p className="mb-3 text-xs text-slate-500">{t('billing.occupancyHelp')}</p>
         <Button variant="secondary" icon={<RefreshCw className="h-4 w-4" />} loading={backfill.isPending} onClick={() => backfill.mutate()}>{t('billing.backfill')}</Button>
         <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-slate-200 pt-4">

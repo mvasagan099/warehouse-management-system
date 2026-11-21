@@ -7,7 +7,10 @@ export const STATUS_TONE: Record<InvoiceStatus, 'gray' | 'green' | 'red' | 'ambe
 export const STORAGE_TYPES = ['DRY', 'CHILLED', 'FROZEN', 'DEEP_FREEZE', 'BONDED', 'HAZMAT'] as const
 export const LABOUR_ACTIVITIES = ['UNLOADING', 'LOADING', 'SORTING', 'STACKING', 'LABELLING', 'PICKING', 'PACKING'] as const
 export const LABOUR_BASES = ['PER_PACKAGE', 'PER_TONNE', 'PER_BRIGADE_MOVED', 'PER_HOUR', 'FLAT_PER_LORRY'] as const
-export const PAYMENT_METHODS = ['UPI', 'BANK_TRANSFER', 'CHEQUE', 'CASH', 'DEPOSIT_ADJUSTMENT'] as const
+/** Hand cash only for now. Other methods (UPI, bank, cheque, deposit adjustment) stay in the database but are not offered. */
+export const PAYMENT_METHODS = ['CASH'] as const
+/** Online payment (Razorpay link / client Pay online) is switched off. */
+export const ONLINE_PAYMENTS = false
 
 /** What is still owed on an invoice, in paise. */
 export const owed = (i: { grand_total_paise: number; paid_paise: number; credit_paise: number }) => i.grand_total_paise - i.paid_paise - i.credit_paise
