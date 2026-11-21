@@ -109,7 +109,7 @@ export interface ReceiptPdfData {
 export function ReceiptPdf({ receipt, lines, warehouse, client, company, gate }: ReceiptPdfData) {
   const issues = lines.filter((l) => l.short_qty > 0 || l.damaged_qty > 0)
   return (
-    <Document title={receipt.receipt_no} author={warehouse?.name ?? 'Cold Storage WMS'}>
+    <Document title={receipt.receipt_no} author={warehouse?.name ?? 'Slott'}>
       <Page size="A4" style={s.page}>
         <View style={s.band}>
           <View>
@@ -206,7 +206,7 @@ export interface ChallanPdfData {
 
 export function ChallanPdf({ challan, lines, warehouse, client, toCompany, gate, signatureDataUrl }: ChallanPdfData) {
   return (
-    <Document title={challan.challan_no} author={warehouse?.name ?? 'Cold Storage WMS'}>
+    <Document title={challan.challan_no} author={warehouse?.name ?? 'Slott'}>
       <Page size="A4" style={s.page}>
         <View style={s.band}>
           <View>

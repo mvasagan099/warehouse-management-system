@@ -1,9 +1,12 @@
 {
-  "appId": "in.example.coldstorage",
-  "appName": "Cold Storage WMS",
+  "appId": "app.slott.wms",
+  "appName": "Slott",
   "webDir": "dist",
-  "bundledWebRuntime": false,
-  "server": { "androidScheme": "https" },
-  "android": { "allowMixedContent": false },
-  "_note": "Ready for a later Android build (see docs/android.md). Nothing is built or published from this file in Phase 5; change appId to your own reverse-domain before the first build."
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "_note": "Android project lives in android/ (see docs/android.md)."
 }

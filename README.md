@@ -1,4 +1,4 @@
-# Cold Storage WMS — Phases 1 to 4
+# Slott — warehouse and cold storage management
 
 Warehouse & cold-storage management for a Tamil Nadu business.
 

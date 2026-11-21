@@ -1,7 +1,7 @@
 {
-  "name": "Cold Storage WMS",
-  "short_name": "Cold Storage",
-  "description": "Warehouse and cold-storage operations: gate, stock, dispatch, temperature and billing.",
+  "name": "Slott",
+  "short_name": "Slott",
+  "description": "Slott: warehouse and cold storage operations, from gate to invoice.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import {
   Activity, AlertTriangle, BarChart3, BookOpen, Cpu, Thermometer, UserCog, CalendarCheck, FileUp, ServerCog, Download as DownloadIcon, Bell, UserCircle, Wrench, SlidersHorizontal, FileBarChart, Boxes, Building2, CalendarClock, ClipboardCheck, ClipboardList, FileText, Grid3x3, KeyRound, LayoutDashboard,
-  LifeBuoy, LogOut, Menu, PackageCheck, Package, Percent, QrCode, Receipt, Ruler, ScanLine, Settings, Snowflake, Truck, UserPlus, Users, Wallet, Warehouse, X,
+  LifeBuoy, LogOut, Menu, PackageCheck, Package, Percent, QrCode, Receipt, Ruler, ScanLine, Settings, Truck, UserPlus, Users, Wallet, Warehouse, X,
 } from 'lucide-react'
 import { useEffect, useState, type ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +12,7 @@ import { LanguageSwitch } from './LanguageSwitch'
 import { NotificationBell } from './NotificationBell'
 import { SyncStatus } from './SyncStatus'
 import { disabledAreas, useFeatureFlags } from '../../lib/features'
+import { Logo } from '../Logo'
 import { StatusRail } from './StatusRail'
 
 const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
@@ -123,10 +124,7 @@ export function AppLayout() {
   )
 
   const brand = (
-    <div className="flex items-center gap-3 px-5 py-5 text-white">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600"><Snowflake className="h-5 w-5" aria-hidden /></span>
-      <span className="font-display text-lg font-semibold leading-tight">{t('app.name')}</span>
-    </div>
+    <div className="px-5 py-5"><Logo light /></div>
   )
 
   return (

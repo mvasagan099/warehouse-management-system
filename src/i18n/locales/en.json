@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Cold Storage WMS",
-    "tagline": "Warehouse & cold storage management"
+    "name": "Slott",
+    "tagline": "Warehouse and cold storage management"
   },
   "common": {
     "save": "Save",
