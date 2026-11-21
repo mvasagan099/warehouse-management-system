@@ -1,3 +1,6 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource/noto-sans-tamil/400.css";
+@import "@fontsource/noto-sans-tamil/600.css";
 @import "tailwindcss";
 
 @theme {
@@ -7,11 +10,14 @@
   --color-brand-600: #0891b2;
   --color-brand-700: #0e7490;
   --color-brand-800: #155e75;
-  --font-sans: "Inter", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
 }
 
 html, body, #root { height: 100%; }
-body { @apply bg-slate-50 text-slate-900 antialiased; }
+body { @apply bg-slate-100/60 text-slate-900 antialiased; font-feature-settings: 'cv11', 'ss01'; }
+:focus-visible { outline: 2px solid var(--color-brand-600); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 
 /* Printing: only the label sheet / document area is printed */
 @media print {

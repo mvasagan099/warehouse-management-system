@@ -25,7 +25,7 @@ export function PageHeader({ title, actions, subtitle }: { title: string; subtit
   return (
     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
         {subtitle && <div className="mt-1 text-sm text-slate-500">{subtitle}</div>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
@@ -34,7 +34,7 @@ export function PageHeader({ title, actions, subtitle }: { title: string; subtit
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={clsx('rounded-xl border border-slate-200 bg-white shadow-sm', className)}>{children}</div>
+  return <div className={clsx('rounded-2xl border border-slate-200/80 bg-white shadow-[var(--shadow-card)]', className)}>{children}</div>
 }
 
 export function EmptyState({ message, action }: { message: string; action?: ReactNode }) {

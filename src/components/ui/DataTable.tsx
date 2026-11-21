@@ -87,7 +87,7 @@ export function DataTable<T>({
     <div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50">
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((h) => {
@@ -128,7 +128,7 @@ export function DataTable<T>({
               </tr>
             ) : (
               rows.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50">
+                <tr key={row.id} className="transition-colors hover:bg-brand-50/50">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="whitespace-nowrap px-4 py-2.5 align-middle">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

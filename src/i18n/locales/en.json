@@ -109,13 +109,22 @@
     "staff": "Staff",
     "support": "Support",
     "companies": "Senders & Receivers",
-    "advice": "Inward Advice"
+    "advice": "Inward Advice",
+    "group": {
+      "operations": "Operations",
+      "clients": "Clients & support",
+      "coldchain": "Cold chain",
+      "billing": "Billing",
+      "people": "People",
+      "setup": "Setup & admin"
+    }
   },
   "header": {
     "language": "Language",
     "logout": "Log out",
     "changePassword": "Change password",
-    "menu": "Menu"
+    "menu": "Menu",
+    "quick": "Quick links"
   },
   "roles": {
     "SUPER_ADMIN": "Super Admin",
