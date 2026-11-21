@@ -12,6 +12,7 @@ import { Spinner } from '../../components/ui/Spinner'
 import { openPrivateFile, safeFileName } from '../../lib/download'
 import { errorMessage } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
+import { compressImage } from '../../lib/image'
 import { supabase } from '../../lib/supabase'
 import { Constants, type SupportTicket, type TicketEvent, type TicketStatus } from '../../lib/types'
 import { useWarehouses } from '../shared/queries'
@@ -22,7 +23,7 @@ async function uploadAll(clientId: string, files: File[]): Promise<string[]> {
   const out: string[] = []
   for (const f of files) {
     const path = `${clientId}/${crypto.randomUUID()}/${safeFileName(f.name)}`
-    const up = await supabase.storage.from('tickets').upload(path, f, { contentType: f.type }); if (up.error) throw up.error
+    const file = await compressImage(f); const up = await supabase.storage.from('tickets').upload(path, file, { contentType: file.type }); if (up.error) throw up.error
     out.push(path)
   }
   return out

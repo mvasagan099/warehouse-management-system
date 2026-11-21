@@ -13,7 +13,7 @@ export function StatusRail() {
   const { profile } = useAuth()
   const allowed = !!profile && canAccess(profile.role, 'alerts')
   const q = useQuery({
-    queryKey: ['status_rail'], enabled: allowed, refetchInterval: 60_000,
+    queryKey: ['status_rail'], enabled: allowed, refetchInterval: 180_000,
     queryFn: async () => {
       const { data, error } = await supabase.from('alerts').select('severity').is('recovered_at', null).neq('status', 'RESOLVED').limit(50)
       if (error) throw error

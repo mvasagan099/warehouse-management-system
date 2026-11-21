@@ -79,7 +79,7 @@ export function useEquipment(warehouseId?: string) {
 
 export function useNotifications() {
   return useQuery({
-    queryKey: ['notifications'], refetchInterval: 120_000,
+    queryKey: ['notifications'], refetchInterval: 300_000,
     queryFn: async () => {
       const { data, error } = await supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(30)
       if (error) throw error

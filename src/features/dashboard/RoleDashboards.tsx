@@ -43,7 +43,7 @@ function Stat({ to, icon, label, value, sub, tone }: { to?: string; icon: React.
 export function AdminDashboard() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage
-  const q = useQuery({ queryKey: ['admin_dashboard'], refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.rpc('admin_dashboard'); if (error) throw error; return data as unknown as AdminDash } })
+  const q = useQuery({ queryKey: ['admin_dashboard'], refetchInterval: 180_000, queryFn: async () => { const { data, error } = await supabase.rpc('admin_dashboard'); if (error) throw error; return data as unknown as AdminDash } })
   if (q.isPending) return <div className="flex justify-center p-6"><Spinner /></div>
   if (q.error || !q.data) return <ErrorState message={t('common.error')} onRetry={() => q.refetch()} />
   const d = q.data
@@ -88,7 +88,7 @@ export function ManagerDashboard() {
   const [sel, setSel] = useState('')
   const mine = (whs.data ?? []).filter((w) => w.is_active)
   const warehouseId = sel || mine[0]?.id || ''
-  const q = useQuery({ queryKey: ['manager_dashboard', warehouseId], enabled: !!warehouseId, refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.rpc('manager_dashboard', { p_warehouse_id: warehouseId }); if (error) throw error; return data as unknown as ManagerDash } })
+  const q = useQuery({ queryKey: ['manager_dashboard', warehouseId], enabled: !!warehouseId, refetchInterval: 180_000, queryFn: async () => { const { data, error } = await supabase.rpc('manager_dashboard', { p_warehouse_id: warehouseId }); if (error) throw error; return data as unknown as ManagerDash } })
   if (!profile) return null
   return (
     <section className="mb-8 space-y-4" aria-label={t('dash.managerTitle')} data-testid="manager-dashboard">

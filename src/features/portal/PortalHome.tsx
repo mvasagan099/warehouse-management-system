@@ -45,7 +45,7 @@ export function PortalHome() {
   const [showContracts, setShowContracts] = useState(false)
   const [showCompanies, setShowCompanies] = useState(false)
   const client = clients.data?.find((c) => c.id === profile?.client_id)
-  const dash = useQuery({ queryKey: ['client_dashboard'], refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.rpc('client_dashboard', {}); if (error) throw error; return data as unknown as Dash } })
+  const dash = useQuery({ queryKey: ['client_dashboard'], refetchInterval: 180_000, queryFn: async () => { const { data, error } = await supabase.rpc('client_dashboard', {}); if (error) throw error; return data as unknown as Dash } })
   if (clients.isPending || dash.isPending) return <FullPageSpinner />
   if (dash.error || !dash.data) return <ErrorState message={t('common.error')} onRetry={() => dash.refetch()} retryLabel={t('common.retry')} />
   const d = dash.data

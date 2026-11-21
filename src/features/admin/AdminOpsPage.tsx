@@ -18,7 +18,7 @@ import { FEATURE_KEYS, type FeatureKey } from '../../lib/features'
 
 function CronCard() {
   const { t, i18n } = useTranslation()
-  const q = useQuery({ queryKey: ['cron_state'], refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.from('cron_job_state').select('*').order('job'); if (error) throw error; return data } })
+  const q = useQuery({ queryKey: ['cron_state'], refetchInterval: 300_000, queryFn: async () => { const { data, error } = await supabase.from('cron_job_state').select('*').order('job'); if (error) throw error; return data } })
   const now = Date.now()
   return (
     <Card className="p-4"><h2 className="mb-1 flex items-center gap-2 font-semibold"><Timer className="h-4 w-4" />{t('ops.cronTitle')}</h2><p className="mb-3 text-sm text-slate-500">{t('ops.cronHelp')}</p>

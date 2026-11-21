@@ -10,6 +10,7 @@ import { errorMessage } from '../../lib/errors'
 import { formatDateTime, formatTemperatureRange } from '../../lib/format'
 import { isNetworkError } from '../../lib/offline/queue'
 import { useOfflineQueue } from '../../lib/offline/useOfflineQueue'
+import { compressImage } from '../../lib/image'
 import { supabase } from '../../lib/supabase'
 import { useWarehouses, useZones } from '../shared/queries'
 
@@ -49,7 +50,7 @@ export function ManualReadingPage() {
       let path: string | undefined
       if (photo && zone) {
         path = `${zone.warehouse_id}/readings/${crypto.randomUUID()}-${photo.name.replace(/[^A-Za-z0-9._-]+/g, '-')}`
-        const up = await supabase.storage.from('coldchain').upload(path, photo, { contentType: photo.type || 'image/jpeg' })
+        const small = await compressImage(photo); const up = await supabase.storage.from('coldchain').upload(path, small, { contentType: small.type || 'image/jpeg' })
         if (up.error) throw up.error
       }
       const { error } = await supabase.rpc('add_manual_reading', { p_zone_id: zoneId, p_value: num!, p_photo_path: path, p_note: note.trim() || undefined })

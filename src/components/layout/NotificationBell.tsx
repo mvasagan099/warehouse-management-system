@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
+import { useFeatureFlags } from '../../lib/features'
 import { useColdChainRealtime, useNotifications } from '../../features/coldchain/queries'
 import { formatDateTime } from '../../lib/format'
 import { supabase } from '../../lib/supabase'
@@ -16,7 +17,8 @@ export function NotificationBell() {
   const qc = useQueryClient()
   const enabled = !!profile && profile.role !== 'ACCOUNTANT'
   const list = useNotifications()
-  useColdChainRealtime(enabled)
+  const flags = useFeatureFlags()
+  useColdChainRealtime(enabled && flags.data?.coldChain === true)
   const [open, setOpen] = useState(false)
   const read = useMutation({ mutationFn: async () => { await supabase.rpc('mark_notifications_read', {}) }, onSuccess: () => void qc.invalidateQueries({ queryKey: ['notifications'] }) })
   if (!enabled) return null
