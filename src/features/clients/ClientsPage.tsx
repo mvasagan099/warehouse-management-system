@@ -21,6 +21,7 @@ import { useClientGroups } from '../billing/queries'
 import { qk, useClients } from '../shared/queries'
 import { BillingOverrideDialog, GroupsDialog } from './ClientBillingDialogs'
 import { ClientLoginDialog } from './ClientLoginDialog'
+import { ClientWarehousesDialog } from './ClientWarehousesDialog'
 import { CompaniesDialog } from './CompaniesDialog'
 import { ContractsDialog } from './ContractsDialog'
 import { clientSchema, clientToForm, emptyClient, type ClientFormInput, type ClientFormOutput } from './schema'
@@ -124,6 +125,7 @@ export function ClientsPage() {
   const [editing, setEditing] = useState<Client | 'new' | null>(null)
   const [contractsFor, setContractsFor] = useState<Client | null>(null)
   const [companiesFor, setCompaniesFor] = useState<Client | null>(null)
+  const [warehousesFor, setWarehousesFor] = useState<Client | null>(null)
   const [loginFor, setLoginFor] = useState<Client | null>(null)
   const [overrideFor, setOverrideFor] = useState<Client | null>(null)
   const [showGroups, setShowGroups] = useState(false)
@@ -157,6 +159,7 @@ export function ClientsPage() {
           {canEdit && <Button size="sm" variant="ghost" icon={<Pencil className="h-4 w-4" />} onClick={() => setEditing(row.original)}>{t('common.edit')}</Button>}
           <Button size="sm" variant="ghost" icon={<FileSignature className="h-4 w-4" />} onClick={() => setContractsFor(row.original)}>{t('contracts.title')}</Button>
           <Button size="sm" variant="ghost" icon={<Building className="h-4 w-4" />} onClick={() => setCompaniesFor(row.original)}>{t('companies.title')}</Button>
+          {profile?.role === 'SUPER_ADMIN' && <Button size="sm" variant="ghost" onClick={() => setWarehousesFor(row.original)}>{t('clients.warehouses')}</Button>}
           {isAdmin && (
             <Button size="sm" variant="ghost" icon={<KeyRound className="h-4 w-4" />} onClick={() => setLoginFor(row.original)}>{t('clients.createLogin')}</Button>
           )}
@@ -190,6 +193,7 @@ export function ClientsPage() {
         />
       )}
       {contractsFor && <ContractsDialog clientId={contractsFor.id} clientName={contractsFor.company_name} canEdit onClose={() => setContractsFor(null)} />}
+      {warehousesFor && <ClientWarehousesDialog clientId={warehousesFor.id} clientName={warehousesFor.company_name} onClose={() => setWarehousesFor(null)} />}
       {companiesFor && <CompaniesDialog clientId={companiesFor.id} clientName={companiesFor.company_name} onClose={() => setCompaniesFor(null)} />}
       {loginFor && (
         <ClientLoginDialog

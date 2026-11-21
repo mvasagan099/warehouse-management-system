@@ -97,7 +97,7 @@ function EditDialog({ employee, onClose }: { employee: Row; onClose: () => void 
       // Making someone a manager (or back to staff) changes their LOGIN role and warehouse assignment, not just a label.
       const wantsManager = f.job_role === 'MANAGER'
       if (isAdmin && (loginRole === 'STAFF' || loginRole === 'WAREHOUSE_MANAGER') && wantsManager !== (loginRole === 'WAREHOUSE_MANAGER')) {
-        const { error } = await (supabase.rpc as unknown as (fn: string, args: object) => Promise<{ error: { message: string } | null }>)('change_login_role', { p_user_id: employee.user_id, p_new_role: wantsManager ? 'WAREHOUSE_MANAGER' : 'STAFF' })
+        const { error } = await (supabase as unknown as { rpc: (fn: string, args: object) => Promise<{ error: { message: string } | null }> }).rpc('change_login_role', { p_user_id: employee.user_id, p_new_role: wantsManager ? 'WAREHOUSE_MANAGER' : 'STAFF' })
         if (error) throw error
       }
       const { error } = await supabase.from('employees').update({ job_role: f.job_role, status: f.status === 'EXITED' ? employee.status : f.status, emergency_contact_name: f.name.trim() || null, emergency_contact_phone: f.phone.trim() || null, joining_date: f.joining }).eq('id', employee.id)

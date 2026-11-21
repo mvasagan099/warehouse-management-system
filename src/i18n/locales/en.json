@@ -516,7 +516,10 @@
     "billingOverride": "Credit override",
     "billingOverrideHelp": "If this client is blocked for overdue or over-limit bills, an override lets it book and dispatch until the date you choose.",
     "overrideUntil": "Current override until {{date}}: {{reason}}",
-    "overrideUntilLabel": "Allow until"
+    "overrideUntilLabel": "Allow until",
+    "warehouses": "Warehouses",
+    "warehousesTitle": "Warehouses of {{name}}",
+    "warehousesHelp": "Managers and staff see this client only if it is linked to their warehouse. A client is linked automatically when it is added at a warehouse or has a gate entry, booking or contract there."
   },
   "contracts": {
     "title": "Contracts",

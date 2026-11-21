@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
-select plan(337);
+select plan(341);
 
 -- RLS matrix fixtures: two warehouses, two clients, one user per role (plus a second manager/staff), rows in every tenant-scoped table.
 -- Included by supabase/tests/database/rls_matrix.test.sql and by scripts/rls/draft.sql.
@@ -173,11 +173,12 @@ insert into expected values
   ('brigade_types', 'a-aa-', 'a----', 'a----', 'x----'),
   ('calibration_log', '?????', '?????', '-----', '-----'),
   ('client_change_requests', 'ap---', '-----', '-----', '-----'),
-  ('client_contacts', 'apaaa', 'aa---', 'ap---', '-----'),
+  ('client_contacts', 'apppa', 'aa---', 'ap---', '-----'),
   ('client_groups', '?????', '?????', '?????', '?????'),
   ('client_notices', 'appp-', '-----', '-----', '-----'),
-  ('clients', 'apaaa', 'a-a--', 'a-a--', 'x----'),
-  ('company_master', 'apaaa', 'aaaa-', 'apaa-', 'x----'),
+  ('client_warehouses', 'a-pp-', '-----', '-----', '-----'),
+  ('clients', 'apppa', 'a-a--', 'a-p--', 'x----'),
+  ('company_master', 'apppa', 'aaaa-', 'appp-', 'x----'),
   ('contracts', 'appp-', 'a-a--', 'a-p--', 'a----'),
   ('crew_log', 'a-pp-', '-----', '-----', '-----'),
   ('cron_job_runs', '?????', '?????', '-----', '-----'),

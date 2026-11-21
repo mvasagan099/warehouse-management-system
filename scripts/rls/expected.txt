@@ -13,11 +13,12 @@ brigade_slots 2 a-pp- a-a-- a-p-- x-x--
 brigade_types 1 a-aa- a---- a---- x----
 calibration_log 0 ????? ????? ----- -----
 client_change_requests 2 ap--- ----- ----- -----
-client_contacts 2 apaaa aa--- ap--- -----
+client_contacts 2 apppa aa--- ap--- -----
 client_groups 0 ????? ????? ????? ?????
 client_notices 2 appp- ----- ----- -----
-clients 2 apaaa a-a-- a-a-- x----
-company_master 2 apaaa aaaa- apaa- x----
+client_warehouses 4 a-pp- ----- ----- -----
+clients 2 apppa a-a-- a-p-- x----
+company_master 2 apppa aaaa- appp- x----
 contracts 2 appp- a-a-- a-p-- a----
 crew_log 2 a-pp- ----- ----- -----
 cron_job_runs 0 ????? ????? ----- -----
