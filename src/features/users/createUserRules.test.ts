@@ -57,6 +57,9 @@ describe('create-user authorize', () => {
   it('denies staff, clients and inactive accounts', () => {
     expect(authorize({ ...manager, role: 'STAFF' }, req()).ok).toBe(false)
     expect(authorize({ ...manager, role: 'CLIENT' }, req()).ok).toBe(false)
+    // but a client of the manager's own warehouse may be given a login by that manager
+    expect(authorize(manager, { ...req(), role: 'CLIENT', warehouse_ids: [] }, { clientWarehouseIds: manager.managedWarehouseIds }).ok).toBe(true)
+    expect(authorize(manager, { ...req(), role: 'CLIENT', warehouse_ids: [] }, { clientWarehouseIds: ['other'] }).ok).toBe(false)
     expect(authorize({ ...admin, is_active: false }, req()).ok).toBe(false)
     expect(authorize({ ...admin, role: null }, req()).ok).toBe(false)
   })

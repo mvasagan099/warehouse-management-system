@@ -6,7 +6,9 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { Wand2 } from 'lucide-react'
 import { useAuth } from '../../auth/AuthProvider'
+import { generateTempPassword } from '../users/schema'
 import { Button } from '../../components/ui/Button'
 import { DataTable } from '../../components/ui/DataTable'
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/Field'
@@ -33,7 +35,7 @@ function ClientForm({ initial, title, saving, onClose, onSubmit }: {
 }) {
   const { t } = useTranslation()
   const groups = useClientGroups()
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<ClientFormInput, unknown, ClientFormOutput>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ClientFormInput, unknown, ClientFormOutput>({
     resolver: zodResolver(clientSchema), defaultValues: initial,
   })
   const gstin = (watch('gstin') ?? '').toUpperCase()
@@ -73,6 +75,10 @@ function ClientForm({ initial, title, saving, onClose, onSubmit }: {
           {f('contact_name', t('clients.contactName'), { optional: true })}
           {f('phone', t('common.phone'), { optional: true, type: 'tel', inputMode: 'tel' })}
           {f('email', t('common.email'), { optional: true, type: 'email', inputMode: 'email' })}
+          <Field label={t('clients.loginPassword')} htmlFor="cf-login_password" optional error={errors.login_password?.message} hint={t('clients.loginPasswordHint')}>
+            <div className="flex gap-1"><Input id="cf-login_password" autoComplete="new-password" className="font-mono" {...register('login_password')} />
+              <Button type="button" variant="secondary" size="sm" aria-label={t('users.generate')} icon={<Wand2 className="h-4 w-4" />} onClick={() => setValue('login_password', generateTempPassword(), { shouldValidate: true })} /></div>
+          </Field>
         </fieldset>
         <div className="grid gap-4 sm:grid-cols-3">
           {f('credit_limit_paise', t('clients.creditLimit'), { inputMode: 'decimal', hint: t('clients.creditHelp') })}
@@ -132,12 +138,26 @@ export function ClientsPage() {
 
   const save = useMutation({
     mutationFn: async (v: ClientFormOutput) => {
+      const { login_password, ...row } = v
       const res = editing && editing !== 'new'
-        ? await supabase.from('clients').update(v).eq('id', editing.id)
-        : await supabase.from('clients').insert(v)
+        ? await supabase.from('clients').update(row).eq('id', editing.id)
+        : await supabase.from('clients').insert(row)
       if (res.error) throw res.error
+      let loginCreated = false
+      if (login_password && row.email) {
+        let clientId = editing && editing !== 'new' ? editing.id : ''
+        if (!clientId) {
+          const { data, error } = await supabase.from('clients').select('id').eq('company_name', row.company_name).order('created_at', { ascending: false }).limit(1).maybeSingle()
+          if (error || !data) throw error ?? new Error('Client saved, but its login could not be created. Use the login button.')
+          clientId = data.id
+        }
+        const { error } = await supabase.functions.invoke('create-user', { body: { email: row.email, password: login_password, full_name: row.contact_name || row.company_name, phone: row.phone || undefined, role: 'CLIENT', client_id: clientId, warehouse_ids: [] } })
+        if (error) throw error
+        loginCreated = true
+      }
+      return loginCreated
     },
-    onSuccess: () => { toast.success(editing === 'new' ? t('clients.added') : t('clients.updated')); setEditing(null); void qc.invalidateQueries({ queryKey: qk.clients }) },
+    onSuccess: (loginCreated) => { toast.success(loginCreated ? t('clients.addedWithLogin') : editing === 'new' ? t('clients.added') : t('clients.updated')); setEditing(null); void qc.invalidateQueries({ queryKey: qk.clients }) },
     onError: async (e) => toast.error(await errorMessage(e)),
   })
 

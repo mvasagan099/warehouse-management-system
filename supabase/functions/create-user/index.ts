@@ -57,6 +57,12 @@ Deno.serve(guarded('create-user', async (req) => {
     admin.from('warehouse_managers').select('warehouse_id').eq('user_id', callerId).is('deleted_at', null),
   ])
 
+  // for a client login, the warehouses that client belongs to (a manager may create it when one of them is theirs)
+  let clientWarehouseIds: string[] = []
+  if (input.role === 'CLIENT' && input.client_id) {
+    const { data: cw } = await admin.from('client_warehouses').select('warehouse_id').eq('client_id', input.client_id)
+    clientWarehouseIds = (cw ?? []).map((r) => r.warehouse_id as string)
+  }
   const decision = authorize(
     {
       id: callerId,
@@ -65,6 +71,7 @@ Deno.serve(guarded('create-user', async (req) => {
       managedWarehouseIds: (managed ?? []).map((m) => m.warehouse_id as string),
     },
     input,
+    { clientWarehouseIds },
   )
   if (!decision.ok) return json(decision.status, { error: decision.error })
 

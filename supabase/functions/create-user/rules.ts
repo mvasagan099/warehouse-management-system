@@ -78,17 +78,20 @@ export function parseRequest(body: unknown): { ok: true; value: CreateUserReques
 /**
  * Who may create whom:
  *  - SUPER_ADMIN: managers (any warehouses), staff (any warehouse), accountants and client logins; may link an applicant.
- *  - WAREHOUSE_MANAGER: STAFF only, only for a warehouse they manage; no applicant linking.
+ *  - WAREHOUSE_MANAGER: STAFF for a warehouse they manage, and CLIENT logins for clients of their warehouse; no applicant linking.
  *  - everyone else: nobody.
  */
-export function authorize(caller: Caller, req: CreateUserRequest): Decision {
+export function authorize(caller: Caller, req: CreateUserRequest, ctx: { clientWarehouseIds?: string[] } = {}): Decision {
   if (!caller.is_active || !caller.role) return { ok: false, status: 403, error: 'Account is not active' }
 
   if (caller.role === 'SUPER_ADMIN') return { ok: true }
 
   if (caller.role === 'WAREHOUSE_MANAGER') {
-    if (req.role === 'CLIENT')
-      return { ok: false, status: 403, error: 'Only an administrator can create client logins' }
+    if (req.role === 'CLIENT') {
+      // a manager may create the login of a client that belongs to one of their warehouses
+      const mine = (ctx.clientWarehouseIds ?? []).some((w) => caller.managedWarehouseIds.includes(w))
+      return mine ? { ok: true } : { ok: false, status: 403, error: 'You can only create logins for clients of your own warehouse' }
+    }
     if (req.role === 'ACCOUNTANT')
       return { ok: false, status: 403, error: 'Only an administrator can create accountant logins' }
     if (req.role !== 'STAFF') return { ok: false, status: 403, error: 'Managers can only create staff' }

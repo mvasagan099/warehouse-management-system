@@ -343,7 +343,8 @@
     "mustChange": "Must change password",
     "none": "—",
     "updated": "User updated",
-    "accountantHelp": "An accountant sees billing for every warehouse and can export, but cannot change anything."
+    "accountantHelp": "An accountant sees billing for every warehouse and can export, but cannot change anything.",
+    "generate": "Generate password"
   },
   "hiring": {
     "title": "Hiring",
@@ -519,7 +520,10 @@
     "overrideUntilLabel": "Allow until",
     "warehouses": "Warehouses",
     "warehousesTitle": "Warehouses of {{name}}",
-    "warehousesHelp": "Managers and staff see this client only if it is linked to their warehouse. A client is linked automatically when it is added at a warehouse or has a gate entry, booking or contract there."
+    "warehousesHelp": "Managers and staff see this client only if it is linked to their warehouse. A client is linked automatically when it is added at a warehouse or has a gate entry, booking or contract there.",
+    "loginPassword": "Login password",
+    "loginPasswordHint": "Fill this to create the client's login with the email above. Leave blank to skip. At least 10 characters with capital, small letter and number.",
+    "addedWithLogin": "Client saved and login created"
   },
   "contracts": {
     "title": "Contracts",

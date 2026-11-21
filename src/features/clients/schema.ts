@@ -1,3 +1,4 @@
+import { passwordProblem } from '../../lib/password'
 import { z } from 'zod'
 import { isValidGstin, PAN_RE } from '../../lib/gstin'
 import { rupeesToPaise } from '../../lib/money'
@@ -61,8 +62,15 @@ export const clientSchema = z
     payment_terms_days: z.string().trim().refine((v) => /^\d{1,3}$/.test(v), 'validation.days').transform(Number),
     gst_exempt: z.boolean(),
     gst_exempt_reason: optionalText(200),
+    login_password: z.string().optional().transform((v) => (v ?? '').trim()),
   })
   .superRefine(gstConsistency)
+  .superRefine((v, ctx) => {
+    if (!v.login_password) return
+    if (!v.email) ctx.addIssue({ code: 'custom', path: ['email'], message: 'validation.required' })
+    const problem = passwordProblem(v.login_password)
+    if (problem) ctx.addIssue({ code: 'custom', path: ['login_password'], message: problem })
+  })
   .superRefine((v, ctx) => {
     if (v.gst_exempt && !v.gst_exempt_reason) ctx.addIssue({ code: 'custom', path: ['gst_exempt_reason'], message: 'validation.required' })
   })
@@ -74,7 +82,7 @@ export type ClientFormOutput = z.output<typeof clientSchema>
 export const emptyClient: ClientFormInput = {
   company_name: '', gstin: '', pan: '', address_line1: '', address_line2: '', city: '', district: '', state: '',
   pincode: '', contact_name: '', phone: '', email: '', credit_limit_paise: '', pick_rule: 'FEFO', status: 'ACTIVE', notes: '',
-  group_id: '', billing_cycle: 'MONTHLY', billing_mode: 'BOTH', payment_terms_days: '15', gst_exempt: false, gst_exempt_reason: '',
+  group_id: '', billing_cycle: 'MONTHLY', billing_mode: 'BOTH', payment_terms_days: '15', gst_exempt: false, gst_exempt_reason: '', login_password: '',
 }
 
 const str = (v: unknown) => (v === null || v === undefined ? '' : String(v))
@@ -87,7 +95,7 @@ export function clientToForm(c: Client): ClientFormInput {
     pincode: str(c.pincode), contact_name: str(c.contact_name), phone: str(c.phone), email: str(c.email),
     credit_limit_paise: paiseToRupeesInput(c.credit_limit_paise), pick_rule: c.pick_rule, status: c.status, notes: str(c.notes),
     group_id: str(c.group_id), billing_cycle: c.billing_cycle, billing_mode: c.billing_mode, payment_terms_days: String(c.payment_terms_days),
-    gst_exempt: c.gst_exempt, gst_exempt_reason: str(c.gst_exempt_reason),
+    gst_exempt: c.gst_exempt, gst_exempt_reason: str(c.gst_exempt_reason), login_password: '',
   }
 }
 
