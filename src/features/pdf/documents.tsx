@@ -10,9 +10,9 @@ import { amountInWords, bpToPercent, formatIndian } from '../../lib/words'
 // Documents are printed in English with the built-in Helvetica font (Tamil needs an embedded font; see README).
 const s = StyleSheet.create({
   page: { padding: 28, fontSize: 9, fontFamily: 'Helvetica', color: '#0f172a' },
-  head: { flexDirection: 'row', justifyContent: 'space-between', borderBottom: '1pt solid #0e7490', paddingBottom: 8, marginBottom: 10 },
-  title: { fontSize: 15, fontWeight: 'bold', color: '#0e7490' },
-  band: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#0e7490', color: '#ffffff', padding: 12, borderRadius: 4, marginBottom: 10 },
+  head: { flexDirection: 'row', justifyContent: 'space-between', borderBottom: '1pt solid #1d5fa6', paddingBottom: 8, marginBottom: 10 },
+  title: { fontSize: 15, fontWeight: 'bold', color: '#1d5fa6' },
+  band: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#1d5fa6', color: '#ffffff', padding: 12, borderRadius: 4, marginBottom: 10 },
   bandTitle: { fontSize: 17, fontWeight: 'bold', color: '#ffffff', letterSpacing: 1 },
   bandText: { fontSize: 8.5, color: '#e0f2fe' },
   bandBold: { fontSize: 12, fontWeight: 'bold', color: '#ffffff' },
@@ -26,7 +26,7 @@ const s = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   box: { flex: 1, border: '0.5pt solid #cbd5e1', borderRadius: 3, padding: 6 },
   label: { fontSize: 7, color: '#64748b', textTransform: 'uppercase', marginBottom: 1 },
-  th: { backgroundColor: '#0e7490', color: '#ffffff', fontWeight: 'bold', fontSize: 8 },
+  th: { backgroundColor: '#1d5fa6', color: '#ffffff', fontWeight: 'bold', fontSize: 8 },
   tr: { flexDirection: 'row', borderBottom: '0.5pt solid #e2e8f0' },
   td: { padding: 3 },
   sigRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 34 },
@@ -363,7 +363,7 @@ export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark, upiQr }
               {inv.credit_paise > 0 && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text>Credit notes</Text><Text>- {money(inv.credit_paise)}</Text></View>}
             </View>
           )}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#0e7490', marginTop: 4, padding: 5, borderRadius: 3 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#1d5fa6', marginTop: 4, padding: 5, borderRadius: 3 }}>
             <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Balance due (INR)</Text><Text style={{ color: '#ffffff', fontWeight: 'bold' }}>{money(Math.max(inv.grand_total_paise - inv.paid_paise - inv.credit_paise, 0))}</Text>
           </View>
         </View>
@@ -382,7 +382,7 @@ export function InvoicePdf({ invoice: inv, lines, tax, terms, watermark, upiQr }
             <Text>{terms ?? ''}</Text>
           </View>
         </View>
-        <Text style={{ marginTop: 8, textAlign: 'center', color: '#0e7490', fontWeight: 'bold' }}>Thank you for your business.</Text>
+        <Text style={{ marginTop: 8, textAlign: 'center', color: '#1d5fa6', fontWeight: 'bold' }}>Thank you for your business.</Text>
         <View style={s.sigRow} wrap={false}>
           <Text style={s.sig}>Receiver's signature</Text>
           <Text style={s.sig}>For {String(sup.legal_name || sup.name || 'the supplier')}{'\n'}Authorised signatory</Text>
@@ -409,7 +409,7 @@ function ReadingsChart({ rows, lo, hi, width = 520, height = 150 }: { rows: { t:
       <Svg width={width} height={height + 4} viewBox={`0 0 ${width} ${height + 4}`}>
         <Rect x={0} y={0} width={width} height={height} fill="#f8fafc" />
         {lo !== null && hi !== null && <Rect x={0} y={y(hi)} width={width} height={Math.max(y(lo) - y(hi), 1)} fill="#d1fae5" />}
-        <Path d={sparkPath(rows, width, height, 15 * 60_000, lo ?? undefined, hi ?? undefined)} stroke="#0e7490" strokeWidth={1.2} fill="none" />
+        <Path d={sparkPath(rows, width, height, 15 * 60_000, lo ?? undefined, hi ?? undefined)} stroke="#1d5fa6" strokeWidth={1.2} fill="none" />
       </Svg>
       <Text style={s.small}>Range {fnum(min)} to {fnum(max)} C{lo !== null && hi !== null ? `; allowed ${fnum(lo)} to ${fnum(hi)} C (green band)` : ''}. A gap in the line means no data was received.</Text>
     </View>

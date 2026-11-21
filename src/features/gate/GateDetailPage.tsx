@@ -138,7 +138,7 @@ export function GateDetailPage() {
   const editable = inward && (g.status === 'AT_GATE' || g.status === 'UNLOADING')
   const sum = loadSummary(lines)
   const kv = (label: string, value: React.ReactNode) => (
-    <div><dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt><dd className="text-sm font-medium">{value ?? '—'}</dd></div>
+    <div><dt className="text-xs text-slate-500">{label}</dt><dd className="text-sm font-medium">{value ?? '—'}</dd></div>
   )
 
   return (
@@ -193,7 +193,7 @@ export function GateDetailPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+                <thead className="bg-slate-50 text-left text-xs text-slate-500">
                   <tr><th className="px-4 py-2">#</th><th className="px-4 py-2">{t('common.item')}</th><th className="px-4 py-2">{t('common.batch')}</th><th className="px-4 py-2">{t('common.expiry')}</th><th className="px-4 py-2">{t('gate.declaredQty')}</th><th className="px-4 py-2">{t('gate.weightKg')}</th>{g.direction === 'INWARD' && <th className="px-4 py-2">{t('gate.counted')}</th>}<th className="px-4 py-2">{t('gate.requirement')}</th><th className="px-4 py-2">{t('common.status')}</th><th /></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">

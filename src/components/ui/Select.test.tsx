@@ -8,8 +8,8 @@ const many = ['C001 · Vikram Foods', 'C002 · hari', 'C003 · sakthi', 'C004 ·
 
 describe('Select', () => {
   it('stays a plain select for short lists', () => {
-    render(<Select aria-label="Client"><option value="">Select</option><option value="1">One</option><option value="2">Two</option></Select>)
-    expect(screen.getByRole('combobox', { name: 'Client' }).tagName).toBe('SELECT')
+    render(<Select aria-label="Status"><option value="">Select</option><option value="1">One</option><option value="2">Two</option></Select>)
+    expect(screen.getByRole('combobox', { name: 'Status' }).tagName).toBe('SELECT')
   })
   it('gets a search box with suggestions for long lists and sets the real value', async () => {
     const seen: string[] = []

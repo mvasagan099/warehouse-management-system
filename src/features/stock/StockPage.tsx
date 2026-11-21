@@ -238,7 +238,7 @@ export function StockPage() {
         {tab === 'ledger' && (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-sm">
-              <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th className="px-4 py-2">{t('common.date')}</th><th className="px-4 py-2">{t('stock.movement')}</th><th className="px-4 py-2">{t('common.item')}</th><th className="px-4 py-2">{t('common.quantity')}</th><th className="px-4 py-2">{t('common.slot')}</th><th className="px-4 py-2">{t('common.reason')}</th></tr></thead>
+              <thead className="bg-slate-50 text-left text-xs text-slate-500"><tr><th className="px-4 py-2">{t('common.date')}</th><th className="px-4 py-2">{t('stock.movement')}</th><th className="px-4 py-2">{t('common.item')}</th><th className="px-4 py-2">{t('common.quantity')}</th><th className="px-4 py-2">{t('common.slot')}</th><th className="px-4 py-2">{t('common.reason')}</th></tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {(ledger.data ?? []).map((m) => (
                   <tr key={m.id}>

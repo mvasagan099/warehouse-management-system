@@ -119,7 +119,7 @@ export function AuditLogPage() {
           <p className="mb-3 text-sm text-slate-500">{formatDateTime(viewing.changed_at, lang)} · {t('audit.record')}: <span className="font-mono">{viewing.record_id}</span></p>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead><tr className="text-left text-xs uppercase text-slate-500"><th className="py-1 pr-4">Field</th><th className="py-1 pr-4">{t('audit.oldData')}</th><th className="py-1">{t('audit.newData')}</th></tr></thead>
+              <thead><tr className="text-left text-xs text-slate-500"><th className="py-1 pr-4">Field</th><th className="py-1 pr-4">{t('audit.oldData')}</th><th className="py-1">{t('audit.newData')}</th></tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {changes.map((c) => (
                   <tr key={c.field} className="align-top">

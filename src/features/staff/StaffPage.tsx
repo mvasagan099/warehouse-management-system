@@ -149,7 +149,7 @@ export function StaffPage() {
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showExited} onChange={(e) => setShowExited(e.target.checked)} />{t('staff.showExited')}</label>
         </div>
         {list.isPending ? <div className="flex justify-center p-8"><Spinner /></div> : list.error ? <ErrorState message={t('common.error')} onRetry={() => list.refetch()} /> : !rows.length ? <EmptyState message={t('staff.none')} /> : (
-          <div className="overflow-x-auto"><table className="min-w-full divide-y divide-slate-100 text-sm"><thead className="text-left text-xs uppercase text-slate-500"><tr>
+          <div className="overflow-x-auto"><table className="min-w-full divide-y divide-slate-100 text-sm"><thead className="text-left text-xs text-slate-500"><tr>
             <th className="px-3 py-2">{t('common.code')}</th><th className="px-3 py-2">{t('common.name')}</th><th className="px-3 py-2">{t('hiring.jobRole')}</th><th className="px-3 py-2">{t('common.warehouse')}</th>
             <th className="px-3 py-2">{t('common.status')}</th><th className="px-3 py-2">{t('staff.joiningDate')}</th><th /></tr></thead>
             <tbody className="divide-y divide-slate-50">{rows.map((r) => (

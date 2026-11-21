@@ -90,7 +90,7 @@ function KeysDialog({ sensor, onClose }: { sensor: Sensor; onClose: () => void }
             <Button size="sm" variant="secondary" icon={<Copy className="h-4 w-4" />} onClick={() => { void navigator.clipboard.writeText(shown.key); toast.success(t('billing.linkCopied')) }}>{t('billing.copyLink')}</Button></div>
           <pre className="overflow-x-auto rounded bg-slate-900 p-2 text-[11px] text-slate-100" data-testid="curl-sample">{curl}</pre>
         </div>}
-        <table className="min-w-full text-xs"><thead className="text-left uppercase text-slate-500"><tr><th className="py-1">{t('cold.keyLabel')}</th><th>{t('cold.keyPrefix')}</th><th>{t('cold.scope')}</th><th>{t('cold.lastUsed')}</th><th>{t('common.status')}</th><th /></tr></thead>
+        <table className="min-w-full text-xs"><thead className="text-left text-slate-500"><tr><th className="py-1">{t('cold.keyLabel')}</th><th>{t('cold.keyPrefix')}</th><th>{t('cold.scope')}</th><th>{t('cold.lastUsed')}</th><th>{t('common.status')}</th><th /></tr></thead>
           <tbody>{mine.map((k) => <tr key={k.id} className="border-t border-slate-100"><td className="py-1.5">{k.label}</td><td className="font-mono">{k.key_prefix}…</td><td>{k.sensor_id ? t('cold.thisSensor') : t('cold.wholeWarehouse')}</td>
             <td>{k.last_used_at ? formatDateTime(k.last_used_at, i18n.resolvedLanguage) : '—'}</td><td>{k.revoked_at ? <Badge tone="red">{t('cold.revoked')}</Badge> : <Badge tone="green">{t('common.active')}</Badge>}</td>
             <td className="whitespace-nowrap">{!k.revoked_at && <><Button size="sm" variant="ghost" onClick={() => rotate.mutate(k)}>{t('cold.rotate')}</Button><Button size="sm" variant="ghost" onClick={() => revoke.mutate(k)}>{t('cold.revoke')}</Button></>}</td></tr>)}
@@ -139,7 +139,7 @@ function CalibrationDialog({ sensor, onClose }: { sensor: Sensor; onClose: () =>
         {offset !== null && <p className="rounded-lg bg-slate-50 p-2">{t('cold.offsetApplied')}: <b data-testid="offset-preview">{offset > 0 ? '+' : ''}{offset} °C</b></p>}
         <Field label={t('cold.certificate')} htmlFor="cb-file" optional><input id="cb-file" type="file" accept="application/pdf,image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="block w-full text-sm" /></Field>
         <Field label={t('common.notes')} htmlFor="cb-notes" optional><Input id="cb-notes" value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
-        {!!history.data?.length && <table className="min-w-full text-xs"><thead className="text-left uppercase text-slate-500"><tr><th className="py-1">{t('common.date')}</th><th>{t('cold.referenceReading')}</th><th>{t('cold.sensorReading')}</th><th>{t('cold.offsetApplied')}</th><th /></tr></thead>
+        {!!history.data?.length && <table className="min-w-full text-xs"><thead className="text-left text-slate-500"><tr><th className="py-1">{t('common.date')}</th><th>{t('cold.referenceReading')}</th><th>{t('cold.sensorReading')}</th><th>{t('cold.offsetApplied')}</th><th /></tr></thead>
           <tbody>{history.data.map((c) => <tr key={c.id} className="border-t border-slate-100"><td className="py-1.5">{formatDate(c.calibrated_on, i18n.resolvedLanguage)}</td><td>{c.reference_value}</td><td>{c.sensor_value}</td><td>{c.offset_applied}</td>
             <td>{c.certificate_path && <Button size="sm" variant="ghost" onClick={() => certificate(c)}>{t('cold.certificate')}</Button>}</td></tr>)}</tbody></table>}
       </div>

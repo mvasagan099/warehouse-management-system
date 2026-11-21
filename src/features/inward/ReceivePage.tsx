@@ -135,10 +135,10 @@ export function ReceivePage() {
                   <div className="font-medium">{l.line_no}. {l.item_name}</div>
                   <div className="text-xs text-slate-500">{l.sku} {l.batch_no && `· ${l.batch_no}`} · {l.required_temp_c !== null ? `${l.required_temp_c} °C` : ''} {l.storage_type ? t(`storageType.${l.storage_type}`) : ''}</div>
                 </div>
-                <div><div className="text-xs uppercase text-slate-500">{t('gate.declaredQty')}</div><div className="py-2 font-medium">{formatNumber(tot.declared, lang, 3)} {l.unit}</div></div>
+                <div><div className="text-xs text-slate-500">{t('gate.declaredQty')}</div><div className="py-2 font-medium">{formatNumber(tot.declared, lang, 3)} {l.unit}</div></div>
                 <Field label={t('receive.accepted')} htmlFor={`acc-${l.id}`}><Input id={`acc-${l.id}`} inputMode="decimal" value={counts[l.id]?.accepted ?? ''} onChange={(e) => setCount(l.id, { accepted: e.target.value })} className="h-11 text-base" /></Field>
                 <Field label={t('receive.damaged')} htmlFor={`dmg-${l.id}`}><Input id={`dmg-${l.id}`} inputMode="decimal" value={counts[l.id]?.damaged ?? ''} onChange={(e) => setCount(l.id, { damaged: e.target.value })} className="h-11 text-base" /></Field>
-                <div><div className="text-xs uppercase text-slate-500">{t('receive.short')}</div><div className={`py-2 font-medium ${tot.short > 0 ? 'text-amber-700' : ''}`}>{formatNumber(tot.short, lang, 3)}</div></div>
+                <div><div className="text-xs text-slate-500">{t('receive.short')}</div><div className={`py-2 font-medium ${tot.short > 0 ? 'text-amber-700' : ''}`}>{formatNumber(tot.short, lang, 3)}</div></div>
                 <div className="md:col-span-5"><Input aria-label={`${t('common.notes')} ${l.line_no}`} placeholder={t('receive.lineRemarks')} value={counts[l.id]?.remarks ?? ''} onChange={(e) => setCount(l.id, { remarks: e.target.value })} /></div>
               </div>
             )

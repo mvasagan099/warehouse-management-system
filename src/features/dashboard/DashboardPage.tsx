@@ -18,7 +18,7 @@ const COLORS = { free: '#10b981', reserved: '#8b5cf6', occupied: '#0e7490', bloc
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <Card className="p-4">
-      <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</div>
+      <div className="text-xs font-medium text-slate-500">{label}</div>
       <div className="mt-1 text-2xl font-semibold">{value}</div>
       {sub && <div className="text-xs text-slate-500">{sub}</div>}
     </Card>

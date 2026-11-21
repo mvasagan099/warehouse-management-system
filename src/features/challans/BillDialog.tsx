@@ -48,7 +48,7 @@ export function BillDialog({ clientId, warehouseId, clientName, onClose }: { cli
           <p className="text-slate-600">{t('quickBill.help')}</p>
           <Button loading={bill.isPending} onClick={() => bill.mutate()} data-testid="quick-bill-go">{t('quickBill.calculate')}</Button>
         </>) : (<>
-          <div className="rounded-lg bg-slate-50 p-3"><div className="text-xs uppercase text-slate-500">{t('quickBill.invoice')}</div><div className="text-lg font-semibold">{billed.invoice_no}</div>
+          <div className="rounded-lg bg-slate-50 p-3"><div className="text-xs text-slate-500">{t('quickBill.invoice')}</div><div className="text-lg font-semibold">{billed.invoice_no}</div>
             <div className="text-slate-600">{t('quickBill.period', { from: billed.period_from, to: billed.period_to })}</div><div className="mt-1 text-xl font-semibold" data-testid="quick-bill-due">{formatINR(billed.due_paise)}</div></div>
           {!paid ? (
             <div className="grid gap-3 sm:grid-cols-3">

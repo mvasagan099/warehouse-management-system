@@ -24,7 +24,7 @@ function RateSummary() {
   return (
     <Card className="mt-6">
       <div className="border-b border-slate-200 p-3 font-semibold">{t('billing.myRates')}</div>
-      <table className="min-w-full divide-y divide-slate-100 text-sm"><thead className="text-left text-xs uppercase text-slate-500"><tr><th className="px-3 py-2">{t('billing.rateFor')}</th><th className="px-3 py-2">{t('billing.detail')}</th><th className="px-3 py-2 text-right">{t('billing.rate')}</th><th className="px-3 py-2">{t('billing.basis')}</th></tr></thead>
+      <table className="min-w-full divide-y divide-slate-100 text-sm"><thead className="text-left text-xs text-slate-500"><tr><th className="px-3 py-2">{t('billing.rateFor')}</th><th className="px-3 py-2">{t('billing.detail')}</th><th className="px-3 py-2 text-right">{t('billing.rate')}</th><th className="px-3 py-2">{t('billing.basis')}</th></tr></thead>
         <tbody>{q.data.map((r, i) => <tr key={i}><td className="px-3 py-2">{r.label}</td><td className="px-3 py-2 text-slate-500">{r.detail}</td><td className="px-3 py-2 text-right">{formatINR(r.rate_paise)}</td><td className="px-3 py-2">{r.basis}</td></tr>)}</tbody></table>
     </Card>
   )
@@ -82,7 +82,7 @@ export function LedgerPage() {
           <div className="border-b border-slate-200 p-3 font-semibold">{t('billing.ageing')}</div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-100 text-sm" data-testid="ageing">
-              <thead className="text-left text-xs uppercase text-slate-500"><tr><th className="px-3 py-2">{t('common.client')}</th><th className="px-3 py-2 text-right">0–30</th><th className="px-3 py-2 text-right">31–60</th><th className="px-3 py-2 text-right">61–90</th><th className="px-3 py-2 text-right">90+</th><th className="px-3 py-2 text-right">{t('billing.outstanding')}</th><th className="px-3 py-2 text-right">{t('billing.advance')}</th></tr></thead>
+              <thead className="text-left text-xs text-slate-500"><tr><th className="px-3 py-2">{t('common.client')}</th><th className="px-3 py-2 text-right">0–30</th><th className="px-3 py-2 text-right">31–60</th><th className="px-3 py-2 text-right">61–90</th><th className="px-3 py-2 text-right">90+</th><th className="px-3 py-2 text-right">{t('billing.outstanding')}</th><th className="px-3 py-2 text-right">{t('billing.advance')}</th></tr></thead>
               <tbody>
                 {(ageing.data ?? []).map((r) => <tr key={r.client_id}><td className="px-3 py-2"><Link className="text-brand-700 underline" to="#" onClick={(e) => { e.preventDefault(); setClientId(r.client_id) }}>{r.client_name}</Link></td>
                   {[r.b0_30, r.b31_60, r.b61_90, r.b90_plus, r.outstanding_paise, r.advance_paise].map((v, i) => <td key={i} className="px-3 py-2 text-right">{formatINR(v)}</td>)}</tr>)}

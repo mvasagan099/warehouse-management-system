@@ -1,21 +1,33 @@
-@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans-condensed/600.css";
+@import "@fontsource/ibm-plex-sans-condensed/700.css";
 @import "@fontsource/noto-sans-tamil/400.css";
 @import "@fontsource/noto-sans-tamil/600.css";
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #ecfeff;
-  --color-brand-100: #cffafe;
-  --color-brand-500: #06b6d4;
-  --color-brand-600: #0891b2;
-  --color-brand-700: #0e7490;
-  --color-brand-800: #155e75;
-  --font-sans: "Inter Variable", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+  /* cobalt on frost: the blue of a compressor housing and frosted steel; amber and red are reserved for warnings and alarms */
+  --color-brand-50: #eef4fb;
+  --color-brand-100: #d6e5f6;
+  --color-brand-500: #5b9ae0;
+  --color-brand-600: #2670ba;
+  --color-brand-700: #1d5fa6;
+  --color-brand-800: #174b85;
+  --color-ink: #0e2238;
+  --color-frost: #eef3f6;
+  --font-sans: "IBM Plex Sans", "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "IBM Plex Sans Condensed", "IBM Plex Sans", "Noto Sans Tamil", ui-sans-serif, sans-serif;
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
 }
 
 html, body, #root { height: 100%; }
-body { @apply bg-slate-100/60 text-slate-900 antialiased; font-feature-settings: 'cv11', 'ss01'; }
+body { background: var(--color-frost); @apply text-slate-900 antialiased; }
+.font-display { font-family: var(--font-display); }
+h1, h2 { font-family: var(--font-display); letter-spacing: -0.005em; }
+/* the page title and big figures read like the stencilled labels on a cold room door */
+@keyframes rail-pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.45 } }
 :focus-visible { outline: 2px solid var(--color-brand-600); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 

@@ -97,7 +97,7 @@ export function DataTable<T>({
                     <th
                       key={h.id}
                       scope="col"
-                      className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                      className="whitespace-nowrap px-4 py-2.5 text-left text-[13px] font-semibold text-slate-600"
                     >
                       {h.isPlaceholder ? null : sortable ? (
                         <button className="inline-flex items-center gap-1 uppercase" onClick={h.column.getToggleSortingHandler()}>

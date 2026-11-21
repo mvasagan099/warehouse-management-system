@@ -66,7 +66,7 @@ export function ReceiptDetailPage() {
     catch (e) { toast.error(await errorMessage(e)) }
     finally { setBusy(false) }
   }
-  const kv = (label: string, value: React.ReactNode) => <div><dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt><dd className="text-sm font-medium">{value ?? '—'}</dd></div>
+  const kv = (label: string, value: React.ReactNode) => <div><dt className="text-xs text-slate-500">{label}</dt><dd className="text-sm font-medium">{value ?? '—'}</dd></div>
 
   return (
     <div className="space-y-5">
@@ -102,7 +102,7 @@ export function ReceiptDetailPage() {
         <h2 className="border-b border-slate-200 px-4 py-3 font-semibold">{t('gate.loadLines')}</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+            <thead className="bg-slate-50 text-left text-xs text-slate-500">
               <tr><th className="px-4 py-2">#</th><th className="px-4 py-2">{t('common.item')}</th><th className="px-4 py-2">{t('common.batch')}</th><th className="px-4 py-2">{t('common.expiry')}</th>
                 <th className="px-4 py-2">{t('gate.declaredQty')}</th><th className="px-4 py-2">{t('receive.accepted')}</th><th className="px-4 py-2">{t('receive.short')}</th><th className="px-4 py-2">{t('receive.damaged')}</th><th className="px-4 py-2">{t('common.slot')}</th></tr>
             </thead>

@@ -35,7 +35,7 @@ interface ManagerDash {
 }
 
 function Stat({ to, icon, label, value, sub, tone }: { to?: string; icon: React.ReactNode; label: string; value: string; sub?: string; tone?: 'red' | 'amber' }) {
-  const body = (<><div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">{icon}{label}</div><div className="mt-1 text-2xl font-semibold">{value}</div>{sub && <div className="text-xs text-slate-500">{sub}</div>}</>)
+  const body = (<><div className="flex items-center gap-2 text-xs font-medium text-slate-500">{icon}{label}</div><div className="mt-1 text-2xl font-semibold">{value}</div>{sub && <div className="text-xs text-slate-500">{sub}</div>}</>)
   const cls = `block min-h-24 rounded-xl border p-4 shadow-sm ${tone === 'red' ? 'border-red-300 bg-red-50' : tone === 'amber' ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'}`
   return to ? <Link to={to} className={`${cls} hover:border-brand-500`}>{body}</Link> : <div className={cls}>{body}</div>
 }

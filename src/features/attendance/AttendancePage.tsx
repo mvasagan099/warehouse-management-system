@@ -61,7 +61,7 @@ function MyDay() {
   return (
     <Card className="p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><div className="text-xs font-medium uppercase text-slate-500">{t('att.today')} · {formatDate(istDate(), lang)}</div>
+        <div><div className="text-xs font-medium text-slate-500">{t('att.today')} · {formatDate(istDate(), lang)}</div>
           <div className="mt-1 text-lg font-semibold" data-testid="att-today">{today?.check_in_at ? `${t('att.in')} ${hhmm(today.check_in_at)}` : t('att.notIn')}{today?.check_out_at ? ` · ${t('att.out')} ${hhmm(today.check_out_at)}` : ''}</div>
           {today?.gps_ok === false && <div className="mt-1 flex items-center gap-1 text-xs text-amber-700"><MapPin className="h-3 w-3" />{t('att.outsideRadius', { m: today.check_in_distance_m })}</div>}
           {queuedToday.length > 0 && <div className="mt-1 text-xs text-amber-700">{t('att.waitingToSend', { count: queuedToday.length })}</div>}</div>
@@ -178,7 +178,7 @@ function ManagerView() {
             <Field label={t('att.starts')} htmlFor="sh-s"><Input id="sh-s" type="time" value={newShift.starts} onChange={(e) => setNewShift({ ...newShift, starts: e.target.value })} /></Field>
             <Field label={t('att.ends')} htmlFor="sh-e"><Input id="sh-e" type="time" value={newShift.ends} onChange={(e) => setNewShift({ ...newShift, ends: e.target.value })} /></Field>
             <Button size="sm" disabled={!newShift.name.trim()} loading={addShift.isPending} onClick={() => addShift.mutate()}>{t('att.addShift')}</Button></div>
-          <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="text-left text-xs uppercase text-slate-500"><tr><th className="px-2 py-1">{t('common.name')}</th>{days.map((d) => <th key={d} className="px-2 py-1">{formatDate(d, lang)}</th>)}</tr></thead>
+          <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="text-left text-xs text-slate-500"><tr><th className="px-2 py-1">{t('common.name')}</th>{days.map((d) => <th key={d} className="px-2 py-1">{formatDate(d, lang)}</th>)}</tr></thead>
             <tbody>{(people.data ?? []).map((p) => <tr key={p.id}><td className="px-2 py-1 font-medium">{p.full_name}</td>{days.map((d) => {
               const cur = roster.data?.find((r) => r.user_id === p.id && r.work_date === d)
               return <td key={d} className="px-1 py-1"><Select aria-label={`${p.full_name} ${d}`} value={cur?.shift_id ?? ''} onChange={(e) => assign.mutate({ userId: p.id, day: d, shiftId: e.target.value })} className="py-1"><option value="">—</option>{(shifts.data ?? []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Select></td>

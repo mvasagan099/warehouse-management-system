@@ -92,7 +92,7 @@ export function InvoiceDetail({ id, onClose }: { id: string; onClose: () => void
     window.location.href = (data as { short_url: string }).short_url
   })
 
-  const header = (k: string, v: string) => <div><dt className="text-xs uppercase text-slate-500">{k}</dt><dd className="font-medium">{v}</dd></div>
+  const header = (k: string, v: string) => <div><dt className="text-xs text-slate-500">{k}</dt><dd className="font-medium">{v}</dd></div>
   const totalRows: [string, number][] = inv ? [[t('billing.taxable'), inv.taxable_paise], ['CGST', inv.cgst_paise], ['SGST', inv.sgst_paise], ['IGST', inv.igst_paise], [t('billing.roundOff'), inv.round_off_paise]] : []
 
   return (
@@ -138,7 +138,7 @@ export function InvoiceDetail({ id, onClose }: { id: string; onClose: () => void
                 <h3 className="mb-1 font-semibold">{t(`billing.section${sec}`)}</h3>
                 <div className="overflow-x-auto rounded-lg border border-slate-200">
                   <table className="min-w-full divide-y divide-slate-200 text-xs">
-                    <thead className="bg-slate-50 text-left uppercase text-slate-500"><tr>
+                    <thead className="bg-slate-50 text-left text-slate-500"><tr>
                       <th className="px-2 py-1.5">{t('billing.description')}</th><th className="px-2 py-1.5 text-right">{t('common.quantity')}</th><th className="px-2 py-1.5 text-right">{t('billing.rate')}</th>
                       <th className="px-2 py-1.5 text-right">{t('billing.discount')}</th><th className="px-2 py-1.5 text-right">{t('billing.taxable')}</th>{admin && isDraft && <th />}</tr></thead>
                     <tbody className="divide-y divide-slate-100">
@@ -176,7 +176,7 @@ export function InvoiceDetail({ id, onClose }: { id: string; onClose: () => void
 
           <section>
             <h3 className="mb-1 font-semibold">{t('billing.taxSummary')}</h3>
-            <table className="min-w-full text-xs"><thead className="text-left uppercase text-slate-500"><tr><th>{t('billing.section')}</th><th>SAC</th><th className="text-right">{t('billing.taxable')}</th><th className="text-right">{t('billing.rate')}</th><th className="text-right">CGST</th><th className="text-right">SGST</th><th className="text-right">IGST</th></tr></thead>
+            <table className="min-w-full text-xs"><thead className="text-left text-slate-500"><tr><th>{t('billing.section')}</th><th>SAC</th><th className="text-right">{t('billing.taxable')}</th><th className="text-right">{t('billing.rate')}</th><th className="text-right">CGST</th><th className="text-right">SGST</th><th className="text-right">IGST</th></tr></thead>
               <tbody>{detail.data.tax.map((x) => <tr key={x.id} className="border-t border-slate-100"><td>{t(`billing.section${x.section}`)}</td><td>{x.sac_code}</td><td className="text-right">{formatINR(x.taxable_paise)}</td><td className="text-right">{x.exempt ? t('billing.exempt') : bpToPercent(x.gst_rate_bp)}</td><td className="text-right">{formatINR(x.cgst_paise)}</td><td className="text-right">{formatINR(x.sgst_paise)}</td><td className="text-right">{formatINR(x.igst_paise)}</td></tr>)}</tbody></table>
           </section>
           <dl className="ml-auto w-full max-w-xs space-y-0.5">

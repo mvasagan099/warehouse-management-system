@@ -22,7 +22,7 @@ function CronCard() {
   const now = Date.now()
   return (
     <Card className="p-4"><h2 className="mb-1 flex items-center gap-2 font-semibold"><Timer className="h-4 w-4" />{t('ops.cronTitle')}</h2><p className="mb-3 text-sm text-slate-500">{t('ops.cronHelp')}</p>
-      {q.isPending ? <Spinner /> : <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="text-left text-xs uppercase text-slate-500"><tr><th className="py-1 pr-3">{t('ops.job')}</th><th className="py-1 pr-3">{t('common.status')}</th><th className="py-1 pr-3">{t('ops.lastOk')}</th><th className="py-1">{t('ops.runs')}</th></tr></thead>
+      {q.isPending ? <Spinner /> : <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="text-left text-xs text-slate-500"><tr><th className="py-1 pr-3">{t('ops.job')}</th><th className="py-1 pr-3">{t('common.status')}</th><th className="py-1 pr-3">{t('ops.lastOk')}</th><th className="py-1">{t('ops.runs')}</th></tr></thead>
         <tbody>{(q.data ?? []).map((j) => {
           const stale = !j.last_ok_at || now - Date.parse(j.last_ok_at) > j.max_age_minutes * 60_000
           const bad = j.last_status === 'FAILED' || stale

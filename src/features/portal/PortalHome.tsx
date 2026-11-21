@@ -27,7 +27,7 @@ interface Dash {
 function Tile({ to, icon, label, value, sub, tone }: { to: string; icon: React.ReactNode; label: string; value: string; sub?: string; tone?: 'alert' }) {
   return (
     <Link to={to} className={`block min-h-24 rounded-xl border p-4 shadow-sm transition-colors hover:border-brand-500 ${tone === 'alert' ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white'}`}>
-      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">{icon}{label}</div>
+      <div className="flex items-center gap-2 text-xs font-medium text-slate-500">{icon}{label}</div>
       <div className="mt-1 text-2xl font-semibold">{value}</div>
       {sub && <div className="text-xs text-slate-500">{sub}</div>}
     </Link>

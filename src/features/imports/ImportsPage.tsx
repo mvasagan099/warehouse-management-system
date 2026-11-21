@@ -59,7 +59,7 @@ export function ImportsPage() {
           <div className="mb-3 flex flex-wrap items-center gap-2 text-sm"><Badge tone={report.errors.length ? 'red' : 'green'}>{report.errors.length ? t('imports.hasErrors', { count: report.errors.length }) : report.dry_run ? t('imports.allGood') : t('imports.imported')}</Badge>
             <span>{t('imports.summary', { rows: report.rows, valid: report.valid })}</span>{report.dry_run && !report.errors.length && <span className="text-slate-500">{t('imports.nothingSaved')}</span>}</div>
           {report.errors.length > 0 && (<>
-            <div className="max-h-72 overflow-auto"><table className="min-w-full text-sm"><thead className="text-left text-xs uppercase text-slate-500"><tr><th className="px-2 py-1">{t('imports.row')}</th><th className="px-2 py-1">{t('imports.column')}</th><th className="px-2 py-1">{t('imports.problem')}</th></tr></thead>
+            <div className="max-h-72 overflow-auto"><table className="min-w-full text-sm"><thead className="text-left text-xs text-slate-500"><tr><th className="px-2 py-1">{t('imports.row')}</th><th className="px-2 py-1">{t('imports.column')}</th><th className="px-2 py-1">{t('imports.problem')}</th></tr></thead>
               <tbody>{report.errors.map((e, i) => <tr key={i} className="border-t border-slate-100"><td className="px-2 py-1">{e.row}</td><td className="px-2 py-1">{e.column ?? '—'}</td><td className="px-2 py-1">{e.message}</td></tr>)}</tbody></table></div>
             <Button className="mt-3" size="sm" variant="secondary" icon={<Download className="h-4 w-4" />} onClick={errorCsv}>{t('imports.errorReport')}</Button></>)}
         </Card>)}

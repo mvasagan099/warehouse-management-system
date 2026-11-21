@@ -12,6 +12,7 @@ import { LanguageSwitch } from './LanguageSwitch'
 import { NotificationBell } from './NotificationBell'
 import { SyncStatus } from './SyncStatus'
 import { disabledAreas, useFeatureFlags } from '../../lib/features'
+import { StatusRail } from './StatusRail'
 
 const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
   dashboard: LayoutDashboard,
@@ -98,7 +99,7 @@ export function AppLayout() {
         if (!list.length) return null
         return (
           <div key={g.key} className="mb-3">
-            {g.key !== 'main' && <div className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{t(`nav.group.${g.key}`)}</div>}
+            {g.key !== 'main' && <div className="mx-3 mb-1 mt-4 border-t border-white/10 px-0 pt-3 text-xs font-medium text-slate-400">{t(`nav.group.${g.key}`)}</div>}
             <div className="space-y-0.5">
               {list.map((item) => {
                 const Icon = ICONS[item.area]
@@ -123,15 +124,16 @@ export function AppLayout() {
 
   const brand = (
     <div className="flex items-center gap-3 px-5 py-5 text-white">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 shadow-lg shadow-brand-700/40"><Snowflake className="h-5 w-5" aria-hidden /></span>
-      <span className="font-semibold leading-tight tracking-tight">{t('app.name')}</span>
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600"><Snowflake className="h-5 w-5" aria-hidden /></span>
+      <span className="font-display text-lg font-semibold leading-tight">{t('app.name')}</span>
     </div>
   )
 
   return (
-    <div className="flex h-dvh overflow-hidden">
+    <div className="relative flex h-dvh overflow-hidden">
+      <StatusRail />
       {/* desktop sidebar */}
-      <aside className="hidden h-full w-64 shrink-0 flex-col bg-gradient-to-b from-slate-900 to-slate-950 lg:flex">
+      <aside className="hidden h-full w-64 shrink-0 flex-col bg-ink lg:flex">
         {brand}
         {nav}
       </aside>
@@ -140,7 +142,7 @@ export function AppLayout() {
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-slate-900/50" onClick={() => setOpen(false)} />
-          <aside className="relative flex h-full w-72 flex-col overflow-hidden bg-gradient-to-b from-slate-900 to-slate-950">
+          <aside className="relative flex h-full w-72 flex-col overflow-hidden bg-ink">
             <button className="absolute right-3 top-4 text-slate-300" onClick={() => setOpen(false)} aria-label={t('common.close')}>
               <X className="h-5 w-5" />
             </button>

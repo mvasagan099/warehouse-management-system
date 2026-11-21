@@ -124,7 +124,7 @@ export function AlertDetail({ alertId, onClose }: { alertId: string; onClose: ()
           <div className="flex flex-wrap items-center gap-2"><AlertBadges a={a} /><span className="text-slate-500">{wh?.name} · {zone?.name} · {d.data?.sensor?.name ?? '—'}</span></div>
           <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {[[t('cold.peakValue'), a.peak_value !== null ? `${a.peak_value} °C` : '—'], [t('cold.peakDeviation'), `${a.peak_deviation} °C`], [t('cold.duration'), `${a.duration_min} min`], [t('cold.limit'), a.limit_value !== null ? `${a.limit_value} °C` : '—']].map(([k, v]) =>
-              <div key={k}><dt className="text-xs uppercase text-slate-500">{k}</dt><dd className="font-medium">{v}</dd></div>)}
+              <div key={k}><dt className="text-xs text-slate-500">{k}</dt><dd className="font-medium">{v}</dd></div>)}
           </dl>
           <section><h3 className="mb-1 font-semibold">{t('cold.timeline')}</h3>
             <ol className="space-y-0.5">{events.filter(([ts]) => ts).map(([ts, label]) => <li key={label}><span className="text-slate-500">{formatDateTime(ts, lang)}</span> · {label}</li>)}</ol></section>
@@ -132,7 +132,7 @@ export function AlertDetail({ alertId, onClose }: { alertId: string; onClose: ()
           <section><h3 className="mb-1 font-semibold">{t('cold.affectedStock')}</h3>
             {d.data!.stock.length === 0 ? <p className="text-slate-500">{t('cold.noAffected')}</p> : (
               <div className="overflow-x-auto rounded-lg border border-slate-200"><table className="min-w-full text-xs" data-testid="affected-stock">
-                <thead className="bg-slate-50 text-left uppercase text-slate-500"><tr><th className="px-2 py-1.5">{t('common.client')}</th><th className="px-2 py-1.5">{t('common.slot')}</th><th className="px-2 py-1.5">{t('common.item')}</th><th className="px-2 py-1.5">{t('common.batch')}</th><th className="px-2 py-1.5 text-right">{t('common.quantity')}</th></tr></thead>
+                <thead className="bg-slate-50 text-left text-slate-500"><tr><th className="px-2 py-1.5">{t('common.client')}</th><th className="px-2 py-1.5">{t('common.slot')}</th><th className="px-2 py-1.5">{t('common.item')}</th><th className="px-2 py-1.5">{t('common.batch')}</th><th className="px-2 py-1.5 text-right">{t('common.quantity')}</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">{d.data!.stock.map((s) => <tr key={s.id}><td className="px-2 py-1.5">{s.client_name}</td><td className="px-2 py-1.5 font-mono">{s.slot_code}</td><td className="px-2 py-1.5">{s.item_name ?? '—'}</td><td className="px-2 py-1.5">{s.batch_no ?? '—'}</td><td className="px-2 py-1.5 text-right">{s.quantity !== null ? `${s.quantity} ${s.unit ?? ''}` : '—'}</td></tr>)}</tbody></table></div>)}
           </section>
           {d.data!.notices.length > 0 && <section><h3 className="mb-1 font-semibold">{t('cold.clientNotices')}</h3>

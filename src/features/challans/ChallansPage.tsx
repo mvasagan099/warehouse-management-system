@@ -92,18 +92,18 @@ function ChallanDetail({ challan, onClose }: { challan: DeliveryChallan; onClose
       {detail.isPending ? <div className="flex justify-center p-8"><Spinner /></div> : detail.data && (
         <div className="space-y-4 text-sm">
           <dl className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            <div><dt className="text-xs uppercase text-slate-500">{t('common.client')}</dt><dd className="font-medium">{detail.data.client?.company_name}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">{t('gate.toCompany')}</dt><dd className="font-medium">{detail.data.toCompany?.name}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">{t('challans.dispatchedAt')}</dt><dd className="font-medium">{formatDateTime(challan.dispatched_at, lang)}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">{t('gate.lorryNumber')}</dt><dd className="font-medium">{detail.data.gate?.lorry_number} {detail.data.gate?.driver_name}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">{t('dispatch.seal')}</dt><dd className="font-medium">{challan.seal_number ?? '—'}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">{t('dispatch.dispatchTemp')}</dt><dd className="font-medium">{challan.dispatch_temp_c !== null ? `${challan.dispatch_temp_c} °C` : '—'}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">{t('gate.ewayBill')}</dt><dd className="font-medium">{detail.data.gate?.eway_bill_number ?? '—'}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">{t('dispatch.receiverName')}</dt><dd className="font-medium">{challan.receiver_name ?? '—'}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">{t('challans.pod')}</dt><dd>{challan.signature_path ? <Badge tone="green">{t('challans.signed')} {challan.pod_signed_at ? formatDateTime(challan.pod_signed_at, lang) : ''}</Badge> : <Badge tone="amber">{t('challans.notSigned')}</Badge>}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('common.client')}</dt><dd className="font-medium">{detail.data.client?.company_name}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('gate.toCompany')}</dt><dd className="font-medium">{detail.data.toCompany?.name}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('challans.dispatchedAt')}</dt><dd className="font-medium">{formatDateTime(challan.dispatched_at, lang)}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('gate.lorryNumber')}</dt><dd className="font-medium">{detail.data.gate?.lorry_number} {detail.data.gate?.driver_name}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('dispatch.seal')}</dt><dd className="font-medium">{challan.seal_number ?? '—'}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('dispatch.dispatchTemp')}</dt><dd className="font-medium">{challan.dispatch_temp_c !== null ? `${challan.dispatch_temp_c} °C` : '—'}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('gate.ewayBill')}</dt><dd className="font-medium">{detail.data.gate?.eway_bill_number ?? '—'}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('dispatch.receiverName')}</dt><dd className="font-medium">{challan.receiver_name ?? '—'}</dd></div>
+            <div><dt className="text-xs text-slate-500">{t('challans.pod')}</dt><dd>{challan.signature_path ? <Badge tone="green">{t('challans.signed')} {challan.pod_signed_at ? formatDateTime(challan.pod_signed_at, lang) : ''}</Badge> : <Badge tone="amber">{t('challans.notSigned')}</Badge>}</dd></div>
           </dl>
           <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th className="px-3 py-2">#</th><th className="px-3 py-2">{t('common.item')}</th><th className="px-3 py-2">{t('common.batch')}</th><th className="px-3 py-2">{t('common.expiry')}</th><th className="px-3 py-2">{t('common.quantity')}</th><th className="px-3 py-2">{t('common.slot')}</th></tr></thead>
+            <thead className="bg-slate-50 text-left text-xs text-slate-500"><tr><th className="px-3 py-2">#</th><th className="px-3 py-2">{t('common.item')}</th><th className="px-3 py-2">{t('common.batch')}</th><th className="px-3 py-2">{t('common.expiry')}</th><th className="px-3 py-2">{t('common.quantity')}</th><th className="px-3 py-2">{t('common.slot')}</th></tr></thead>
             <tbody className="divide-y divide-slate-100">
               {detail.data.lines.map((l) => (
                 <tr key={l.id}><td className="px-3 py-2">{l.line_no}</td><td className="px-3 py-2 font-medium">{l.item_name}</td><td className="px-3 py-2">{l.batch_no ?? '—'}</td><td className="px-3 py-2">{l.expiry_date ? formatDate(l.expiry_date, lang) : '—'}</td><td className="px-3 py-2">{formatNumber(l.quantity, lang, 3)} {l.unit}</td><td className="px-3 py-2 font-mono text-xs">{l.slot_code}</td></tr>

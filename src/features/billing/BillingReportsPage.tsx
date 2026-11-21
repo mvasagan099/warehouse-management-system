@@ -69,7 +69,7 @@ export function BillingReportsPage() {
         </div>
         {revenue.isPending ? <div className="flex justify-center p-6"><Spinner /></div> : (
           <div className="overflow-x-auto"><table className="min-w-full divide-y divide-slate-100 text-sm" data-testid="revenue">
-            <thead className="text-left text-xs uppercase text-slate-500"><tr><th className="px-3 py-2">{t(`billing.by${group === 'month' ? 'Month' : group === 'client' ? 'Client' : 'Warehouse'}`)}</th><th className="px-3 py-2 text-right">{t('billing.sectionRENT')}</th><th className="px-3 py-2 text-right">{t('billing.sectionLABOUR')}</th><th className="px-3 py-2 text-right">{t('billing.sectionOTHER')}</th><th className="px-3 py-2 text-right">{t('billing.tax')}</th><th className="px-3 py-2 text-right">{t('billing.grandTotal')}</th></tr></thead>
+            <thead className="text-left text-xs text-slate-500"><tr><th className="px-3 py-2">{t(`billing.by${group === 'month' ? 'Month' : group === 'client' ? 'Client' : 'Warehouse'}`)}</th><th className="px-3 py-2 text-right">{t('billing.sectionRENT')}</th><th className="px-3 py-2 text-right">{t('billing.sectionLABOUR')}</th><th className="px-3 py-2 text-right">{t('billing.sectionOTHER')}</th><th className="px-3 py-2 text-right">{t('billing.tax')}</th><th className="px-3 py-2 text-right">{t('billing.grandTotal')}</th></tr></thead>
             <tbody>
               {(revenue.data ?? []).map((r) => <tr key={r.bucket}><td className="px-3 py-2">{r.bucket}</td>{[r.rent_paise, r.labour_paise, r.other_paise, r.tax_paise, r.total_paise].map((v, i) => <td key={i} className="px-3 py-2 text-right">{formatINR(v)}</td>)}</tr>)}
               {!revenue.data?.length && <tr><td colSpan={6} className="px-3 py-6 text-center text-slate-500">{t('billing.noRevenue')}</td></tr>}
@@ -81,7 +81,7 @@ export function BillingReportsPage() {
         <div className="border-b border-slate-200 p-3"><h2 className="font-semibold">{t('billing.utilisation')}</h2><p className="text-xs text-slate-500">{t('billing.utilisationHelp')}</p></div>
         {util.isPending ? <div className="flex justify-center p-6"><Spinner /></div> : (
           <div className="overflow-x-auto"><table className="min-w-full divide-y divide-slate-100 text-sm">
-            <thead className="text-left text-xs uppercase text-slate-500"><tr><th className="px-3 py-2">{t('common.warehouse')}</th><th className="px-3 py-2 text-right">{t('billing.heldDays')}</th><th className="px-3 py-2 text-right">{t('billing.billedDays')}</th><th className="px-3 py-2 text-right">{t('billing.availableDays')}</th><th className="px-3 py-2 text-right">{t('billing.utilisationPct')}</th></tr></thead>
+            <thead className="text-left text-xs text-slate-500"><tr><th className="px-3 py-2">{t('common.warehouse')}</th><th className="px-3 py-2 text-right">{t('billing.heldDays')}</th><th className="px-3 py-2 text-right">{t('billing.billedDays')}</th><th className="px-3 py-2 text-right">{t('billing.availableDays')}</th><th className="px-3 py-2 text-right">{t('billing.utilisationPct')}</th></tr></thead>
             <tbody>{(util.data ?? []).map((r) => <tr key={r.warehouse_id}><td className="px-3 py-2">{r.warehouse}</td><td className="px-3 py-2 text-right">{r.held_brigade_days}</td><td className="px-3 py-2 text-right">{r.billed_brigade_days}</td><td className="px-3 py-2 text-right">{r.available_brigade_days}</td><td className="px-3 py-2 text-right">{(r.utilisation_bp / 100).toFixed(2)}%</td></tr>)}</tbody></table></div>
         )}
       </Card>
