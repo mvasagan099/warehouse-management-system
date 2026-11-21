@@ -1430,7 +1430,8 @@
       "VOTER_ID": "Voter ID",
       "DRIVING_LICENCE": "Driving licence",
       "PASSPORT": "Passport"
-    }
+    },
+    "promoteNote": "Saving makes this person a warehouse manager of their warehouse (login role changes). They must sign out and in again."
   },
   "att": {
     "title": "Attendance",

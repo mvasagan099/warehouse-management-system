@@ -89,18 +89,27 @@ function EditDialog({ employee, onClose }: { employee: Row; onClose: () => void 
   const { t } = useTranslation()
   const qc = useQueryClient()
   const [f, setF] = useState({ job_role: employee.job_role, status: employee.status, name: employee.emergency_contact_name ?? '', phone: employee.emergency_contact_phone ?? '', joining: employee.joining_date })
+  const { profile } = useAuth()
+  const isAdmin = profile?.role === 'SUPER_ADMIN'
+  const loginRole = employee.person?.role
   const save = useMutation({
     mutationFn: async () => {
+      // Making someone a manager (or back to staff) changes their LOGIN role and warehouse assignment, not just a label.
+      const wantsManager = f.job_role === 'MANAGER'
+      if (isAdmin && (loginRole === 'STAFF' || loginRole === 'WAREHOUSE_MANAGER') && wantsManager !== (loginRole === 'WAREHOUSE_MANAGER')) {
+        const { error } = await (supabase.rpc as unknown as (fn: string, args: object) => Promise<{ error: { message: string } | null }>)('change_login_role', { p_user_id: employee.user_id, p_new_role: wantsManager ? 'WAREHOUSE_MANAGER' : 'STAFF' })
+        if (error) throw error
+      }
       const { error } = await supabase.from('employees').update({ job_role: f.job_role, status: f.status === 'EXITED' ? employee.status : f.status, emergency_contact_name: f.name.trim() || null, emergency_contact_phone: f.phone.trim() || null, joining_date: f.joining }).eq('id', employee.id)
       if (error) throw error
     },
-    onSuccess: () => { toast.success(t('common.saved')); void qc.invalidateQueries({ queryKey: ['employees'] }); onClose() }, onError: async (e) => toast.error(await errorMessage(e)),
+    onSuccess: () => { toast.success(t('common.saved')); void qc.invalidateQueries({ queryKey: ['employees'] }); void qc.invalidateQueries({ queryKey: ['users'] }); onClose() }, onError: async (e) => toast.error(await errorMessage(e)),
   })
   return (
     <Modal open title={`${t('common.edit')} · ${employee.person?.full_name ?? employee.code}`} onClose={onClose}
       footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button></>}>
       <div className="grid gap-3 text-sm sm:grid-cols-2">
-        <Field label={t('hiring.jobRole')} htmlFor="em-role"><Select id="em-role" value={f.job_role} onChange={(e) => setF({ ...f, job_role: e.target.value as JobRole })}>{Constants.public.Enums.job_role.map((r) => <option key={r} value={r}>{t(`jobRole.${r}`)}</option>)}</Select></Field>
+        <Field label={t('hiring.jobRole')} htmlFor="em-role"><Select id="em-role" value={f.job_role} onChange={(e) => setF({ ...f, job_role: e.target.value as JobRole })}>{Constants.public.Enums.job_role.filter((r) => isAdmin || r !== 'MANAGER').map((r) => <option key={r} value={r}>{t(`jobRole.${r}`)}</option>)}</Select>{f.job_role === 'MANAGER' && loginRole === 'STAFF' && <p className="mt-1 text-xs text-amber-700">{t('staff.promoteNote')}</p>}</Field>
         <Field label={t('common.status')} htmlFor="em-status"><Select id="em-status" value={f.status} disabled={employee.status === 'EXITED'} onChange={(e) => setF({ ...f, status: e.target.value as EmployeeStatus })}>{(['ACTIVE', 'ON_LEAVE'] as const).map((x) => <option key={x} value={x}>{t(`employeeStatus.${x}`)}</option>)}</Select></Field>
         <Field label={t('staff.joiningDate')} htmlFor="em-join"><Input id="em-join" type="date" value={f.joining} onChange={(e) => setF({ ...f, joining: e.target.value })} /></Field>
         <div />
