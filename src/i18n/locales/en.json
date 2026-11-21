@@ -1791,5 +1791,10 @@
       "BANK_TRANSFER": "Bank transfer",
       "CHEQUE": "Cheque"
     }
+  },
+  "install": {
+    "button": "Install app",
+    "title": "Install Slott",
+    "iosSteps": "Tap the Share button in Safari, then choose “Add to Home Screen”."
   }
 }

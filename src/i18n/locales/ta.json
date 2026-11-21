@@ -1791,5 +1791,10 @@
       "BANK_TRANSFER": "வங்கி பரிமாற்றம்",
       "CHEQUE": "காசோலை"
     }
+  },
+  "install": {
+    "button": "செயலியை நிறுவு",
+    "title": "Slott ஐ நிறுவு",
+    "iosSteps": "Safari இல் Share பொத்தானை அழுத்தி, “Add to Home Screen” ஐ தேர்ந்தெடுக்கவும்."
   }
 }

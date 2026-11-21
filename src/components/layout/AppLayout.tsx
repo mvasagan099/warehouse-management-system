@@ -13,6 +13,7 @@ import { NotificationBell } from './NotificationBell'
 import { SyncStatus } from './SyncStatus'
 import { disabledAreas, useFeatureFlags } from '../../lib/features'
 import { Logo } from '../Logo'
+import { InstallApp } from '../InstallApp'
 import { StatusRail } from './StatusRail'
 
 const ICONS: Record<Area, ComponentType<{ className?: string }>> = {
@@ -157,6 +158,7 @@ export function AppLayout() {
           </button>
           <div className="flex-1" />
           <SyncStatus />
+          <InstallApp className="hidden sm:inline-flex" />
           <NotificationBell />
           <LanguageSwitch userId={profile?.id} />
           <div className="hidden text-right sm:block">

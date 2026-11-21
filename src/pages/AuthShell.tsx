@@ -1,6 +1,7 @@
 import { Logo } from '../components/Logo'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { InstallApp } from '../components/InstallApp'
 import { LanguageSwitch } from '../components/layout/LanguageSwitch'
 
 export function AuthShell({ title, children }: { title: string; children: ReactNode }) {
@@ -17,6 +18,7 @@ export function AuthShell({ title, children }: { title: string; children: ReactN
         <h1 className="mb-4 text-xl font-semibold">{title}</h1>
         {children}
       </div>
+      <InstallApp className="mt-4 bg-white" />
       <div className="mt-4 rounded-lg bg-white/90 px-3 py-1.5">
         <LanguageSwitch />
       </div>
