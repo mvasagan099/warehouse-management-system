@@ -77,7 +77,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
   const inner = useRef<HTMLSelectElement | null>(null)
   const setRefs = (el: HTMLSelectElement | null) => { inner.current = el; if (typeof ref === 'function') ref(el); else if (ref) (ref as { current: HTMLSelectElement | null }).current = el }
   const opts = optionsOf(children)
-  const searchable = opts.filter((o) => o.value !== '').length > SEARCH_ABOVE
+  // clients, warehouses, companies and the like always get the search box (the lists keep growing); other lists only when long
+  const entity = /client|warehouse|company|compan|zone|slot|vacancy|user|customer/i.test(`${props.id ?? ''} ${props.name ?? ''} ${props['aria-label'] ?? ''}`)
+  const count = opts.filter((o) => o.value !== '').length
+  const searchable = count > 1 && (entity || count > SEARCH_ABOVE)
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
   const [active, setActive] = useState(0)
